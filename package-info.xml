@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
+<package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
+	<id>Arantor:Characters</id>
+	<name>Characters</name>
+	<version>1.0</version>
+	<type>modification</type>
+
+	<install for="2.1 Beta 1, 2.1 Beta 2">
+		<modification type="file">install.xml</modification>
+		<database>install.php</database>
+		<require-file name="chars.css" destination="$themes_dir/default/css" />
+		<require-file name="Profile-Chars.php" destination="$sourcedir" />
+		<require-file name="Profile-Chars.template.php" destination="$themes_dir/default" />
+	</install>
+
+	<uninstall for="2.1 Beta 1, 2.1 Beta 2">
+		<modification type="file" reverse="true">install.xml</modification>
+		<remove-file name="$themes_dir/default/css/chars.css" />
+		<remove-file name="$sourcedir/Profile-Chars.php" />
+		<remove-file name="$themes_dir/default/Profile-Chars.template.php" />
+	</uninstall>
+</package-info>
