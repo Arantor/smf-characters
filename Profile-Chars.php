@@ -3,6 +3,82 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+function chars_profile_menu(&$profile_areas) {
+	global $cur_profile, $scripturl;
+	static $called = false;
+
+	// Sometimes this can be called twice for reasons unknown.
+	if ($called) {
+		return;
+	} else {
+		$called = true;
+	}
+
+	$profile_areas['info']['areas']['characters_popup'] = array(
+		'function' => 'characters_popup',
+		'permission' => array(
+			'own' => 'is_not_guest',
+			'any' => array(),
+		),
+		'select' => 'summary',
+	);
+	$profile_areas['info']['areas']['char_switch'] = array(
+		'function' => 'char_switch',
+		'permission' => array(
+			'own' => 'is_not_guest',
+			'any' => array(),
+		),
+		'select' => 'summary',
+	);
+
+	$insert_array['chars'] = array(
+		'title' => 'Characters',
+		'areas' => array(
+			'characters' => array(
+				'file' => 'Profile-Chars.php',
+				'function' => 'character_profile',
+				'enabled' => true,
+				'permission' => array(
+					'own' => array('is_not_guest'),
+					'any' => array('profile_view'),
+				),
+			),
+		),
+	);
+	// Now we need to add the user's characters to the profile menu, "creatively".
+	if (!empty($cur_profile['characters'])) {
+		addInlineCss('
+span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }');
+		foreach ($cur_profile['characters'] as $id_character => $character) {
+			if (!empty($character['avatar'])) {
+				addInlineCss('
+span.character_' . $id_character . ' { background-image: url(' . $character['avatar'] . '); background-size: cover }');
+			}
+			$insert_array['chars']['areas']['character_' . $id_character] = array(
+				'function' => 'character_profile',
+				'label' => $character['character_name'],
+				'icon' => !empty($character['avatar']) ? 'char_avatar character_' . $id_character : '',
+				'enabled' => true,
+				'permission' => array(
+					'own' => array('is_not_guest'),
+					'any' => array('profile_view'),
+				),
+				'select' => 'characters',
+				'custom_url' => $scripturl . '?action=profile;area=characters;char=' . $id_character,
+			);
+		}
+	}
+
+	$new_profile = array();
+	foreach ($profile_areas as $k => $v) {
+		$new_profile[$k] = $v;
+		if ($k == 'info') {
+			$new_profile['chars'] = $insert_array['chars'];
+		}
+	}
+	$profile_areas = $new_profile;
+}
+
 function characters_popup($memID) {
 	global $context, $user_info, $sourcedir, $db_show_debug, $cur_profile, $smcFunc;
 

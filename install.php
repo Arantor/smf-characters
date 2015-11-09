@@ -49,11 +49,12 @@ foreach ($new_settings as $k => $v)
 // Hook references to be added.
 $hooks = array();
 // Bootstrap
-//$hooks[] = array(
-	// 'hook' => 'integrate_pre_include',
-	// 'function' => '$sourcedir/levgal_src/LevGal-Bootstrap.php',
-	// 'perm' => true,
-//);
+$hooks[] = array(
+	'hook' => 'integrate_profile_areas',
+	'function' => 'chars_profile_menu',
+	'perm' => true,
+	'file' => '$sourcedir/Profile-Chars.php',
+);
 
 // Now, we move on to adding new tables to the database.
 $tables = array();
@@ -236,7 +237,7 @@ foreach ($columns as $column)
 // Add integration hooks, if any
 foreach ($hooks as $hook)
 {
-	add_integration_function($hook['hook'], $hook['function'], $hook['perm']);
+	add_integration_function($hook['hook'], $hook['function'], $hook['perm'], !empty($hook['file']) ? $hook['file'] : '');
 }
 
 // Create characters if an account doesn't have characters

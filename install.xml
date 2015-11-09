@@ -182,46 +182,6 @@
 	user_menus.add("profile", "' . $scripturl . '?action=profile;area=popup");]]></add>
 		</operation>
 	</file>
-	<file name="$sourcedir/Profile.php">
-		<operation>
-			<search position="replace"><![CDATA[
-				'alerts_popup' => array(
-					'function' => 'alerts_popup',
-					'permission' => array(
-						'own' => 'is_not_guest',
-						'any' => array(),
-					),
-					'select' => 'summary',
-				),]]></search>
-			<add><![CDATA[
-				'alerts_popup' => array(
-					'function' => 'alerts_popup',
-					'permission' => array(
-						'own' => 'is_not_guest',
-						'any' => array(),
-					),
-					'select' => 'summary',
-				),
-				'characters_popup' => array(
-					'file' => 'Profile-Chars.php',
-					'function' => 'characters_popup',
-					'permission' => array(
-						'own' => 'is_not_guest',
-						'any' => array(),
-					),
-					'select' => 'summary',
-				),
-				'char_switch' => array(
-					'file' => 'Profile-Chars.php',
-					'function' => 'char_switch',
-					'permission' => array(
-						'own' => 'is_not_guest',
-						'any' => array(),
-					),
-					'select' => 'summary',
-				),]]></add>
-		</operation>
-	</file>
 
 	<!-- Adding character details to saving -->
 	<file name="$sourcedir/Subs-Post.php">
@@ -483,62 +443,6 @@ function AutoSuggest_Search_MemberChar()
 			'profile_signature' => array(true, 'profile'),]]></search>
 			<add><![CDATA[
 			// Signature permission was here]]></add>
-		</operation>
-	</file>
-	<file name="$sourcedir/Profile.php">
-		<operation>
-			<search position="replace"><![CDATA[
-		'edit_profile' => array(
-			'title' => $txt['forumprofile'],
-			'areas' => array(]]></search>
-			<add><![CDATA[
-		'chars' => array(
-			'title' => 'Characters',
-			'areas' => array(
-				'characters' => array(
-					'file' => 'Profile-Chars.php',
-					'function' => 'character_profile',
-					'enabled' => true,
-					'permission' => array(
-						'own' => array('is_not_guest'),
-						'any' => array('profile_view'),
-					),
-				),
-			),
-		),
-		'edit_profile' => array(
-			'title' => $txt['forumprofile'],
-			'areas' => array(]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
-	// Let them modify profile areas easily.]]></search>
-			<add><![CDATA[
-	// Now we need to add the user's characters to the profile menu, "creatively".
-	if (!empty($cur_profile['characters'])) {
-		addInlineCss('
-span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }');
-		foreach ($cur_profile['characters'] as $id_character => $character) {
-			if (!empty($character['avatar'])) {
-				addInlineCss('
-span.character_' . $id_character . ' { background-image: url(' . $character['avatar'] . '); background-size: cover }');
-			}
-			$profile_areas['chars']['areas']['character_' . $id_character] = array(
-				'function' => 'character_profile',
-				'label' => $character['character_name'],
-				'icon' => !empty($character['avatar']) ? 'char_avatar character_' . $id_character : '',
-				'enabled' => true,
-				'permission' => array(
-					'own' => array('is_not_guest'),
-					'any' => array('profile_view'),
-				),
-				'select' => 'characters',
-				'custom_url' => $scripturl . '?action=profile;area=characters;char=' . $id_character,
-			);
-		}
-	}
-
-	// Let them modify profile areas easily.]]></add>
 		</operation>
 	</file>
 
