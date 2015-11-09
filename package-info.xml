@@ -17,6 +17,7 @@
 
 	<uninstall for="2.1 Beta 1, 2.1 Beta 2">
 		<modification type="file" reverse="true">install.xml</modification>
+		<code>uninstall-required.php</code>
 		<remove-file name="$themes_dir/default/css/chars.css" />
 		<remove-file name="$sourcedir/AutoSuggest-Chars.php" />
 		<remove-file name="$sourcedir/Profile-Chars.php" />
