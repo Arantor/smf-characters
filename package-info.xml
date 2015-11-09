@@ -10,6 +10,7 @@
 		<modification type="file">install.xml</modification>
 		<database>install.php</database>
 		<require-file name="chars.css" destination="$themes_dir/default/css" />
+		<require-file name="AutoSuggest-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.template.php" destination="$themes_dir/default" />
 	</install>
@@ -17,6 +18,7 @@
 	<uninstall for="2.1 Beta 1, 2.1 Beta 2">
 		<modification type="file" reverse="true">install.xml</modification>
 		<remove-file name="$themes_dir/default/css/chars.css" />
+		<remove-file name="$sourcedir/AutoSuggest-Chars.php" />
 		<remove-file name="$sourcedir/Profile-Chars.php" />
 		<remove-file name="$themes_dir/default/Profile-Chars.template.php" />
 	</uninstall>

@@ -55,6 +55,12 @@ $hooks[] = array(
 	'perm' => true,
 	'file' => '$sourcedir/Profile-Chars.php',
 );
+$hooks[] = array(
+	'hook' => 'integrate_autosuggest',
+	'function' => 'integrate_character_autosuggest',
+	'perm' => true,
+	'file' => '$sourcedir/AutoSuggest-Chars.php',
+);
 
 // Now, we move on to adding new tables to the database.
 $tables = array();
