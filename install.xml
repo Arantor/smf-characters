@@ -337,7 +337,7 @@
 			<search position="replace"><![CDATA[
 			m.subject, m.id_topic, IFNULL(mem.real_name, m.poster_name) AS real_name,]]></search>
 			<add><![CDATA[
-			m.subject, m.id_topic, IFNULL(IFNULL(chars.character_name, mem.real_name), m.poster_name) AS real_name,]]></add>
+			m.subject, m.id_topic, chars.id_character, IFNULL(IFNULL(chars.character_name, mem.real_name), m.poster_name) AS real_name,]]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
@@ -345,6 +345,14 @@
 			<add><![CDATA[
 			LEFT JOIN {db_prefix}messages AS m ON (m.id_msg = b.id_last_msg)
 			LEFT JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character)]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[
+				'href' => $row_board['poster_name'] != '' && !empty($row_board['id_member']) ? $scripturl . '?action=profile;u=' . $row_board['id_member'] : '',
+				'link' => $row_board['poster_name'] != '' ? (!empty($row_board['id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row_board['id_member'] . '">' . $row_board['real_name'] . '</a>' : $row_board['real_name']) : $txt['not_applicable'],]]></search>
+			<add><![CDATA[
+				'href' => $row_board['poster_name'] != '' && !empty($row_board['id_member']) ? $scripturl . '?action=profile;u=' . $row_board['id_member'] . (!empty($row_board['id_character']) ? ';area=characters;char=' . $row_board['id_character'] : ''): '',
+				'link' => $row_board['poster_name'] != '' ? (!empty($row_board['id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row_board['id_member'] . (!empty($row_board['id_character']) ? ';area=characters;char=' . $row_board['id_character'] : '') . '">' . $row_board['real_name'] . '</a>' : $row_board['real_name']) : $txt['not_applicable'],]]></add>
 		</operation>
 	</file>
 
