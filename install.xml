@@ -348,16 +348,6 @@
 	</file>
 
 	<!-- Moving that fscking logout button -->
-	<file name="$sourcedir/Subs.php">
-		<operation>
-			<search position="replace"><![CDATA[
-				'href' => $scripturl . '?action=logout;%1$s=%2$s',
-				'show' => !$user_info['is_guest'],]]></search>
-			<add><![CDATA[
-				'href' => $scripturl . '?action=logout;%1$s=%2$s',
-				'show' => false,]]></add>
-		</operation>
-	</file>
 	<file name="$themedir/index.template.php">
 		<operation>
 			<search position="replace"><![CDATA[

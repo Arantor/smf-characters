@@ -31,4 +31,16 @@ function integrate_chars()
 		false,
 		'$sourcedir/AutoSuggest-Chars.php'
 	);
+	add_integration_function(
+		'integrate_menu_buttons',
+		'integrate_remove_logout',
+		false
+	);
 }
+
+function integrate_remove_logout(&$buttons)
+{
+	$buttons['logout']['show'] = false;
+}
+
+?>
