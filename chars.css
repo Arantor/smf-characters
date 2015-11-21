@@ -3,16 +3,16 @@
 }
 
 #chars_container span.avatar {
-    width: 25px;
-    height: 25px;
-    display: inline-block;
+	width: 25px;
+	height: 25px;
+	display: inline-block;
 	text-align: center;
 }
 
 #chars_container span.avatar img {
-    max-width: 100%;
-    max-height: 100%;
-    margin-bottom: -7px;
+	max-width: 100%;
+	max-height: 100%;
+	margin-bottom: -7px;
 }
 
 #chars_container li {
@@ -21,4 +21,9 @@
 
 #chars_container .switch {
 	float: right;
+}
+
+/* And the profile menu can use some love */
+#profile_menu_top img.avatar, #profile_menu img.avatar {
+	display: none;
 }
