@@ -92,8 +92,8 @@ function integrate_display_chars_messages(&$output, &$message) {
 		unset ($output['member']);
 		$output['member'] = $memberContext[$message['id_member']];
 		// Now replace the values we need into the new version.
-		if (!empty($message['member']['characters'][$message['id_character']])) {
-			$character = $message['member']['characters'][$message['id_character']];
+		if (!empty($output['member']['characters'][$message['id_character']])) {
+			$character = $output['member']['characters'][$message['id_character']];
 			if (!empty($character['avatar']))
 			{
 				$output['member']['avatar'] = array(
@@ -103,6 +103,7 @@ function integrate_display_chars_messages(&$output, &$message) {
 					'url' => $character['avatar'],
 				);
 			}
+			$output['member']['signature'] = $character['sig_parsed'];
 		}
 	}
 }

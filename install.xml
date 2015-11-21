@@ -56,6 +56,7 @@
 				'character_url' => '?action=profile;u=' . $row['id_member'] . ';area=characters;char=' . $row['id_character'],
 				'avatar' => $row['avatar'],
 				'signature' => $row['signature'],
+				'sig_parsed' => !empty($row['signature']) ? parse_bbc($row['signature'], true, 'sig_char_' . $row['id_character']) : '',
 				'posts' => $row['posts'],
 				'age' => $row['age'],
 				'date_created' => $row['date_created'],
