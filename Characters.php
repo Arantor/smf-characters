@@ -110,6 +110,11 @@ function integrate_chars()
 		false,
 		'$sourcedir/Admin-Chars.php'
 	);
+	add_integration_function(
+		'integrate_message_index',
+		'integrate_message_index',
+		false
+	);
 }
 
 function integrate_remove_logout(&$buttons)
@@ -181,6 +186,17 @@ function integrate_character_post_count($msgOptions, $topicOptions, $posterOptio
 	if ($msgOptions['approved'] && !empty($posterOptions['char_id']) && !empty($posterOptions['update_post_count'])) {
 		updateCharacterData($posterOptions['char_id'], array('posts' => '+'));
 	}
+}
+
+function integrate_message_index(&$message_index_selects, &$message_index_tables, &$message_index_parameters)
+{
+	$message_index_selects[] = 'cf.id_character AS first_character';
+	$message_index_selects[] = 'IFNULL(cf.character_name, IFNULL(memf.real_name, mf.poster_name)) AS first_display_name';
+	$message_index_selects[] = 'cl.id_character AS last_character';
+	$message_index_selects[] = 'IFNULL(cl.character_name, IFNULL(meml.real_name, ml.poster_name)) AS last_display_name';
+
+	$message_index_tables[] = 'LEFT JOIN {db_prefix}characters AS cf ON (cf.id_character = mf.id_character)';
+	$message_index_tables[] = 'LEFT JOIN {db_prefix}characters AS cl ON (cl.id_character = ml.id_character)';
 }
 
 ?>
