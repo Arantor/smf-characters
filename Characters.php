@@ -104,6 +104,12 @@ function integrate_chars()
 		'integrate_character_post_count',
 		false
 	);
+	add_integration_function(
+		'integrate_load_permissions',
+		'integrate_chars_permissions',
+		false,
+		'$sourcedir/Admin-Chars.php'
+	);
 }
 
 function integrate_remove_logout(&$buttons)

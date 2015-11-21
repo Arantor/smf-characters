@@ -12,6 +12,7 @@
 		<require-file name="chars.css" destination="$themes_dir/default/css" />
 		<require-file name="AutoSuggest-Chars.php" destination="$sourcedir" />
 		<require-file name="Characters.php" destination="$sourcedir" />
+		<require-file name="Admin-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.template.php" destination="$themes_dir/default" />
 		<require-dir name="characters" destination="$themes_dir/default/languages" />
@@ -23,6 +24,7 @@
 		<remove-file name="$themes_dir/default/css/chars.css" />
 		<remove-file name="$sourcedir/AutoSuggest-Chars.php" />
 		<remove-file name="$sourcedir/Characters.php" />
+		<remove-file name="$sourcedir/Admin-Chars.php" />
 		<remove-file name="$sourcedir/Profile-Chars.php" />
 		<remove-file name="$themes_dir/default/Profile-Chars.template.php" />
 		<remove-dir name="$themes_dir/default/languages/characters" />

@@ -240,21 +240,15 @@
 	{
 		$character = $message['member']['characters'][$message['id_character']];
 		if (isset($message['member']['characters'][$message['id_character']]))
-		{
 			$profile_link = $character['character_url'];
-			$profile_avatar = empty($character['avatar']) ? '' : '<img class="avatar" src="' . $character['avatar'] . '" alt="">';
-		}
 		else
-		{
 			$profile_link = '?action=profile;u=' . $message['member']['id'];
-			$profile_avatar = !empty($message['member']['avatar']['image']) ? $message['member']['avatar']['image'] : '';
-		}
 
-		if (!empty($profile_avatar))
+		if (!empty($message['member']['avatar']['image']))
 		{
 			echo '
 								<li class="avatar">
-									<a href="', $scripturl, $profile_link, '">', $profile_avatar, '</a>
+									<a href="', $scripturl, $profile_link, '">', $message['member']['avatar']['image'], '</a>
 								</li>';
 		}
 	}]]></add>
@@ -306,24 +300,6 @@
 		<operation>
 			<search position="replace"><![CDATA['id_theme', 'smiley_set', 'hr',]]></search>
 			<add><![CDATA['smiley_set', 'hr',]]></add>
-		</operation>
-	</file>
-	<file name="$sourcedir/ManagePermissions.php">
-		<operation>
-			<search position="replace"><![CDATA[
-			'profile_blurb' => array(true, 'profile'),
-			'profile_server_avatar' => array(false, 'profile'),
-			'profile_upload_avatar' => array(false, 'profile'),
-			'profile_remote_avatar' => array(false, 'profile'),]]></search>
-			<add><![CDATA[
-			'profile_blurb' => array(true, 'profile'),
-			// Avatar permissions were here]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
-			'profile_signature' => array(true, 'profile'),]]></search>
-			<add><![CDATA[
-			// Signature permission was here]]></add>
 		</operation>
 	</file>
 
