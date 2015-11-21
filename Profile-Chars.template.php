@@ -1,10 +1,10 @@
 <?php
 
 function template_characters_popup() {
-	global $context, $scripturl, $user_info, $cur_profile;
+	global $context, $scripturl, $txt, $user_info, $cur_profile;
 	echo '
-		<div id="posting_as">You are posting as: ', $user_info['character_name'], '
-		<div id="my_characters">My Characters</div>
+		<div id="posting_as">', sprintf($txt['you_are_posting_as'], $user_info['character_name']), '
+		<div id="my_characters">', $txt['my_characters'], '</div>
 		<div id="chars_container">
 			<ul>';
 	foreach ($cur_profile['characters'] as $id_character => $char)
@@ -19,7 +19,7 @@ function template_characters_popup() {
 		if ($id_character != $user_info['id_character'])
 			echo '
 						<span class="switch">
-							<span data-href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch;char=', $id_character, ';', $context['session_var'], '=', $context['session_id'], '" class="button">switch</a>
+							<span data-href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch;char=', $id_character, ';', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['switch_chars'], '</a>
 						</span>';
 
 		echo '
@@ -42,7 +42,7 @@ function template_characters_popup() {
 }
 
 function template_character_profile() {
-	global $context, $user_profile, $scripturl;
+	global $context, $txt, $user_profile, $scripturl;
 
 	echo '
 		<div id="admin_content">
@@ -71,11 +71,11 @@ function template_character_profile() {
 		</div>
 		<div id="detailedinfo">
 			<dl>
-				<dt>Character Name: </dt>
-				<dd>', $context['character']['character_name'], $context['character']['editable'] ? '<span class="generic_icons calendar_modify"></span>' : '', '</dd>
-				<dt>Posts: </dt>
+				<dt>', $txt['char_name'], '</dt>
+				<dd>', $context['character']['character_name'], $context['character']['editable'] ? ' <span class="generic_icons calendar_modify"></span>' : '', '</dd>
+				<dt>', $txt['profile_posts'], ':</dt>
 				<dd>', comma_format($context['character']['posts']), $days_registered > 1 ? ' (' . $posts_per_day . ' per day)' : '', '</dd>
-				<dt>Age:</dt>
+				<dt>', $txt['age'], ':</dt>
 				<dd>', !empty($context['character']['age']) ? $context['character']['age'] : 'N/A', '</dd>
 			</dl>';
 
@@ -87,15 +87,15 @@ function template_character_profile() {
 
 	echo '
 			<dl class="noborder">
-				<dt>Date Created: </dt>
+				<dt>', $txt['date_created'], '</dt>
 				<dd>', timeformat($context['character']['date_created']), '</dd>
-				<dt>Last Active: </dt>
+				<dt>', $txt['lastLoggedIn'], ': </dt>
 				<dd>', timeformat($context['character']['last_active']), '</dd>';
 
 	if ($context['character']['editable'])
 		echo '
-				<dt>Current Theme:</dt>
-				<dd>', $context['character']['theme_name'], ' <a class="button" href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=theme">change</a></dd>';
+				<dt>', $txt['current_theme'], ':</dt>
+				<dd>', $context['character']['theme_name'], ' <a class="button" href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=theme">', $txt['change_theme'], '</a></dd>';
 
 	echo '
 			</dl>

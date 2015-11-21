@@ -150,7 +150,7 @@
 		echo '
 			<li>
 				<a href="', $scripturl, '?action=profile;area=characters" id="characters_menu_top" onclick="return false;">
-				Posting as: ', $GLOBALS['user_info']['character_name'], ' &#9660;</a>
+				', sprintf($txt['posting_as'], $GLOBALS['user_info']['character_name']), ' &#9660;</a>
 				<div id="characters_menu" class="top_menu"></div>
 			</li>';
 
