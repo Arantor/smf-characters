@@ -74,15 +74,6 @@
 			}
 		}]]></add>
 		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
-		$memberContext[$user] += array(
-			'username_color' => '<span '. (!empty($profile['member_group_color']) ? 'style="color:'. $profile['member_group_color'] .';"' : '') .'>'. $profile['member_name'] .'</span>',]]></search>
-			<add><![CDATA[
-		$memberContext[$user] += array(
-			'characters' => !empty($profile['characters']) ? $profile['characters'] : array(),
-			'username_color' => '<span '. (!empty($profile['member_group_color']) ? 'style="color:'. $profile['member_group_color'] .';"' : '') .'>'. $profile['member_name'] .'</span>',]]></add>
-		</operation>
 	</file>
 
 	<!-- Make sure we push the current character id into the log when we fill it generally -->
@@ -157,41 +148,8 @@
 		// Secondlyish, PMs if we're doing them]]></add>
 		</operation>
 	</file>
-	<file name="$sourcedir/Subs.php">
-		<operation>
-			<search position="replace"><![CDATA[
-		addInlineJavascript('
-	var user_menus = new smc_PopupMenu();
-	user_menus.add("profile", "' . $scripturl . '?action=profile;area=popup");]]></search>
-			<add><![CDATA[
-		loadCSSFile('chars.css', array('default_theme' => true), 'chars');
-		addInlineJavascript('
-	var user_menus = new smc_PopupMenu();
-	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");
-	user_menus.add("profile", "' . $scripturl . '?action=profile;area=popup");]]></add>
-		</operation>
-	</file>
 
 	<!-- Adding character details to saving -->
-	<file name="$sourcedir/Subs-Post.php">
-		<operation>
-			<search position="replace"><![CDATA[
-	$posterOptions['id'] = empty($posterOptions['id']) ? 0 : (int) $posterOptions['id'];]]></search>
-			<add><![CDATA[
-	$posterOptions['id'] = empty($posterOptions['id']) ? 0 : (int) $posterOptions['id'];
-	$posterOptions['char_id'] = empty($posterOptions['char_id']) ? 0 : (int) $posterOptions['char_id'];]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
-	// What if we want to do anything with posts?]]></search>
-			<add><![CDATA[
-	// Now add characters!
-	$message_columns['id_character'] = 'int';
-	$message_parameters[] = $posterOptions['char_id'];
-
-	// What if we want to do anything with posts?]]></add>
-		</operation>
-	</file>
 	<file name="$sourcedir/Post.php">
 		<operation>
 			<search position="replace"><![CDATA[
@@ -205,29 +163,6 @@
 	</file>
 
 	<!-- Now display the character poster -->
-	<file name="$sourcedir/Display.php">
-		<operation>
-			<search position="replace"><![CDATA[
-			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, id_member, modified_time, modified_name, modified_reason, body,
-				smileys_enabled, poster_name, poster_email, approved, likes,
-				id_msg_modified < {int:new_from} AS is_read]]></search>
-			<add><![CDATA[
-			SELECT
-				id_msg, icon, subject, poster_time, poster_ip, id_member, modified_time, modified_name, modified_reason, body,
-				smileys_enabled, poster_name, poster_email, approved, likes,
-				id_msg_modified < {int:new_from} AS is_read, id_character]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
-		'member' => &$memberContext[$message['id_member']],
-		'icon' => $message['icon'],]]></search>
-			<add><![CDATA[
-		'member' => &$memberContext[$message['id_member']],
-		'id_character' => $message['id_character'],
-		'icon' => $message['icon'],]]></add>
-		</operation>
-	</file>
 	<file name="$themedir/Display.template.php">
 		<operation>
 			<search position="replace"><![CDATA[
