@@ -95,6 +95,11 @@ function integrate_chars()
 		false
 	);
 	add_integration_function(
+		'integrate_load_member_data',
+		'integrate_load_member_data_chars',
+		false
+	);
+	add_integration_function(
 		'integrate_member_context',
 		'integrate_membercontext_chars',
 		false
@@ -143,7 +148,7 @@ function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_paramet
 }
 
 function integrate_display_chars_messages(&$output, &$message) {
-	global $memberContext;
+	global $memberContext, $smcFunc, $txt, $scripturl;
 
 	$output['id_character'] = $message['id_character'];
 
@@ -169,6 +174,15 @@ function integrate_display_chars_messages(&$output, &$message) {
 			}
 			$output['member']['signature'] = $character['sig_parsed'];
 			$output['member']['posts'] = comma_format($character['posts']);
+			$is_online = $message['id_character'] == $output['member']['current_character'];
+			$output['member']['online'] = array(
+				'is_online' => $is_online,
+				'text' => $smcFunc['htmlspecialchars']($txt[$is_online ? 'online' : 'offline']),
+				'member_online_text' => sprintf($txt[$is_online ? 'member_is_online' : 'member_is_offline'], $smcFunc['htmlspecialchars']($character['character_name'])),
+				'href' => $scripturl . '?action=pm;sa=send;u=' . $message['id_member'],
+				'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
+				'label' => $txt[$is_online ? 'online' : 'offline']
+			);
 		}
 	}
 }
@@ -180,11 +194,18 @@ function integrate_create_post_character(&$msgOptions, &$topicOptions, &$posterO
 	$message_parameters[] = $posterOptions['char_id'];
 }
 
+function integrate_load_member_data_chars(&$select_columns, &$select_tables, &$set)
+{
+	if ($set != 'minimal')
+		$select_columns .= ', lo.id_character AS online_character';
+}
+
 function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
 {
 	global $user_profile;
 
 	$mcUser['characters'] = !empty($user_profile[$user]['characters']) ? $user_profile[$user]['characters'] : array();
+	$mcUser['current_character'] = !empty($user_profile[$user]['online_character']) ? $user_profile[$user]['online_character'] : 0;
 }
 
 function integrate_character_post_count($msgOptions, $topicOptions, $posterOptions, $message_columns, $message_parameters) {
