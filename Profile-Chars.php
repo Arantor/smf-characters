@@ -4,30 +4,44 @@ if (!defined('SMF'))
 	die('No direct access...');
 
 function chars_profile_menu(&$profile_areas) {
-	global $cur_profile, $scripturl;
+	global $context, $cur_profile, $scripturl;
 	static $called = false;
 
-	// Sometimes this can be called twice for reasons unknown.
+	// SMF 2.1, GH #3118, this can be called twice.
 	if ($called) {
 		return;
 	} else {
 		$called = true;
 	}
 
-	$profile_areas['info']['areas']['characters_popup'] = array(
-		'function' => 'characters_popup',
-		'permission' => array(
+	// So how are we calling this? Are we calling this directly in the profile area?
+	// Depending on how bug 3118 is fixed, we can cover all the bases once!
+	if (is_array($profile_areas['info']['areas']['summary']['permission'])) {
+		// Classical array of own/any
+		$own_only = array(
 			'own' => 'is_not_guest',
 			'any' => array(),
-		),
+		);
+		$own_any = array(
+			'own' => 'is_not_guest',
+			'any' => 'profile_view',
+		);
+	} else {
+		// Coming from the generic menu hook
+		$own_only = 'is_not_guest';
+		$own_any = $context['user']['is_owner'] ? 'is_not_guest' : 'profile_view';
+	}
+
+	$profile_areas['info']['areas']['characters_popup'] = array(
+		'function' => 'characters_popup',
+		'permission' => $own_only,
+		'enabled' => $context['user']['is_owner'],
 		'select' => 'summary',
 	);
 	$profile_areas['info']['areas']['char_switch'] = array(
 		'function' => 'char_switch',
-		'permission' => array(
-			'own' => 'is_not_guest',
-			'any' => array(),
-		),
+		'permission' => $own_only,
+		'enabled' => $context['user']['is_owner'],
 		'select' => 'summary',
 	);
 
@@ -38,10 +52,7 @@ function chars_profile_menu(&$profile_areas) {
 				'file' => 'Profile-Chars.php',
 				'function' => 'character_profile',
 				'enabled' => true,
-				'permission' => array(
-					'own' => array('is_not_guest'),
-					'any' => array('profile_view'),
-				),
+				'permission' => $own_any,
 			),
 		),
 	);
@@ -59,10 +70,7 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 				'label' => $character['character_name'],
 				'icon' => !empty($character['avatar']) ? 'char_avatar character_' . $id_character : '',
 				'enabled' => true,
-				'permission' => array(
-					'own' => array('is_not_guest'),
-					'any' => array('profile_view'),
-				),
+				'permission' => $own_any,
 				'select' => 'characters',
 				'custom_url' => $scripturl . '?action=profile;area=characters;char=' . $id_character,
 			);
