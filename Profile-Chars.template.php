@@ -42,7 +42,7 @@ function template_characters_popup() {
 }
 
 function template_character_profile() {
-	global $context, $txt, $user_profile, $scripturl;
+	global $context, $txt, $user_profile, $scripturl, $user_info;
 
 	echo '
 		<div id="admin_content">
@@ -60,11 +60,21 @@ function template_character_profile() {
 
 	if (!empty($context['character']['avatar']))
 		echo '
-			<img class="avatar" src="', $context['character']['avatar'], '" alt="">';
+			<img class="avatar" src="', $context['character']['avatar'], '" alt=""><br /><br />';
 	else
 		echo '
-			<img class="avatar" src="', $context['member']['avatar']['image'], '" alt="">';
+			<img class="avatar" src="', $context['member']['avatar']['image'], '" alt=""><br /><br />';
 
+	if ($context['user']['is_owner'] && $user_info['id_character'] != $context['character']['id_character'])
+	{
+		echo '
+			<a href="#" class="button">', $txt['switch_to_char'], '</a><br /><br />';
+	}
+	if ($context['character']['editable'])
+	{
+		echo '
+			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" class="button">', $txt['edit_char'], '</a><br /><br />';
+	}
 	$days_registered = (int) ((time() - $user_profile[$context['id_member']]['date_registered']) / (3600 * 24));
 	$posts_per_day = $days_registered > 1 ? comma_format($context['character']['posts'] / $days_registered, 2) : '';
 	echo '
@@ -72,7 +82,7 @@ function template_character_profile() {
 		<div id="detailedinfo">
 			<dl>
 				<dt>', $txt['char_name'], '</dt>
-				<dd>', $context['character']['character_name'], $context['character']['editable'] ? ' <span class="generic_icons calendar_modify"></span>' : '', '</dd>
+				<dd>', $context['character']['character_name'], '</dd>
 				<dt>', $txt['profile_posts'], ':</dt>
 				<dd>', comma_format($context['character']['posts']), $days_registered > 1 ? ' (' . $posts_per_day . ' per day)' : '', '</dd>
 				<dt>', $txt['age'], ':</dt>
@@ -99,6 +109,62 @@ function template_character_profile() {
 
 	echo '
 			</dl>
+		</div>
+	</div>
+<div class="clear"></div>
+				</div>';
+}
+
+function template_edit_char() {
+	global $context, $txt, $scripturl;
+
+	if ($context['char_updated'])
+	{
+		echo '
+		<div class="infobox">
+			', sprintf($txt[$context['user']['is_owner'] ? 'character_updated_you' : 'character_updated_else'], $context['character']['character_name']), '
+		</div>';
+	}
+
+	echo '
+		<div id="admin_content">
+					<div class="cat_bar">
+						<h3 class="catbg">
+						', $txt['edit_char'], '
+						</h3>
+					</div>
+
+	<div id="profileview" class="roundframe flow_auto">
+		<div id="basicinfo">';
+
+	echo '
+		</div>
+		<div id="detailedinfo">
+			<form id="creator" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" method="post" accept-charset="', $context['character_set'], '">
+				<dl>
+					<dt>', $txt['char_name'], '</dt>
+					<dd>
+						<input type="text" name="char_name" id="char_name" size="50" value="', $context['character']['character_name'], '" maxlength="50" class="input_text">
+					</dd>
+					<dt>', $txt['avatar_link'], '</dt>
+					<dd>
+						<input type="text" name="avatar" id="avatar" size="50" value="', !empty($context['character']['avatar']) ? $context['character']['avatar'] : '', '" maxlength="255" class="input_type">
+					</dd>
+					<dt>', $txt['avatar_preview'], '</dt>
+					<dd id="avatar_preview">
+					
+					</dd>
+					<dt>', $txt['age'], ':</dt>
+					<dd>
+						<input type="text" name="age" id="age" size="50" value="', !empty($context['character']['age']) ? $context['character']['age'] : '', '" maxlength="50" class="input_text">
+					</dd>
+				</dl>
+				<div class="char_signature"></div>
+				<dl></dl>
+				<input type="submit" name="edit_char" class="button_submit" value="', $txt['save_changes'], '" />
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '" />
+				<input type="hidden" name="', $context['edit-char' . $context['character']['id_character'] . '_token_var'], '" value="', $context['edit-char' . $context['character']['id_character'] . '_token'], '">
+			</form>
 		</div>
 	</div>
 <div class="clear"></div>

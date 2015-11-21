@@ -191,6 +191,7 @@ function character_profile($memID) {
 	$context['character']['editable'] = $context['user']['is_owner'] || allowedTo('admin_forum');
 
 	$subactions = array(
+		'edit' => 'char_edit',
 		'theme' => 'char_theme',
 	);
 	if (isset($_GET['sa'], $subactions[$_GET['sa']])) {
@@ -211,6 +212,51 @@ function character_profile($memID) {
 	);
 	list ($context['character']['theme_name']) = $smcFunc['db_fetch_row']($request);
 	$smcFunc['db_free_result']($request);
+}
+
+function char_edit() {
+	global $context, $smcFunc, $txt;
+
+	// If they don't have permission to be here, goodbye.
+	if (!$context['character']['editable']) {
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	$context['sub_template'] = 'edit_char';
+
+	if (isset($_POST['edit_char']))
+	{
+		validateSession();
+		validateToken('edit-char' . $context['character']['id_character'], 'post');
+
+		$changes = array();
+		$new_name = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
+		if ($new_name != '' && $new_name != $context['character']['character_name'])
+			$changes['character_name'] = $new_name;
+
+		if (!empty($changes))
+		{
+			updateCharacterData($context['character']['id_character'], $changes);
+			$_SESSION['char_updated'] = true;
+			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=edit');
+		}
+	}
+
+	addInlineJavascript('
+	function update_preview() {
+		if ($("#avatar").val() == "") {
+			$("#avatar_preview").html(' . JavaScriptEscape($txt['no_avatar_yet']) . ');
+		} else {
+			$("#avatar_preview").html(\'<img src="\' + $("#avatar").val() + \'" class="avatar" alt="" />\');
+		}
+	}
+	$(document).ready(function() { update_preview(); });
+	$("#avatar").on("blur", function() { update_preview(); });', true);
+
+	createToken('edit-char' . $context['character']['id_character'], 'post');
+
+	$context['char_updated'] = !empty($_SESSION['char_updated']);
+	unset ($_SESSION['char_updated']);
 }
 
 function char_theme() {
