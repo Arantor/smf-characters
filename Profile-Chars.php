@@ -233,6 +233,9 @@ function char_edit() {
 		$new_name = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
 		if ($new_name != '' && $new_name != $context['character']['character_name'])
 			$changes['character_name'] = $new_name;
+		$new_age = !empty($_POST['age']) ? $smcFunc['htmlspecialchars'](trim($_POST['age']), ENT_QUOTES) : '';
+		if ($new_age != $context['character']['age'])
+			$changes['age'] = $new_age;
 
 		if (!empty($changes))
 		{
