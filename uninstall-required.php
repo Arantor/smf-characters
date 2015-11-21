@@ -29,14 +29,9 @@ global $smcFunc;
 // 1. Removing all the SMF hooks.
 $hooks = array();
 $hooks[] = array(
-	'hook' => 'integrate_profile_areas',
-	'function' => 'chars_profile_menu',
-	'file' => '$sourcedir/Profile-Chars.php',
-);
-$hooks[] = array(
-	'hook' => 'integrate_autosuggest',
-	'function' => 'integrate_character_autosuggest',
-	'file' => '$sourcedir/AutoSuggest-Chars.php',
+	'hook' => 'integrate_user_info',
+	'function' => 'integrate_chars',
+	'file' => '$sourcedir/Characters.php',
 );
 
 foreach ($hooks as $hook)

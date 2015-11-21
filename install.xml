@@ -33,17 +33,6 @@
 				)
 			);]]></add>
 		</operation>
-		<!-- Splice it into $user_info so it's always available -->
-		<operation>
-			<search position="replace"><![CDATA[
-		'name' => isset($user_settings['real_name']) ? $user_settings['real_name'] : '',]]></search>
-			<add><![CDATA[
-		'name' => isset($user_settings['real_name']) ? $user_settings['real_name'] : '',
-		'id_character' => isset($user_settings['id_character']) ? (int) $user_settings['id_character'] : 0,
-		'character_name' => isset($user_settings['character_name']) ? $user_settings['character_name'] : (isset($user_settings['real_name']) ? $user_settings['real_name'] : ''),
-		'char_avatar' => isset($user_settings['char_avatar']) ? $user_settings['char_avatar'] : '',
-		'char_signature' => isset($user_settings['char_signature']) ? $user_settings['char_signature'] : '',]]></add>
-		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
 	if (!empty($new_loaded_ids) && $set !== 'minimal')
@@ -379,7 +368,7 @@
 		// And now we're done.
 		echo '
 			<li>
-				<a href="', $scripturl, '?action=logout;', $context['session_var'], '=', $context['session_id'], '">Log Out</a>
+				<a href="', $scripturl, '?action=logout;', $context['session_var'], '=', $context['session_id'], '">', $txt['logout'], '</a>
 			</li>
 		</ul>';]]></add>
 		</operation>

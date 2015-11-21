@@ -50,16 +50,10 @@ foreach ($new_settings as $k => $v)
 $hooks = array();
 // Bootstrap
 $hooks[] = array(
-	'hook' => 'integrate_profile_areas',
-	'function' => 'chars_profile_menu',
+	'hook' => 'integrate_user_info',
+	'function' => 'integrate_chars',
 	'perm' => true,
-	'file' => '$sourcedir/Profile-Chars.php',
-);
-$hooks[] = array(
-	'hook' => 'integrate_autosuggest',
-	'function' => 'integrate_character_autosuggest',
-	'perm' => true,
-	'file' => '$sourcedir/AutoSuggest-Chars.php',
+	'file' => '$sourcedir/Characters.php',
 );
 
 // Now, we move on to adding new tables to the database.

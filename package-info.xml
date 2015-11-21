@@ -11,8 +11,10 @@
 		<database>install.php</database>
 		<require-file name="chars.css" destination="$themes_dir/default/css" />
 		<require-file name="AutoSuggest-Chars.php" destination="$sourcedir" />
+		<require-file name="Characters.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.template.php" destination="$themes_dir/default" />
+		<require-dir name="characters" destination="$themes_dir/default/languages" />
 	</install>
 
 	<uninstall for="2.1 Beta 1, 2.1 Beta 2">
@@ -20,7 +22,9 @@
 		<code>uninstall-required.php</code>
 		<remove-file name="$themes_dir/default/css/chars.css" />
 		<remove-file name="$sourcedir/AutoSuggest-Chars.php" />
+		<remove-file name="$sourcedir/Characters.php" />
 		<remove-file name="$sourcedir/Profile-Chars.php" />
 		<remove-file name="$themes_dir/default/Profile-Chars.template.php" />
+		<remove-dir name="$themes_dir/default/languages/characters" />
 	</uninstall>
 </package-info>
