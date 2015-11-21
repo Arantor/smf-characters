@@ -3,6 +3,49 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+function updateCharacterData($char_id, $data)
+{
+	global $smcFunc;
+
+	$setString = '';
+	$condition = 'id_character = {int:id_character}';
+	$parameters = array('id_character' => $char_id);
+	foreach ($data as $var => $val)
+	{
+		$type = 'string';
+		if (in_array($var, array('id_theme', 'posts', 'last_active')))
+			$type = 'int';
+
+		// Doing an increment?
+		if ($type == 'int' && ($val === '+' || $val === '-'))
+		{
+			$val = $var . ' ' . $val . ' 1';
+			$type = 'raw';
+		}
+
+		// Ensure posts don't overflow or underflow.
+		if (in_array($var, array('posts')))
+		{
+			if (preg_match('~^' . $var . ' (\+ |- |\+ -)([\d]+)~', $val, $match))
+			{
+				if ($match[1] != '+ ')
+					$val = 'CASE WHEN ' . $var . ' <= ' . abs($match[2]) . ' THEN 0 ELSE ' . $val . ' END';
+				$type = 'raw';
+			}
+		}
+
+		$setString .= ' ' . $var . ' = {' . $type . ':p_' . $var . '},';
+		$parameters['p_' . $var] = $val;
+	}
+
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET' . substr($setString, 0, -1) . '
+		WHERE ' . $condition,
+		$parameters
+	);
+}
+
 function integrate_chars()
 {
 	global $user_info, $user_settings, $txt;
@@ -54,6 +97,11 @@ function integrate_chars()
 	add_integration_function(
 		'integrate_member_context',
 		'integrate_membercontext_chars',
+		false
+	);
+	add_integration_function(
+		'integrate_after_create_post',
+		'integrate_character_post_count',
 		false
 	);
 }
@@ -122,4 +170,11 @@ function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
 
 	$mcUser['characters'] = !empty($user_profile[$user]['characters']) ? $user_profile[$user]['characters'] : array();
 }
+
+function integrate_character_post_count($msgOptions, $topicOptions, $posterOptions, $message_columns, $message_parameters) {
+	if ($msgOptions['approved'] && !empty($posterOptions['char_id']) && !empty($posterOptions['update_post_count'])) {
+		updateCharacterData($posterOptions['char_id'], array('posts' => '+'));
+	}
+}
+
 ?>

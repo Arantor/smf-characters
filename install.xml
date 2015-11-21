@@ -163,6 +163,50 @@
 		</operation>
 	</file>
 
+	<!-- Fix poster counts when approving posts -->
+	<file name="$sourcedir/Subs-Post.php">
+		<operation>
+			<search position="replace"><![CDATA[topic_approved, b.count_posts]]></search>
+			<add><![CDATA[topic_approved, b.count_posts, m.id_character]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[
+	$member_post_changes = array();]]></search>
+			<add><![CDATA[
+	$member_post_changes = array();
+	$char_post_changes = array();]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[
+		// Post count for the user?
+		if ($row['id_member'] && empty($row['count_posts']))
+			$member_post_changes[$row['id_member']] = isset($member_post_changes[$row['id_member']]) ? $member_post_changes[$row['id_member']] + 1 : 1;]]></search>
+			<add><![CDATA[
+		// Post count for the user?
+		if ($row['id_member'] && empty($row['count_posts']))
+		{
+			$member_post_changes[$row['id_member']] = isset($member_post_changes[$row['id_member']]) ? $member_post_changes[$row['id_member']] + 1 : 1;
+			$char_post_changes[$row['id_character']] = isset($char_post_changes[$row['id_character']]) ? $char_post_changes[$row['id_character']] + 1 : 1;
+			
+		}]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[
+	// Post count for the members?
+	if (!empty($member_post_changes))
+		foreach ($member_post_changes as $id_member => $count_change)
+			updateMemberData($id_member, array('posts' => 'posts ' . ($approve ? '+' : '-') . ' ' . $count_change));]]></search>
+			<add><![CDATA[
+	// Post count for the members?
+	if (!empty($member_post_changes))
+		foreach ($member_post_changes as $id_member => $count_change)
+			updateMemberData($id_member, array('posts' => 'posts ' . ($approve ? '+' : '-') . ' ' . $count_change));
+	if (!empty($char_post_changes))
+		foreach ($char_post_changes as $id_char => $count_change)
+			updateCharacterData($id_char, array('posts' => 'posts ' . ($approve ? '+' : '-') . ' ' . $count_change));]]></add>
+		</operation>
+	</file>
+
 	<!-- Now display the character poster -->
 	<file name="$themedir/Display.template.php">
 		<operation>
