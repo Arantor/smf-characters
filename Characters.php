@@ -104,6 +104,7 @@ function integrate_display_chars_messages(&$output, &$message) {
 				);
 			}
 			$output['member']['signature'] = $character['sig_parsed'];
+			$output['member']['posts'] = comma_format($character['posts']);
 		}
 	}
 }
