@@ -99,7 +99,7 @@ function characters_popup($memID) {
 }
 
 function char_switch($memID, $char = null, $return = false) {
-	global $smcFunc;
+	global $smcFunc, $modSettings;
 
 	if (!$return) {
 		checkSession('get');
@@ -165,6 +165,10 @@ function char_switch($memID, $char = null, $return = false) {
 			'character' => $char,
 		)
 	);
+
+	// If caching would have cached the user's record, nuke it.
+	if (!empty($modSettings['cache_enable']) && $modSettings['cache_enable'] >= 2)
+		cache_put_data('user_settings-' . $id_member, null, 60);
 
 	if ($return)
 		return true;
