@@ -112,7 +112,12 @@ function integrate_chars()
 	);
 	add_integration_function(
 		'integrate_message_index',
-		'integrate_message_index',
+		'integrate_message_index_chars',
+		false
+	);
+	add_integration_function(
+		'integrate_display_topic',
+		'integrate_display_topic_chars',
 		false
 	);
 }
@@ -188,7 +193,7 @@ function integrate_character_post_count($msgOptions, $topicOptions, $posterOptio
 	}
 }
 
-function integrate_message_index(&$message_index_selects, &$message_index_tables, &$message_index_parameters)
+function integrate_message_index_chars(&$message_index_selects, &$message_index_tables, &$message_index_parameters)
 {
 	$message_index_selects[] = 'cf.id_character AS first_character';
 	$message_index_selects[] = 'IFNULL(cf.character_name, IFNULL(memf.real_name, mf.poster_name)) AS first_display_name';
@@ -197,6 +202,12 @@ function integrate_message_index(&$message_index_selects, &$message_index_tables
 
 	$message_index_tables[] = 'LEFT JOIN {db_prefix}characters AS cf ON (cf.id_character = mf.id_character)';
 	$message_index_tables[] = 'LEFT JOIN {db_prefix}characters AS cl ON (cl.id_character = ml.id_character)';
+}
+
+function integrate_display_topic_chars(&$topic_selects, &$topic_tables, &$topic_parameters)
+{
+	$topic_selects[] = 'IFNULL(chars.character_name, IFNULL(mem.real_name, ms.poster_name)) AS topic_started_name';
+	$topic_tables[] = 'LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = ms.id_character)';
 }
 
 ?>
