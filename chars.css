@@ -28,11 +28,11 @@
 	display: none;
 }
 
-#current_sig_parsed {
+#current_sig_parsed, #sig_preview_parsed {
 	border: none;
 	padding-top: 0;
 }
-#detailedinfo #current_sig, #detailedinfo #sig_header {
+#detailedinfo #current_sig, #detailedinfo #sig_preview, #detailedinfo #sig_header {
 	margin-bottom: 0;
 	padding-bottom: 0;
 }

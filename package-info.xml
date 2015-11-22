@@ -10,6 +10,7 @@
 		<modification type="file">install.xml</modification>
 		<database>install.php</database>
 		<require-file name="chars.css" destination="$themes_dir/default/css" />
+		<require-file name="chars.js" destination="$themes_dir/default/scripts" />
 		<require-file name="AutoSuggest-Chars.php" destination="$sourcedir" />
 		<require-file name="Characters.php" destination="$sourcedir" />
 		<require-file name="Admin-Chars.php" destination="$sourcedir" />
@@ -22,6 +23,7 @@
 		<modification type="file" reverse="true">install.xml</modification>
 		<code>uninstall-required.php</code>
 		<remove-file name="$themes_dir/default/css/chars.css" />
+		<remove-file name="$themes_dir/default/scripts/chars.js" />
 		<remove-file name="$sourcedir/AutoSuggest-Chars.php" />
 		<remove-file name="$sourcedir/Characters.php" />
 		<remove-file name="$sourcedir/Admin-Chars.php" />

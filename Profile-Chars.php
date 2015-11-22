@@ -223,6 +223,13 @@ function char_edit() {
 	}
 
 	$context['sub_template'] = 'edit_char';
+	loadJavascriptFile('chars.js', array('default_theme' => true), 'chars');
+
+	require_once($sourcedir . '/Subs-Post.php');
+	require_once($sourcedir . '/Profile-Modify.php');
+	profileLoadSignatureData();
+
+	$context['form_errors'] = array();
 
 	if (isset($_POST['edit_char']))
 	{
@@ -231,30 +238,56 @@ function char_edit() {
 
 		$changes = array();
 		$new_name = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
-		if ($new_name != '' && $new_name != $context['character']['character_name'])
+		if ($new_name == '')
+			$context['form_errors'][] = 'character_must_have_name';
+		elseif ($new_name != $context['character']['character_name'])
 			$changes['character_name'] = $new_name;
+
 		$new_age = !empty($_POST['age']) ? $smcFunc['htmlspecialchars'](trim($_POST['age']), ENT_QUOTES) : '';
 		if ($new_age != $context['character']['age'])
 			$changes['age'] = $new_age;
 
 		$new_avatar = !empty($_POST['avatar']) ? trim($_POST['avatar']) : '';
 		$validatable_avatar = strpos($new_avatar, 'http') !== 0 ? 'http://' . $new_avatar : $new_avatar; // filter_var doesn't like // URLs
-		if (filter_var($validatable_avatar, FILTER_VALIDATE_URL) && $new_avatar != $context['character']['avatar'])
-			$changes['avatar'] = $new_avatar;
+		if ($new_avatar != $context['character']['avatar'])
+		{
+			if (filter_var($validatable_avatar, FILTER_VALIDATE_URL))
+				$changes['avatar'] = $new_avatar;
+			elseif ($new_avatar != '')
+				$context['form_errors'][] = 'avatar_must_be_real_url';
+		}
 
-		if (!empty($changes))
+		$new_sig = !empty($_POST['char_signature']) ? $smcFunc['htmlspecialchars']($_POST['char_signature'], ENT_QUOTES) : '';
+		$valid_sig = profileValidateSignature($new_sig);
+		if ($valid_sig === true)
+			$changes['signature'] = $new_sig; // sanitised by profileValidateSignature
+		else
+			$context['form_errors'][] = $valid_sig;
+
+		trigger_error(print_r($changes, true));
+		trigger_error(print_r($context['form_errors'], true));
+		if (!empty($changes) && empty($context['form_errors']))
 		{
 			updateCharacterData($context['character']['id_character'], $changes);
 			$_SESSION['char_updated'] = true;
 			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=edit');
 		}
+
+		// Put the new values back in for the form
+		$context['character'] = array_merge($context['character'], $changes);
 	}
+
+	$form_value = !empty($context['character']['signature']) ? $context['character']['signature'] : '';
+	// Get it ready for the editor.
+	$form_value = un_preparsecode($form_value);
+	censorText($form_value);
+	$form_value = str_replace(array('"', '<', '>', '&nbsp;'), array('&quot;', '&lt;', '&gt;', ' '), $form_value);
 
 	require_once($sourcedir . '/Subs-Editor.php');
 	$editorOptions = array(
-		'id' => 'signature',
-		'value' => '',
-		'disable_smiley_box' => 'false',
+		'id' => 'char_signature',
+		'value' => $form_value,
+		'disable_smiley_box' => false,
 		'labels' => array(),
 		'height' => '200px',
 		'width' => '80%',

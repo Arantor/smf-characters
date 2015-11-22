@@ -138,6 +138,17 @@ function template_edit_char() {
 		<div id="basicinfo">';
 
 	echo '
+					<div class="errorbox" id="profile_error"', empty($context['form_errors']) ? ' style="display:none"' : '', '>
+						<span>ERROR</span>
+						<ul id="list_errors">';
+	foreach ($context['form_errors'] as $err)
+		echo '
+							<li>', $err, '</li>';
+	echo '
+						</ul>
+					</div>';
+
+	echo '
 		</div>
 		<div id="detailedinfo">
 			<form id="creator" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" method="post" accept-charset="', $context['character_set'], '">
@@ -172,9 +183,88 @@ function template_edit_char() {
 				<dl class="noborder" id="sig_header">
 					<dt>', $txt['signature'], ':</dt>
 				</dl>
-				', template_control_richedit('signature', 'smileyBox_message', 'bbcBox_message'), '
-				
+				', template_control_richedit('char_signature', 'smileyBox_message', 'bbcBox_message');
+
+	echo '
+				<div style="width: 75%">
+					<span class="floatright"><input type="button" name="preview_signature" id="preview_button" value="', $txt['preview_signature'], '" class="button_submit"></span>';
+	// If there is a limit at all!
+	if (!empty($context['signature_limits']['max_length']))
+		echo '
+				<span class="smalltext">', sprintf($txt['max_sig_characters'], $context['signature_limits']['max_length']), ' <span id="signatureLeft">', $context['signature_limits']['max_length'], '</span></span><br>';
+
+	echo '
+				</div>';
+
+	if ($context['signature_warning'])
+		echo '
+					<span class="smalltext">', $context['signature_warning'], '</span>';
+
+	// Some javascript used to count how many characters have been used so far in the signature.
+	echo '
+				<script>
+					var maxLength = ', $context['signature_limits']['max_length'], ';
+					last_signature = false;
+
+					function calcCharLeft()
+					{
+						var oldSignature = "", currentSignature = $("#char_signature").data("sceditor").getText().replace(/&#/g, \'&#38;#\');
+						var currentChars = 0;
+
+						if (!document.getElementById("signatureLeft"))
+							return;
+
+						// Changed since we were last here?
+						if (last_signature === currentSignature)
+							return;
+						last_signature = currentSignature;
+
+						if (oldSignature != currentSignature)
+						{
+							oldSignature = currentSignature;
+
+							var currentChars = currentSignature.replace(/\r/, "").length;
+							if (is_opera)
+								currentChars = currentSignature.replace(/\r/g, "").length;
+
+							if (currentChars > maxLength)
+								document.getElementById("signatureLeft").className = "error";
+							else
+								document.getElementById("signatureLeft").className = "";
+
+							if (currentChars > maxLength)
+								chars_ajax_getSignaturePreview(false);
+							// Only hide it if the only errors were signature errors...
+							else if (currentChars <= maxLength)
+							{
+								// Are there any errors to begin with?
+								if ($(document).has("#list_errors"))
+								{
+									// Remove any signature errors
+									$("#list_errors").remove(".sig_error");
+
+									// Show this if other errors remain
+									if (!$("#list_errors").has("li"))
+									{
+										$("#profile_error").css({display:"none"});
+										$("#profile_error").html("");
+									}
+								}
+							}
+						}
+
+						setInnerHTML(document.getElementById("signatureLeft"), maxLength - currentChars);
+					}
+					$(document).ready(function() {
+						calcCharLeft();
+						$("#preview_button").click(function() {
+							return chars_ajax_getSignaturePreview(true);
+						});
+					});
+					window.setInterval(calcCharLeft, 1000);
+				</script>
 				<dl></dl>
+				<input type="hidden" name="u" value="', $context['id_member'], '" />
 				<input type="submit" name="edit_char" class="button_submit" value="', $txt['save_changes'], '" />
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '" />
 				<input type="hidden" name="', $context['edit-char' . $context['character']['id_character'] . '_token_var'], '" value="', $context['edit-char' . $context['character']['id_character'] . '_token'], '">
