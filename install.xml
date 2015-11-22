@@ -392,6 +392,23 @@
 	}]]></add>
 		</operation>
 	</file>
+	<file name="$sourcedir/Post.php">
+		<operation>
+			<search position="replace"><![CDATA[
+		SELECT
+			IFNULL(mem.real_name, m.poster_name) AS poster_name, m.poster_time,
+			m.body, m.smileys_enabled, m.id_msg, m.id_member
+		FROM {db_prefix}messages AS m
+			LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)]]></search>
+			<add><![CDATA[
+		SELECT
+			IFNULL(chars.character_name, IFNULL(mem.real_name, m.poster_name)) AS poster_name, m.poster_time,
+			m.body, m.smileys_enabled, m.id_msg, m.id_member
+		FROM {db_prefix}messages AS m
+			LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
+			LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = m.id_character)]]></add>
+		</operation>
+	</file>
 
 	<!-- Now fix the board index -->
 	<file name="$sourcedir/Subs-BoardIndex.php">
