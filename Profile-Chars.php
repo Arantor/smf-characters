@@ -264,8 +264,6 @@ function char_edit() {
 		else
 			$context['form_errors'][] = $valid_sig;
 
-		trigger_error(print_r($changes, true));
-		trigger_error(print_r($context['form_errors'], true));
 		if (!empty($changes) && empty($context['form_errors']))
 		{
 			updateCharacterData($context['character']['id_character'], $changes);
