@@ -151,15 +151,29 @@ function template_edit_char() {
 						<input type="text" name="avatar" id="avatar" size="50" value="', !empty($context['character']['avatar']) ? $context['character']['avatar'] : '', '" maxlength="255" class="input_type">
 					</dd>
 					<dt>', $txt['avatar_preview'], '</dt>
-					<dd id="avatar_preview">
-					
-					</dd>
+					<dd id="avatar_preview"></dd>
 					<dt>', $txt['age'], ':</dt>
 					<dd>
 						<input type="text" name="age" id="age" size="50" value="', !empty($context['character']['age']) ? $context['character']['age'] : '', '" maxlength="50" class="input_text">
 					</dd>
 				</dl>
 				<div class="char_signature"></div>
+				<dl class="noborder" id="current_sig">
+					<dt>', $txt['current_signature'], ':</dt>
+				</dl>
+				<div class="signature" id="current_sig_parsed">
+					', !empty($context['character']['signature']) ? parse_bbc($context['character']['signature'], true, 'sig_char_' . $context['character']['id_character']) : '<em>' . $txt['no_signature_set'] . '</em>', '
+				</div>
+				<dl></dl>
+				<dl class="noborder" id="sig_preview">
+					<dt>', $txt['signature_preview'], ':</dt>
+				</dl>
+				<div class="signature" id="sig_preview_parsed"></div>
+				<dl class="noborder" id="sig_header">
+					<dt>', $txt['signature'], ':</dt>
+				</dl>
+				', template_control_richedit('signature', 'smileyBox_message', 'bbcBox_message'), '
+				
 				<dl></dl>
 				<input type="submit" name="edit_char" class="button_submit" value="', $txt['save_changes'], '" />
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '" />

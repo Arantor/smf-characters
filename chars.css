@@ -27,3 +27,15 @@
 #profile_menu_top img.avatar, #profile_menu img.avatar {
 	display: none;
 }
+
+#current_sig_parsed {
+	border: none;
+	padding-top: 0;
+}
+#detailedinfo #current_sig, #detailedinfo #sig_header {
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+#sig_preview, #sig_preview_parsed {
+	display: none;
+}

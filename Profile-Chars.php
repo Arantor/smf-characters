@@ -215,7 +215,7 @@ function character_profile($memID) {
 }
 
 function char_edit() {
-	global $context, $smcFunc, $txt;
+	global $context, $smcFunc, $txt, $sourcedir;
 
 	// If they don't have permission to be here, goodbye.
 	if (!$context['character']['editable']) {
@@ -249,6 +249,19 @@ function char_edit() {
 			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=edit');
 		}
 	}
+
+	require_once($sourcedir . '/Subs-Editor.php');
+	$editorOptions = array(
+		'id' => 'signature',
+		'value' => '',
+		'disable_smiley_box' => 'false',
+		'labels' => array(),
+		'height' => '200px',
+		'width' => '80%',
+		'preview_type' => 0,
+		'required' => true,
+	);
+	create_control_richedit($editorOptions);
 
 	addInlineJavascript('
 	function update_preview() {
