@@ -237,6 +237,11 @@ function char_edit() {
 		if ($new_age != $context['character']['age'])
 			$changes['age'] = $new_age;
 
+		$new_avatar = !empty($_POST['avatar']) ? trim($_POST['avatar']) : '';
+		$validatable_avatar = strpos($new_avatar, 'http') !== 0 ? 'http://' . $new_avatar : $new_avatar; // filter_var doesn't like // URLs
+		if (filter_var($validatable_avatar, FILTER_VALIDATE_URL) && $new_avatar != $context['character']['avatar'])
+			$changes['avatar'] = $new_avatar;
+
 		if (!empty($changes))
 		{
 			updateCharacterData($context['character']['id_character'], $changes);
