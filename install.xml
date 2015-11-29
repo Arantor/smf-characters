@@ -482,4 +482,82 @@
 		</ul>';]]></add>
 		</operation>
 	</file>
+
+	<!-- Marking boards as OOC -->
+	<file name="$sourcedir/Load.php">
+		<operation>
+			<search position="replace"><![CDATA[b.child_level,
+				b.id_theme, b.override_theme, b.count_posts, b.id_profile, b.redirect,]]></search>
+			<add><![CDATA[b.child_level, b.in_character,
+				b.id_theme, b.override_theme, b.count_posts, b.id_profile, b.redirect,]]></add>
+		</operation>
+	</file>
+	<file name="$sourcedir/Subs-Boards.php">
+		<operation>
+			<search position="replace"><![CDATA[IFNULL(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level,]]></search>
+			<add><![CDATA[IFNULL(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level, b.in_character,]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA['redirect' => $row['redirect'],
+				'prev_board' => $prevBoard]]></search>
+			<add><![CDATA['redirect' => $row['redirect'],
+				'in_character' => $row['in_character'],
+				'prev_board' => $prevBoard]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[if (isset($boardOptions['num_posts']))
+	{
+		$boardUpdates[] = 'num_posts = {int:num_posts}';
+		$boardUpdateParameters['num_posts'] = (int) $boardOptions['num_posts'];
+	}
+
+	$id = $board_id;]]></search>
+			<add><![CDATA[if (isset($boardOptions['num_posts']))
+	{
+		$boardUpdates[] = 'num_posts = {int:num_posts}';
+		$boardUpdateParameters['num_posts'] = (int) $boardOptions['num_posts'];
+	}
+
+	if (isset($boardOptions['in_character']))
+	{
+		$boardUpdates[] = 'in_character = {int:in_character}';
+		$boardUpdateParameters['in_character'] = !empty($boardOptions['in_character']) ? 1 : 0;
+	}
+
+	$id = $board_id;]]></add>
+		</operation>
+	</file>
+	<file name="$sourcedir/ManageBoards.php">
+		<operation>
+			<search position="replace"><![CDATA['override_theme' => 0,
+			'redirect' => '',]]></search>
+			<add><![CDATA['override_theme' => 0,
+			'in_character' => 1,
+			'redirect' => '',]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[// Checkboxes....
+		$boardOptions['posts_count'] = isset($_POST['count']);]]></search>
+			<add><![CDATA[// Checkboxes....
+		$boardOptions['in_character'] = !empty($_POST['in_character']);
+		$boardOptions['posts_count'] = isset($_POST['count']);]]></add>
+		</operation>
+	</file>
+	<file name="$themedir/ManageBoards.template.php">
+		<operation>
+			<search position="replace"><![CDATA[</dd>
+					<dt>
+						<strong>', $txt['permission_profile'], ':</strong><br>]]></search>
+			<add><![CDATA[</dd>
+					<dt>
+						<strong>', $txt['board_in_character'], '</strong><br>
+						<span class="smalltext">', $txt['board_in_character_desc'], '</span><br>
+					</dt>
+					<dd>
+						<input type="checkbox" name="in_character"', $context['board']['in_character'] ? ' checked' : '', ' class="input_check">
+					</dd>
+					<dt>
+						<strong>', $txt['permission_profile'], ':</strong><br>]]></add>
+		</operation>
+	</file>
 </modification>

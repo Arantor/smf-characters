@@ -116,6 +116,12 @@ function integrate_chars()
 		'$sourcedir/Admin-Chars.php'
 	);
 	add_integration_function(
+		'integrate_create_board',
+		'integrate_chars_create_board',
+		false,
+		'$sourcedir/Admin-Chars.php'
+	);
+	add_integration_function(
 		'integrate_message_index',
 		'integrate_message_index_chars',
 		false

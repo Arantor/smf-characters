@@ -15,4 +15,13 @@ function integrate_chars_permissions(&$permissionGroups, &$permissionList, &$lef
 	unset ($permissionList['membergroup']['profile_signature']);
 }
 
+function integrate_chars_create_board(&$boardOptions, &$board_columns, &$board_parameters)
+{
+	if (isset($boardOptions['in_character']))
+	{
+		$board_columns['in_character'] = 'int';
+		$board_parameters[] = $boardOptions['in_character'] ? 1 : 0;
+	}
+}
+
 ?>

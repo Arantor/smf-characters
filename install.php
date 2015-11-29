@@ -111,6 +111,13 @@ $columns[] = array(
 	'if_exists' => 'ignore',
 	'error' => 'fatal',
 );
+$columns[] = array(
+	'table_name' => '{db_prefix}boards',
+	'column_info' => db_field('in_character', 'tinyint'),
+	'parameters' => array(),
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+);
 
 // Update mod settings if applicable
 updateSettings($mod_settings);
