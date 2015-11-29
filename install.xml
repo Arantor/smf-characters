@@ -490,6 +490,27 @@
 			<add><![CDATA['smiley_set', 'hr',]]></add>
 		</operation>
 	</file>
+	<file name="$sourcedir/Profile-View.php">
+		<operation>
+			<search position="replace"><![CDATA[$action_text = $row['action'];
+
+		// Parse BBC?]]></search>
+			<add><![CDATA[$action_text = $row['action'];
+
+		// Character related edit?
+		if (!empty($extra['id_character']))
+		{
+			if (!empty($context['member']['characters'][$extra['id_character']]))
+				$character_name = $context['member']['characters'][$extra['id_character']]['character_name'];
+			else
+				$character_name = $extra['character_name'];
+
+			$action_text = sprintf($action_text, $character_name);
+		}
+
+		// Parse BBC?]]></add>
+		</operation>
+	</file>
 
 	<!-- Moving that fscking logout button -->
 	<file name="$themedir/index.template.php">

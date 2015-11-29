@@ -24,4 +24,9 @@ $txt['character_updated_else'] = 'The character, %s, has been updated.';
 $txt['board_in_character'] = 'Board is "in character"?';
 $txt['board_in_character_desc'] = 'If a board is "in character", only characters may post. If a board is "not in character" only the "main account" character can post.';
 
+$txt['trackEdit_action_char_signature'] = '%1$s - signature';
+$txt['trackEdit_action_char_age'] = '%1$s - age';
+$txt['trackEdit_action_char_character_name'] = '%1$s - character name';
+$txt['trackEdit_action_char_avatar'] = '%1$s - avatar';
+
 ?>

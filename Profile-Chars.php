@@ -215,7 +215,7 @@ function character_profile($memID) {
 }
 
 function char_edit() {
-	global $context, $smcFunc, $txt, $sourcedir;
+	global $context, $smcFunc, $txt, $sourcedir, $user_info, $modSettings;
 
 	// If they don't have permission to be here, goodbye.
 	if (!$context['character']['editable']) {
@@ -266,6 +266,41 @@ function char_edit() {
 
 		if (!empty($changes) && empty($context['form_errors']))
 		{
+			if (!empty($modSettings['userlog_enabled'])) {
+				$rows = array();
+				foreach ($changes as $key => $new_value)
+				{
+					$change_array = array(
+						'previous' => $context['character'][$key],
+						'new' => $changes[$key],
+						'applicator' => $context['user']['id'],
+						'member_affected' => $context['id_member'],
+						'id_character' => $context['character']['id_character'],
+						'character_name' => !empty($changes['character_name']) ? $changes['character_name'] : $context['character']['character_name'],
+					);
+					$rows[] = array(
+						'id_log' => 2, // 2 = profile edits log
+						'log_time' => time(),
+						'id_member' => $context['id_member'],
+						'ip' => $user_info['ip'],
+						'action' => 'char_' . $key,
+						'id_board' => 0,
+						'id_topic' => 0,
+						'id_msg' => 0,
+						'extra' => json_encode($change_array),
+					);
+				}
+				if (!empty($rows)) {
+					$smcFunc['db_insert']('insert',
+						'{db_prefix}log_actions',
+						array('id_log' => 'int', 'log_time' => 'int', 'id_member' => 'int',
+							'ip' => 'string', 'action' => 'string', 'id_board' => 'int',
+							'id_topic' => 'int', 'id_msg' => 'int', 'extra' => 'string'),
+						$rows,
+						array()
+					);
+				}
+			}
 			updateCharacterData($context['character']['id_character'], $changes);
 			$_SESSION['char_updated'] = true;
 			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=edit');
