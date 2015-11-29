@@ -16,6 +16,11 @@ function template_characters_popup() {
 							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="" />' : '', '
 						</span>
 						<a href="', $scripturl, $char['character_url'], '">', $char['character_name'], '</a>';
+		if (!empty($char['is_main']))
+		{
+			echo '
+						(<abbr title="', $txt['main_char_desc'], '">', $txt['main_char'], '</abbr>)';
+		}
 		if ($id_character != $user_info['id_character'])
 			echo '
 						<span class="switch">
