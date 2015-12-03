@@ -178,6 +178,7 @@ function integrate_display_chars_messages(&$output, &$message) {
 					'url' => $character['avatar'],
 				);
 			}
+			$output['member']['link'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . '">' . $character['character_name'] . '</a>';
 			$output['member']['signature'] = $character['sig_parsed'];
 			$output['member']['posts'] = comma_format($character['posts']);
 			$is_online = $message['id_character'] == $output['member']['current_character'];

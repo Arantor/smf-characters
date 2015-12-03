@@ -350,23 +350,6 @@
 	<file name="$themedir/Display.template.php">
 		<operation>
 			<search position="replace"><![CDATA[
-	echo '
-								', $message['member']['link'], ']]></search>
-			<add><![CDATA[
-	if (isset($message['member']['characters'][$message['id_character']]))
-	{
-		$character = $message['member']['characters'][$message['id_character']];
-		$profile_link = '<a href="' . $scripturl . $character['character_url'] . '">' . $character['character_name'] . '</a>';
-	}
-	else
-	{
-		$profile_link = $message['member']['link'];
-	}
-	echo '
-								', $profile_link, ']]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[
 	// Show the user's avatar.
 	if (!empty($modSettings['show_user_images']) && empty($options['show_no_avatars']) && !empty($message['member']['avatar']['image']))
 		echo '
