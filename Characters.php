@@ -55,6 +55,7 @@ function integrate_chars()
 		'character_name' => isset($user_settings['character_name']) ? $user_settings['character_name'] : (isset($user_settings['real_name']) ? $user_settings['real_name'] : ''),
 		'char_avatar' => isset($user_settings['char_avatar']) ? $user_settings['char_avatar'] : '',
 		'char_signature' => isset($user_settings['char_signature']) ? $user_settings['char_signature'] : '',
+		'char_is_main' => !empty($user_settings['is_main']),
 	);
 
 	// And since this is now done early in the process, but after language is identified...

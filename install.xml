@@ -22,7 +22,7 @@
 			<add><![CDATA[
 			$request = $smcFunc['db_query']('', '
 				SELECT mem.*, chars.id_character, chars.character_name, chars.avatar AS char_avatar, chars.signature AS char_signature,
-					chars.id_theme, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
+					chars.id_theme, chars.is_main, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
 				FROM {db_prefix}members AS mem
 					LEFT JOIN {db_prefix}attachments AS a ON (a.id_member = {int:id_member})
 					LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = mem.current_character)
@@ -528,6 +528,56 @@
 			<add><![CDATA['recycle' => !empty($modSettings['recycle_enable']) && !empty($modSettings['recycle_board']) && $modSettings['recycle_board'] == $board,
 				'in_character' => !empty($row['in_character']),
 				'posts_count' => empty($row['count_posts']),]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[// Remove all the permissions they shouldn't have ;).
+	if (!empty($modSettings['permission_enable_deny']))
+		$user_info['permissions'] = array_diff($user_info['permissions'], $removals);]]></search>
+			<add><![CDATA[// Remove all the permissions they shouldn't have ;).
+	if (!empty($modSettings['permission_enable_deny']))
+		$user_info['permissions'] = array_diff($user_info['permissions'], $removals);
+
+	// And if this is an OOC board, we might have to remove some permissions.
+	$disable_posting = !empty($board_info['in_character']) && $user_info['char_is_main'];
+	if ($disable_posting)
+	{
+		$user_info['permissions'] = array_diff($user_info['permissions'], array(
+			'moderate_board',
+			'approve_posts',
+			'post_new',
+			'post_unapproved_topics',
+			'post_unapproved_replies_own',
+			'post_unapproved_replies_any',
+			'post_reply_own',
+			'post_reply_any',
+			'post_draft',
+			'post_attachment',
+			'modify_own',
+			'modify_any',
+			'modify_replies',
+			'delete_own',
+			'delete_any',
+			'delete_replies',
+			'merge_any',
+			'split_any',
+			'lock_own',
+			'lock_any',
+			'remove_own',
+			'remove_any',
+			'poll_vote',
+			'poll_post',
+			'poll_add_own',
+			'poll_add_any',
+			'poll_edit_own',
+			'poll_edit_any',
+			'poll_lock_own',
+			'poll_lock_any',
+			'poll_remove_own',
+			'poll_remove_any',
+			'post_unapproved_attachments',
+			'post_attachment',
+		));
+	}]]></add>
 		</operation>
 	</file>
 	<file name="$sourcedir/Subs-Boards.php">
