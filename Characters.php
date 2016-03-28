@@ -148,6 +148,21 @@ function integrate_chars()
 		false,
 		'$sourcedir/Admin-Chars.php'
 	);
+	add_integration_function(
+		'integrate_register_check',
+		'integrate_register_check_chars',
+		false
+	);
+	add_integration_function(
+		'integrate_register',
+		'integrate_register_chars',
+		false
+	);
+	add_integration_function(
+		'integrate_post_register',
+		'integrate_post_register_chars',
+		false
+	);
 }
 
 function integrate_chars_actions(&$actionArray)
@@ -428,6 +443,85 @@ function ReattributePost() {
 
 	// 7. All done. Exit back to the post.
 	redirectexit('topic=' . $topic . '.msg' . $msg . '#msg' . $msg);
+}
+
+function integrate_register_check_chars(&$regOptions, &$reg_errors)
+{
+	global $smcFunc;
+
+	// First, gotta have a character name.
+	if (empty($regOptions['extra_register_vars']['first_char']))
+	{
+		$reg_errors[] = array('lang', 'no_character_added', false);
+		return;
+	}
+
+	// If we do, make sure it's unique.
+	$result = $smcFunc['db_query']('', '
+		SELECT COUNT(*)
+		FROM {db_prefix}characters
+		WHERE character_name LIKE {string:new_name}',
+		array(
+			'new_name' => $regOptions['extra_register_vars']['first_char'],
+		)
+	);
+	list ($matching_names) = $smcFunc['db_fetch_row']($result);
+	$smcFunc['db_free_result']($result);
+
+	if ($matching_names) {
+		$reg_errors[] = array('lang', 'char_error_duplicate_character_name', false);
+		return;
+	}
+}
+
+function integrate_register_chars(&$regOptions, &$theme_vars, &$knownInts, &$knownFloats)
+{
+	unset($regOptions['register_vars']['first_char']);
+}
+
+function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
+{
+	global $smcFunc;
+
+	// So at this point we've created the account, and we're going to be creating
+	// a character. More accurately, two - one for the 'main' and one for the 'character'.
+	$smcFunc['db_insert']('',
+		'{db_prefix}characters',
+		array('id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
+			'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int', 'age' => 'string',
+			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int'),
+		array(
+			$memberID, $regOptions['register_vars']['real_name'], '',
+			'', 0, 0, '',
+			time(), 0, 1
+		),
+		array('id_character')
+	);
+	$real_account = $smcFunc['db_insert_id']('{db_prefix}characters', 'id_character');
+
+	$smcFunc['db_insert']('',
+		'{db_prefix}characters',
+		array('id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
+			'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int', 'age' => 'string',
+			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int'),
+		array(
+			$memberID, $regOptions['extra_register_vars']['first_char'], '',
+			'', 0, 0, '',
+			time(), 0, 0
+		),
+		array('id_character')
+	);
+
+	// Now we mark the current character into the user table.
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}members
+		SET current_character = {int:char}
+		WHERE id_member = {int:member}',
+		array(
+			'char' => $real_account,
+			'member' => $memberID,
+		)
+	);
 }
 
 ?>
