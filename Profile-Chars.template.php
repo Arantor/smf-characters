@@ -1,7 +1,7 @@
 <?php
 
 function template_characters_popup() {
-	global $context, $scripturl, $txt, $user_info, $cur_profile;
+	global $context, $scripturl, $txt, $user_info, $cur_profile, $modSettings;
 	echo '
 		<div id="posting_as">', sprintf($txt['you_are_posting_as'], $user_info['character_name']), '
 		<div id="my_characters">', $txt['my_characters'], '</div>
@@ -13,7 +13,7 @@ function template_characters_popup() {
 				<li>
 					<div class="character">
 						<span class="avatar">
-							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="" />' : '', '
+							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="" />' : '<img src="' . $modSettings['avatar_url'] . '/default.png" alt="" />', '
 						</span>
 						<a href="', $scripturl, $char['character_url'], '">', $char['character_name'], '</a>';
 		if (!empty($char['is_main']))
