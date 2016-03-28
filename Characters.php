@@ -153,7 +153,7 @@ function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_paramet
 	$msg_selects[] = 'id_character';
 }
 
-function integrate_display_chars_messages(&$output, &$message) {
+function integrate_display_chars_messages(&$output, &$message, $counter) {
 	global $memberContext, $smcFunc, $txt, $scripturl;
 
 	$output['id_character'] = $message['id_character'];

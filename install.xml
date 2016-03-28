@@ -10,7 +10,7 @@
 		<operation>
 			<search position="replace"><![CDATA[
 			$request = $smcFunc['db_query']('', '
-				SELECT mem.*, IFNULL(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
+				SELECT mem.*, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
 				FROM {db_prefix}members AS mem
 					LEFT JOIN {db_prefix}attachments AS a ON (a.id_member = {int:id_member})
 				WHERE mem.id_member = {int:id_member}
@@ -22,7 +22,7 @@
 			<add><![CDATA[
 			$request = $smcFunc['db_query']('', '
 				SELECT mem.*, chars.id_character, chars.character_name, chars.avatar AS char_avatar, chars.signature AS char_signature,
-					chars.id_theme, IFNULL(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
+					chars.id_theme, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
 				FROM {db_prefix}members AS mem
 					LEFT JOIN {db_prefix}attachments AS a ON (a.id_member = {int:id_member})
 					LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = mem.current_character)
@@ -85,14 +85,14 @@
 		$smcFunc['db_insert']($do_delete ? 'ignore' : 'replace',
 			'{db_prefix}log_online',
 			array('session' => 'string', 'id_member' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'raw', 'url' => 'string'),
-			array($session_id, $user_info['id'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'IFNULL(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
+			array($session_id, $user_info['id'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'COALESCE(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
 			array('session')
 		);]]></search>
 			<add><![CDATA[
 		$smcFunc['db_insert']($do_delete ? 'ignore' : 'replace',
 			'{db_prefix}log_online',
 			array('session' => 'string', 'id_member' => 'int', 'id_character' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'raw', 'url' => 'string'),
-			array($session_id, $user_info['id'], $user_info['id_character'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'IFNULL(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
+			array($session_id, $user_info['id'], $user_info['id_character'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'COALESCE(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
 			array('session')
 		);]]></add>
 		</operation>
@@ -117,15 +117,15 @@
 			<search position="replace"><![CDATA[
 		SELECT
 			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, mem.real_name,
-			lo.session, mg.online_color, IFNULL(mem.show_online, 1) AS show_online,
+			lo.session, mg.online_color, COALESCE(mem.show_online, 1) AS show_online,
 			lo.id_spider
 		FROM {db_prefix}log_online AS lo
 			LEFT JOIN {db_prefix}members AS mem ON (lo.id_member = mem.id_member)
 			LEFT JOIN {db_prefix}membergroups AS mg ON (mg.id_group = CASE WHEN mem.id_group = {int:regular_member} THEN mem.id_post_group ELSE mem.id_group END)' . (!empty($conditions) ? ']]></search>
 			<add><![CDATA[
 		SELECT
-			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, lo.id_character, IFNULL(chars.character_name, mem.real_name) AS real_name,
-			lo.session, mg.online_color, IFNULL(mem.show_online, 1) AS show_online,
+			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, lo.id_character, COALESCE(chars.character_name, mem.real_name) AS real_name,
+			lo.session, mg.online_color, COALESCE(mem.show_online, 1) AS show_online,
 			lo.id_spider
 		FROM {db_prefix}log_online AS lo
 			LEFT JOIN {db_prefix}members AS mem ON (lo.id_member = mem.id_member)
@@ -380,13 +380,13 @@
 		<operation>
 			<search position="replace"><![CDATA[
 		SELECT
-			IFNULL(mem.real_name, m.poster_name) AS poster_name, m.poster_time,
+			COALESCE(mem.real_name, m.poster_name) AS poster_name, m.poster_time,
 			m.body, m.smileys_enabled, m.id_msg, m.id_member
 		FROM {db_prefix}messages AS m
 			LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)]]></search>
 			<add><![CDATA[
 		SELECT
-			IFNULL(chars.character_name, IFNULL(mem.real_name, m.poster_name)) AS poster_name, m.poster_time,
+			COALESCE(chars.character_name, mem.real_name, m.poster_name) AS poster_name, m.poster_time,
 			m.body, m.smileys_enabled, m.id_msg, m.id_member
 		FROM {db_prefix}messages AS m
 			LEFT JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
@@ -394,12 +394,12 @@
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
-		SELECT IFNULL(mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body, m.id_topic, m.subject,
+		SELECT COALESCE(mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body, m.id_topic, m.subject,
 			m.id_board, m.id_member, m.approved
 		FROM {db_prefix}messages AS m
 			INNER JOIN {db_prefix}topics AS t ON (t.id_topic = m.id_topic)]]></search>
 			<add><![CDATA[
-		SELECT IFNULL(chars.character_name, IFNULL(mem.real_name, m.poster_name)) AS poster_name, m.poster_time, m.body, m.id_topic, m.subject,
+		SELECT COALESCE(chars.character_name, mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body, m.id_topic, m.subject,
 			m.id_board, m.id_member, m.approved
 		FROM {db_prefix}messages AS m
 			LEFT JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character)
@@ -407,11 +407,11 @@
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
-				SELECT m.subject, IFNULL(mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body
+				SELECT m.subject, COALESCE(mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body
 				FROM {db_prefix}messages AS m
 					INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})]]></search>
 			<add><![CDATA[
-				SELECT m.subject, IFNULL(chars.character_name, IFNULL(mem.real_name, m.poster_name)) AS poster_name, m.poster_time, m.body
+				SELECT m.subject, COALESCE(chars.character_name, mem.real_name, m.poster_name) AS poster_name, m.poster_time, m.body
 				FROM {db_prefix}messages AS m
 					LEFT JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character)
 					INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})]]></add>
@@ -422,9 +422,9 @@
 	<file name="$sourcedir/Subs-BoardIndex.php">
 		<operation>
 			<search position="replace"><![CDATA[
-			m.subject, m.id_topic, IFNULL(mem.real_name, m.poster_name) AS real_name,]]></search>
+			m.subject, m.id_topic, COALESCE(mem.real_name, m.poster_name) AS real_name,]]></search>
 			<add><![CDATA[
-			m.subject, m.id_topic, chars.id_character, IFNULL(IFNULL(chars.character_name, mem.real_name), m.poster_name) AS real_name,]]></add>
+			m.subject, m.id_topic, chars.id_character, COALESCE(chars.character_name, mem.real_name, m.poster_name) AS real_name,]]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
@@ -523,8 +523,8 @@
 	</file>
 	<file name="$sourcedir/Subs-Boards.php">
 		<operation>
-			<search position="replace"><![CDATA[IFNULL(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level,]]></search>
-			<add><![CDATA[IFNULL(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level, b.in_character,]]></add>
+			<search position="replace"><![CDATA[COALESCE(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level,]]></search>
+			<add><![CDATA[COALESCE(b.id_board, 0) AS id_board, b.id_parent, b.name AS board_name, b.description, b.child_level, b.in_character,]]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA['redirect' => $row['redirect'],
