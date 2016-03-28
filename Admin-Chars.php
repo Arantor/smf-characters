@@ -61,6 +61,15 @@ function integrate_delete_members_chars($users)
 			)
 		);
 	}
+
+	// Then delete their characters.
+	$smcFunc['db_query']('', '
+		DELETE FROM {db_prefix}characters
+		WHERE id_member IN ({array_int:users})',
+		array(
+			'users' => $users,
+		)
+	);
 }
 
 ?>
