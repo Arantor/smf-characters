@@ -360,9 +360,11 @@
 	// Show the user's avatar.
 	if (!empty($modSettings['show_user_images']) && empty($options['show_no_avatars']))
 	{
-		$character = $message['member']['characters'][$message['id_character']];
 		if (isset($message['member']['characters'][$message['id_character']]))
+		{
+			$character = $message['member']['characters'][$message['id_character']];
 			$profile_link = $character['character_url'];
+		}
 		else
 			$profile_link = '?action=profile;u=' . $message['member']['id'];
 
