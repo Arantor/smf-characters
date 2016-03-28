@@ -6,7 +6,7 @@
 	<version>1.0</version>
 	<type>modification</type>
 
-	<install for="2.1 Beta 2">
+	<install for="2.1 Beta 3">
 		<modification type="file">install.xml</modification>
 		<database>install.php</database>
 		<require-file name="chars.css" destination="$themes_dir/default/css" />
@@ -19,7 +19,7 @@
 		<require-dir name="characters" destination="$themes_dir/default/languages" />
 	</install>
 
-	<uninstall for="2.1 Beta 1, 2.1 Beta 2">
+	<uninstall for="2.1 Beta 3">
 		<modification type="file" reverse="true">install.xml</modification>
 		<code>uninstall-required.php</code>
 		<remove-file name="$themes_dir/default/css/chars.css" />
