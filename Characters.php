@@ -141,6 +141,12 @@ function integrate_chars()
 		'integrate_chars_actions',
 		false
 	);
+	add_integration_function(
+		'integrate_delete_members',
+		'integrate_delete_members_chars',
+		false,
+		'$sourcedir/Admin-Chars.php'
+	);
 }
 
 function integrate_chars_actions(&$actionArray)
