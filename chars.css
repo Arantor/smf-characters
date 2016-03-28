@@ -39,3 +39,9 @@
 #sig_preview, #sig_preview_parsed {
 	display: none;
 }
+
+.quickbuttons li ul ul {
+	right: 12em;
+	top: auto;
+	margin-right: 10px;
+}

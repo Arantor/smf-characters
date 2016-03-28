@@ -520,6 +520,13 @@
 			<add><![CDATA[b.child_level, b.in_character,
 				b.id_theme, b.override_theme, b.count_posts, b.id_profile, b.redirect,]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA['recycle' => !empty($modSettings['recycle_enable']) && !empty($modSettings['recycle_board']) && $modSettings['recycle_board'] == $board,
+				'posts_count' => empty($row['count_posts']),]]></search>
+			<add><![CDATA['recycle' => !empty($modSettings['recycle_enable']) && !empty($modSettings['recycle_board']) && $modSettings['recycle_board'] == $board,
+				'in_character' => !empty($row['in_character']),
+				'posts_count' => empty($row['count_posts']),]]></add>
+		</operation>
 	</file>
 	<file name="$sourcedir/Subs-Boards.php">
 		<operation>
@@ -611,6 +618,32 @@
 				INNER JOIN {db_prefix}messages AS last_m ON (last_m.id_msg = t.id_last_msg)
 				LEFT JOIN {db_prefix}characters AS char_f ON (first_m.id_character = char_f.id_character)
 				LEFT JOIN {db_prefix}characters AS char_l ON (last_m.id_character = char_l.id_character)]]></add>
+		</operation>
+	</file>
+
+	<!-- Allow switching between characters on a post -->
+	<file name="$themedir/Display.template.php">
+		<operation>
+			<search position="replace"><![CDATA[// What about splitting it off the rest of the topic?]]></search>
+			<add><![CDATA[// What about if we want to post to multiple characters?
+		if ($message['can_switch_char'])
+		{
+			echo '
+											<li>
+												<a href="#" onclick="return false">
+													<span class="generic_icons people"></span> ', $txt['switch_to_char_menu'], '
+												</a>
+												<ul>';
+			foreach ($message['possible_characters'] as $char_id => $char_name) {
+				echo '
+													<li><a href=" ', $scripturl, '?action=reattributepost;topic=', $context['current_topic'], ';msg=', $message['id'], ';char=', $char_id, ';', $context['session_var'], '=', $context['session_id'], '">', $char_name, '</a></li>';
+			}
+			echo '
+												</ul>
+											</li>';
+		}
+
+		// What about splitting it off the rest of the topic?]]></add>
 		</operation>
 	</file>
 </modification>

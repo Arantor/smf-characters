@@ -136,6 +136,16 @@ function integrate_chars()
 		'integrate_search_message_chars',
 		false
 	);
+	add_integration_function(
+		'integrate_actions',
+		'integrate_chars_actions',
+		false
+	);
+}
+
+function integrate_chars_actions(&$actionArray)
+{
+	$actionArray['reattributepost'] = array('Characters.php', 'ReattributePost');
 }
 
 function integrate_remove_logout(&$buttons)
@@ -159,7 +169,7 @@ function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_paramet
 }
 
 function integrate_display_chars_messages(&$output, &$message, $counter) {
-	global $memberContext, $smcFunc, $txt, $scripturl;
+	global $memberContext, $smcFunc, $txt, $scripturl, $board_info;
 
 	$output['id_character'] = $message['id_character'];
 
@@ -195,6 +205,34 @@ function integrate_display_chars_messages(&$output, &$message, $counter) {
 				'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
 				'label' => $txt[$is_online ? 'online' : 'offline']
 			);
+		}
+	}
+
+	// Now we indicate whether we can potentially migrate this to another character.
+	// But that requires us having characters to migrate to, and follow the OOC/IC rules.
+	$output['can_switch_char'] = false;
+	if ($board_info['in_character'])
+	{
+		if (!empty($output['member']['characters'])) {
+			$output['possible_characters'] = array();
+			foreach ($output['member']['characters'] as $char_id => $char) {
+				// We can't switch to the character that already posted it.
+				if ($char_id == $message['id_character']) {
+					continue;
+				}
+				// You can't switch it to a main character.
+				if ($char['is_main']) {
+					continue;
+				}
+				$output['possible_characters'][$char_id] = $char['character_name'];
+			}
+			if (!empty($output['possible_characters'])) {
+				asort($output['possible_characters']);
+			}
+		}
+		$output['can_switch_char'] = !empty($output['possible_characters']) && $output['can_modify'];
+		if (!$output['can_switch_char']) {
+			unset ($output['possible_characters']);
 		}
 	}
 }
@@ -280,6 +318,109 @@ function integrate_search_message_chars(&$output, &$message, $counter)
 			}
 		}
 	}
+}
+
+function ReattributePost() {
+	global $topic, $smcFunc, $modSettings, $user_info, $board_info;
+
+	// 1. Session check, quick and easy to get out the way before we forget.
+	checkSession('get');
+
+	// 2. Check this is an 'in character' board. We don't want this working outside.
+	if (!$board_info['in_character'])
+		fatal_lang_error('no_access', false);
+
+	// 3. Get the message id and verify that it exists inside the topic in question.
+	$msg = isset($_GET['msg']) ? (int) $_GET['msg'] : 0;
+	$result = $smcFunc['db_query']('', '
+		SELECT t.id_topic, t.locked, t.id_member_started, m.id_member AS id_member_posted,
+			m.id_character
+		FROM {db_prefix}messages AS m
+			INNER JOIN {db_prefix}topics AS t ON (m.id_topic = t.id_topic)
+		WHERE m.id_msg = {int:msg}',
+		array(
+			'msg' => $msg,
+		)
+	);
+
+	// 3a. Doesn't exist?
+	if ($smcFunc['db_num_rows']($result) == 0)
+		fatal_lang_error('no_access', false);
+
+	$row = $smcFunc['db_fetch_assoc']($result);
+	$smcFunc['db_free_result']($result);
+
+	// 3b. Not the topic we thought it was?
+	if ($row['id_topic'] != $topic)
+		fatal_lang_error('no_access', false);
+
+	// 4. Verify we have permission. We loaded $topic's board's permissions earlier.
+	// Now verify that we have the relevant powers.
+	$is_poster = $user_info['id'] == $row['id_member_posted'];
+	$is_topic_starter = $user_info['id'] == $row['id_member_started'];
+	$can_modify = (!$row['locked'] || allowedTo('moderate_board')) && (allowedTo('modify_any') || (allowedTo('modify_replies') && $is_topic_starter) || (allowedTo('modify_own') && $is_poster));
+	if (!$can_modify)
+		fatal_lang_error('no_access', false);
+
+	// 4. Verify that the requested character belongs to the person we're changing to.
+	$character = isset($_GET['char']) ? (int) $_GET['char'] : 0;
+	$result = $smcFunc['db_query']('', '
+		SELECT COUNT(id_character)
+		FROM {db_prefix}characters
+		WHERE id_character = {int:char}
+			AND id_member = {int:member}
+			AND is_main = 0',
+		array(
+			'char' => $character,
+			'member' => $row['id_member_posted'],
+		)
+	);
+	list ($owned_char) = $smcFunc['db_fetch_row']($result);
+	$smcFunc['db_free_result']($result);
+
+	if (!$owned_char)
+		fatal_lang_error('no_access', false);
+
+	// 5. So we've verified the topic matches the message, the user has power
+	// to edit the message, and the message owner's new character exists.
+	// Time to reattribute the message!
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}messages
+		SET id_character = {int:char}
+		WHERE id_msg = {int:msg}',
+		array(
+			'char' => $character,
+			'msg' => $msg,
+		)
+	);
+
+	// 6. Having reattributed the post, now let's also fix the post count.
+	// If we're supposed to, that is.
+	if ($board_info['posts_count'])
+	{
+		// Subtract one from the post count of the current owner.
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}characters
+			SET posts = (CASE WHEN posts <= 1 THEN 0 ELSE posts - 1 END)
+			WHERE id_character = {int:char}',
+			array(
+				'char' => $row['id_character'],
+			)
+		);
+
+		// Add one to the new owner.
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}characters
+			SET posts = posts + 1
+			WHERE id_character = {int:char}',
+			array(
+				'char' => $character,
+			)
+		);
+	}
+
+	// 7. All done. Exit back to the post.
+	redirectexit('topic=' . $topic . '.msg' . $msg . '#msg' . $msg);
 }
 
 ?>

@@ -12,6 +12,7 @@ $txt['main_char'] = 'main';
 $txt['main_char_desc'] = 'This is your \'main\' account, and should be used for posting in the Out Of Character (OOC) areas.';
 
 $txt['switch_to_char'] = 'Switch to this character';
+$txt['switch_to_char_menu'] = 'Reattribute to...';
 $txt['edit_char'] = 'Edit this character';
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
