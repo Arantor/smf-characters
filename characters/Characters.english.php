@@ -30,4 +30,8 @@ $txt['trackEdit_action_char_age'] = '%1$s - age';
 $txt['trackEdit_action_char_character_name'] = '%1$s - character name';
 $txt['trackEdit_action_char_avatar'] = '%1$s - avatar';
 
+$txt['char_editing_error'] = 'This character could not be updated because:';
+$txt['char_error_character_must_have_name'] = 'Your character must have a name.';
+$txt['char_error_duplicate_character_name'] = 'Your character cannot have the same name as another character.';
+$txt['char_error_avatar_must_be_real_url'] = 'Your avatar must have a proper URL, beginning with http:// or https://.';
 ?>

@@ -137,21 +137,20 @@ function template_edit_char() {
 						<h3 class="catbg">
 						', $txt['edit_char'], '
 						</h3>
-					</div>
-
-	<div id="profileview" class="roundframe flow_auto">
-		<div id="basicinfo">';
+					</div>';
 
 	echo '
-					<div class="errorbox" id="profile_error"', empty($context['form_errors']) ? ' style="display:none"' : '', '>
-						<span>ERROR</span>
-						<ul id="list_errors">';
+	<div id="profileview" class="roundframe flow_auto">
+		<div class="errorbox" id="profile_error"', empty($context['form_errors']) ? ' style="display:none"' : '', '>
+			<span>', $txt['char_editing_error'], '</span>
+			<ul id="list_errors">';
 	foreach ($context['form_errors'] as $err)
 		echo '
-							<li>', $err, '</li>';
+				<li>', $err, '</li>';
 	echo '
-						</ul>
-					</div>';
+			</ul>
+		</div>
+		<div id="basicinfo">';
 
 	echo '
 		</div>

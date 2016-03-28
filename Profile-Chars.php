@@ -241,9 +241,28 @@ function char_edit() {
 		$changes = array();
 		$new_name = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
 		if ($new_name == '')
-			$context['form_errors'][] = 'character_must_have_name';
+			$context['form_errors'][] = $txt['char_error_character_must_have_name'];
 		elseif ($new_name != $context['character']['character_name'])
-			$changes['character_name'] = $new_name;
+		{
+			// Check if the name already exists.
+			$result = $smcFunc['db_query']('', '
+				SELECT COUNT(*)
+				FROM {db_prefix}characters
+				WHERE character_name LIKE {string:new_name}
+					AND id_character != {int:char}',
+				array(
+					'new_name' => $new_name,
+					'char' => $context['character']['id_character'],
+				)
+			);
+			list ($matching_names) = $smcFunc['db_fetch_row']($result);
+			$smcFunc['db_free_result']($result);
+
+			if ($matching_names)
+				$context['form_errors'][] = $txt['char_error_duplicate_character_name'];
+			else
+				$changes['character_name'] = $new_name;
+		}
 
 		$new_age = !empty($_POST['age']) ? $smcFunc['htmlspecialchars'](trim($_POST['age']), ENT_QUOTES) : '';
 		if ($new_age != $context['character']['age'])
@@ -256,7 +275,7 @@ function char_edit() {
 			if (filter_var($validatable_avatar, FILTER_VALIDATE_URL))
 				$changes['avatar'] = $new_avatar;
 			elseif ($new_avatar != '')
-				$context['form_errors'][] = 'avatar_must_be_real_url';
+				$context['form_errors'][] = $txt['char_error_avatar_must_be_real_url'];
 		}
 
 		$new_sig = !empty($_POST['char_signature']) ? $smcFunc['htmlspecialchars']($_POST['char_signature'], ENT_QUOTES) : '';
