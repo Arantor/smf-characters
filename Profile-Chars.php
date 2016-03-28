@@ -5,32 +5,16 @@ if (!defined('SMF'))
 
 function chars_profile_menu(&$profile_areas) {
 	global $context, $cur_profile, $scripturl;
-	static $called = false;
 
-	// SMF 2.1, GH #3118, this can be called twice.
-	if ($called) {
-		return;
-	} else {
-		$called = true;
-	}
-
-	// So how are we calling this? Are we calling this directly in the profile area?
-	// Depending on how bug 3118 is fixed, we can cover all the bases once!
-	if (is_array($profile_areas['info']['areas']['summary']['permission'])) {
-		// Classical array of own/any
-		$own_only = array(
-			'own' => 'is_not_guest',
-			'any' => array(),
-		);
-		$own_any = array(
-			'own' => 'is_not_guest',
-			'any' => 'profile_view',
-		);
-	} else {
-		// Coming from the generic menu hook
-		$own_only = 'is_not_guest';
-		$own_any = $context['user']['is_owner'] ? 'is_not_guest' : 'profile_view';
-	}
+	// Classical array of own/any
+	$own_only = array(
+		'own' => 'is_not_guest',
+		'any' => array(),
+	);
+	$own_any = array(
+		'own' => 'is_not_guest',
+		'any' => 'profile_view',
+	);
 
 	$profile_areas['info']['areas']['characters_popup'] = array(
 		'function' => 'characters_popup',

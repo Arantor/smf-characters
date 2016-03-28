@@ -63,7 +63,7 @@ function integrate_chars()
 	// We can now also hook the rest of the characters stuff, meaning we
 	// only need to remember and manage one hook in the installer.
 	add_integration_function(
-		'integrate_profile_areas',
+		'integrate_pre_profile_areas',
 		'chars_profile_menu',
 		false,
 		'$sourcedir/Profile-Chars.php'
