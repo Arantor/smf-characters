@@ -131,6 +131,11 @@ function integrate_chars()
 		'integrate_display_topic_chars',
 		false
 	);
+	add_integration_function(
+		'integrate_search_message_context',
+		'integrate_search_message_chars',
+		false
+	);
 }
 
 function integrate_remove_logout(&$buttons)
@@ -236,6 +241,45 @@ function integrate_display_topic_chars(&$topic_selects, &$topic_tables, &$topic_
 {
 	$topic_selects[] = 'IFNULL(chars.character_name, IFNULL(mem.real_name, ms.poster_name)) AS topic_started_name';
 	$topic_tables[] = 'LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = ms.id_character)';
+}
+
+function integrate_search_message_chars(&$output, &$message, $counter)
+{
+	global $memberContext, $scripturl, $smcFunc, $txt;
+
+	foreach ($output['matches'] as $match_id => $match)
+	{
+		if (!empty($match['member']['id']))
+		{
+			unset ($output['matches'][$match_id]['member']);
+			$output['matches'][$match_id]['member'] = $memberContext[$message['id_member']];
+			// Now replace the values we need into the new version.
+			if (!empty($output['matches'][$match_id]['member']['characters'][$message['id_character']])) {
+				$character = $output['matches'][$match_id]['member']['characters'][$message['id_character']];
+				if (!empty($character['avatar']))
+				{
+					$output['matches'][$match_id]['member']['avatar'] = array(
+						'name' => $character['avatar'],
+						'image' => '<img class="avatar" src="' . $character['avatar'] . '" alt="">',
+						'href' => $character['avatar'],
+						'url' => $character['avatar'],
+					);
+				}
+				$output['matches'][$match_id]['member']['link'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $message['id_character'] . '">' . $character['character_name'] . '</a>';
+				$output['matches'][$match_id]['member']['signature'] = $character['sig_parsed'];
+				$output['matches'][$match_id]['member']['posts'] = comma_format($character['posts']);
+				$is_online = $message['id_character'] == $output['matches'][$match_id]['member']['current_character'];
+				$output['matches'][$match_id]['member']['online'] = array(
+					'is_online' => $is_online,
+					'text' => $smcFunc['htmlspecialchars']($txt[$is_online ? 'online' : 'offline']),
+					'member_online_text' => sprintf($txt[$is_online ? 'member_is_online' : 'member_is_offline'], $smcFunc['htmlspecialchars']($character['character_name'])),
+					'href' => $scripturl . '?action=pm;sa=send;u=' . $message['id_member'],
+					'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
+					'label' => $txt[$is_online ? 'online' : 'offline']
+				);
+			}
+		}
+	}
 }
 
 ?>

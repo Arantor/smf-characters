@@ -589,4 +589,28 @@
 						<strong>', $txt['permission_profile'], ':</strong><br>]]></add>
 		</operation>
 	</file>
+
+	<!-- We also need to fix up searching. -->
+	<file name="$sourcedir/Search.php">
+		<operation>
+			<search position="replace"><![CDATA[
+				first_mem.id_member AS first_member_id, COALESCE(first_mem.real_name, first_m.poster_name) AS first_member_name,
+				last_m.id_msg AS last_msg, last_m.poster_time AS last_poster_time, last_mem.id_member AS last_member_id,
+				COALESCE(last_mem.real_name, last_m.poster_name) AS last_member_name, last_m.icon AS last_icon, last_m.subject AS last_subject,]]></search>
+			<add><![CDATA[
+				first_mem.id_member AS first_member_id, m.id_character, COALESCE(char_f.character_name, first_mem.real_name, first_m.poster_name) AS first_member_name,
+				last_m.id_msg AS last_msg, last_m.poster_time AS last_poster_time, last_mem.id_member AS last_member_id,
+				COALESCE(char_l.character_name, last_mem.real_name, last_m.poster_name) AS last_member_name, last_m.icon AS last_icon, last_m.subject AS last_subject,]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[
+				INNER JOIN {db_prefix}messages AS first_m ON (first_m.id_msg = t.id_first_msg)
+				INNER JOIN {db_prefix}messages AS last_m ON (last_m.id_msg = t.id_last_msg)]]></search>
+			<add><![CDATA[
+				INNER JOIN {db_prefix}messages AS first_m ON (first_m.id_msg = t.id_first_msg)
+				INNER JOIN {db_prefix}messages AS last_m ON (last_m.id_msg = t.id_last_msg)
+				LEFT JOIN {db_prefix}characters AS char_f ON (first_m.id_character = char_f.id_character)
+				LEFT JOIN {db_prefix}characters AS char_l ON (last_m.id_character = char_l.id_character)]]></add>
+		</operation>
+	</file>
 </modification>
