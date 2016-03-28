@@ -68,7 +68,7 @@ function template_character_profile() {
 			<img class="avatar" src="', $context['character']['avatar'], '" alt=""><br /><br />';
 	else
 		echo '
-			<img class="avatar" src="', $context['member']['avatar']['image'], '" alt=""><br /><br />';
+			<img class="avatar" src="', $context['member']['avatar']['href'], '" alt=""><br /><br />';
 
 	if ($context['user']['is_owner'] && $user_info['id_character'] != $context['character']['id_character'])
 	{
