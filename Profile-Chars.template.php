@@ -73,7 +73,7 @@ function template_character_profile() {
 	if ($context['user']['is_owner'] && $user_info['id_character'] != $context['character']['id_character'])
 	{
 		echo '
-			<a href="#" class="button">', $txt['switch_to_char'], '</a><br /><br />';
+			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch_redir;char=', $context['character']['id_character'], ';', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['switch_to_char'], '</a><br /><br />';
 	}
 	if ($context['character']['editable'])
 	{

@@ -28,6 +28,12 @@ function chars_profile_menu(&$profile_areas) {
 		'enabled' => $context['user']['is_owner'],
 		'select' => 'summary',
 	);
+	$profile_areas['info']['areas']['char_switch_redir'] = array(
+		'function' => 'char_switch_redir',
+		'permission' => $own_only,
+		'enabled' => $context['user']['is_owner'],
+		'select' => 'summary',
+	);
 
 	$insert_array['chars'] = array(
 		'title' => 'Characters',
@@ -158,6 +164,18 @@ function char_switch($memID, $char = null, $return = false) {
 		return true;
 	else
 		die;
+}
+
+function char_switch_redir($memID) {
+	checkSession('get');
+
+	$char = isset($_GET['char']) ? (int) $_GET['char'] : 0;
+
+	if (char_switch($memID, $char, true)) {
+		redirectexit('action=profile;u=' . $memID . ';area=characters;char=' . $char);
+	}
+
+	redirectexit('action=profile;u=' . $memID);
 }
 
 function character_profile($memID) {
