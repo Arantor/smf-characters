@@ -356,9 +356,10 @@ function ReattributePost() {
 	$msg = isset($_GET['msg']) ? (int) $_GET['msg'] : 0;
 	$result = $smcFunc['db_query']('', '
 		SELECT t.id_topic, t.locked, t.id_member_started, m.id_member AS id_member_posted,
-			m.id_character
+			m.id_character, c.character_name AS old_character
 		FROM {db_prefix}messages AS m
 			INNER JOIN {db_prefix}topics AS t ON (m.id_topic = t.id_topic)
+			INNER JOIN {db_prefix}characters AS c ON (m.id_character = c.id_character)
 		WHERE m.id_msg = {int:msg}',
 		array(
 			'msg' => $msg,
@@ -387,7 +388,7 @@ function ReattributePost() {
 	// 4. Verify that the requested character belongs to the person we're changing to.
 	$character = isset($_GET['char']) ? (int) $_GET['char'] : 0;
 	$result = $smcFunc['db_query']('', '
-		SELECT COUNT(id_character)
+		SELECT character_name
 		FROM {db_prefix}characters
 		WHERE id_character = {int:char}
 			AND id_member = {int:member}
@@ -397,10 +398,13 @@ function ReattributePost() {
 			'member' => $row['id_member_posted'],
 		)
 	);
-	list ($owned_char) = $smcFunc['db_fetch_row']($result);
+	$owned_char = false;
+	if ($smcFunc['db_num_rows']($result)) {
+		list ($owned_char) = $smcFunc['db_fetch_row']($result);
+	}
 	$smcFunc['db_free_result']($result);
 
-	if (!$owned_char)
+	if (empty($owned_char))
 		fatal_lang_error('no_access', false);
 
 	// 5. So we've verified the topic matches the message, the user has power
@@ -441,7 +445,15 @@ function ReattributePost() {
 		);
 	}
 
-	// 7. All done. Exit back to the post.
+	// 7. Add it to the moderation log.
+	logAction('char_reattribute', array(
+		'member' => $row['id_member_posted'],
+		'old_character' => $row['old_character'],
+		'new_character' => $owned_char,
+		'message' => $msg,
+	), 'moderate');
+
+	// 8. All done. Exit back to the post.
 	redirectexit('topic=' . $topic . '.msg' . $msg . '#msg' . $msg);
 }
 

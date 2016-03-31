@@ -39,4 +39,6 @@ $txt['char_register_nickname'] = 'Your nickname';
 $txt['char_register_charname'] = 'Your first character\'s name';
 
 $txt['no_character_added'] = 'You didn\'t add a name for your first roleplay character.';
+
+$txt['modlog_ac_char_reattribute'] = 'Reattributed &quot;{message}&quot; by &quot;{member}&quot; from &quot;{old_character}&quot; to &quot;{new_character}&quot;';
 ?>
