@@ -20,6 +20,11 @@ $txt['this_character_cannot_delete_posts'] = 'This character cannot be deleted; 
 $txt['this_character_cannot_delete_main'] = 'This character is a main character, it cannot be deleted.';
 $txt['this_character_cannot_delete_active_self'] = 'You are currently posting as this character.';
 $txt['this_character_cannot_delete_active'] = 'This character\'s account is currently using this character; it cannot be deleted.';
+$txt['showPosts_help_char'] = 'This section allows you to view all posts made by this character. Note that you can only see posts made in areas you currently have access to.';
+$txt['showPosts_char'] = 'Character Posts';
+$txt['showTopics_char'] = 'Character Topics';
+$txt['char_profile'] = 'Character Profile';
+
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
 $txt['no_avatar_yet'] = 'You don\'t have an avatar yet, add the link above';

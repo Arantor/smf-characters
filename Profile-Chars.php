@@ -4,7 +4,7 @@ if (!defined('SMF'))
 	die('No direct access...');
 
 function chars_profile_menu(&$profile_areas) {
-	global $context, $cur_profile, $scripturl;
+	global $context, $cur_profile, $scripturl, $txt;
 
 	// Classical array of own/any
 	$own_only = array(
@@ -63,6 +63,11 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 				'permission' => $own_any,
 				'select' => 'characters',
 				'custom_url' => $scripturl . '?action=profile;area=characters;char=' . $id_character,
+				'subsections' => array(
+					'profile' => array($txt['char_profile'], array('is_not_guest', 'profile_view')),
+					'posts' => array($txt['showPosts_char'], array('is_not_guest', 'profile_view')),
+					'topics' => array($txt['showTopics_char'], array('is_not_guest', 'profile_view')),
+				),
 			);
 		}
 	}
@@ -196,6 +201,8 @@ function character_profile($memID) {
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
 		'delete' => 'char_delete',
+		'posts' => 'char_posts',
+		'topics' => 'char_posts',
 	);
 	if (isset($_GET['sa'], $subactions[$_GET['sa']])) {
 		$func = $subactions[$_GET['sa']];
@@ -441,6 +448,307 @@ function char_theme() {
 	}
 
 	$context['sub_template'] = 'char_theme';
+}
+
+function char_posts()
+{
+	global $txt, $user_info, $scripturl, $modSettings;
+	global $context, $user_profile, $sourcedir, $smcFunc, $board;
+
+	// Some initial context.
+	$context['start'] = (int) $_REQUEST['start'];
+	$context['sub_template'] = 'char_posts';
+
+	// Create the tabs for the template.
+	$context[$context['profile_menu_name']]['tab_data'] = array(
+		'title' => $txt['showPosts'],
+		'description' => $txt['showPosts_help_char'],
+		'icon' => 'profile_hd.png',
+		'tabs' => array(
+			'posts' => array(
+			),
+			'topics' => array(
+			),
+		),
+	);
+
+	// Shortcut used to determine which $txt['show*'] string to use for the title, based on the SA
+	$title = array(
+		'posts' => 'Posts',
+		'topics' => 'Topics'
+	);
+
+	// Set the page title
+	if (isset($_GET['sa']) && array_key_exists($_GET['sa'], $title))
+		$context['page_title'] = $txt['show' . $title[$_GET['sa']]];
+	else
+		$context['page_title'] = $txt['showPosts'];
+
+	$context['page_title'] .= ' - ' . $context['character']['character_name'];
+
+	// Is the load average too high to allow searching just now?
+	if (!empty($context['load_average']) && !empty($modSettings['loadavg_show_posts']) && $context['load_average'] >= $modSettings['loadavg_show_posts'])
+		fatal_lang_error('loadavg_show_posts_disabled', false);
+
+	// Are we just viewing topics?
+	$context['is_topics'] = isset($_GET['sa']) && $_GET['sa'] == 'topics' ? true : false;
+
+	// Default to 10.
+	if (empty($_REQUEST['viewscount']) || !is_numeric($_REQUEST['viewscount']))
+		$_REQUEST['viewscount'] = '10';
+
+	if ($context['is_topics'])
+		$request = $smcFunc['db_query']('', '
+			SELECT COUNT(*)
+			FROM {db_prefix}topics AS t' . ($user_info['query_see_board'] == '1=1' ? '' : '
+				INNER JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board AND {query_see_board})') . '
+				INNER JOIN {db_prefix}messages AS m ON (t.id_first_msg = m.id_msg)
+			WHERE m.id_character = {int:current_member}' . (!empty($board) ? '
+				AND t.id_board = {int:board}' : '') . (!$modSettings['postmod_active'] || $context['user']['is_owner'] ? '' : '
+				AND t.approved = {int:is_approved}'),
+			array(
+				'current_member' => $context['character']['id_character'],
+				'is_approved' => 1,
+				'board' => $board,
+			)
+		);
+	else
+		$request = $smcFunc['db_query']('', '
+			SELECT COUNT(*)
+			FROM {db_prefix}messages AS m' . ($user_info['query_see_board'] == '1=1' ? '' : '
+				INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board AND {query_see_board})') . '
+			WHERE m.id_character = {int:current_member}' . (!empty($board) ? '
+				AND m.id_board = {int:board}' : '') . (!$modSettings['postmod_active'] || $context['user']['is_owner'] ? '' : '
+				AND m.approved = {int:is_approved}'),
+			array(
+				'current_member' => $context['character']['id_character'],
+				'is_approved' => 1,
+				'board' => $board,
+			)
+		);
+	list ($msgCount) = $smcFunc['db_fetch_row']($request);
+	$smcFunc['db_free_result']($request);
+
+	$request = $smcFunc['db_query']('', '
+		SELECT MIN(id_msg), MAX(id_msg)
+		FROM {db_prefix}messages AS m
+		WHERE m.id_character = {int:current_member}' . (!empty($board) ? '
+			AND m.id_board = {int:board}' : '') . (!$modSettings['postmod_active'] || $context['user']['is_owner'] ? '' : '
+			AND m.approved = {int:is_approved}'),
+		array(
+			'current_member' => $context['character']['id_character'],
+			'is_approved' => 1,
+			'board' => $board,
+		)
+	);
+	list ($min_msg_member, $max_msg_member) = $smcFunc['db_fetch_row']($request);
+	$smcFunc['db_free_result']($request);
+
+	$reverse = false;
+	$range_limit = '';
+
+	if ($context['is_topics'])
+		$maxPerPage = empty($modSettings['disableCustomPerPage']) && !empty($options['topics_per_page']) ? $options['topics_per_page'] : $modSettings['defaultMaxTopics'];
+	else
+		$maxPerPage = empty($modSettings['disableCustomPerPage']) && !empty($options['messages_per_page']) ? $options['messages_per_page'] : $modSettings['defaultMaxMessages'];
+
+	$maxIndex = $maxPerPage;
+
+	// Make sure the starting place makes sense and construct our friend the page index.
+	$context['page_index'] = constructPageIndex($scripturl . '?action=profile;area=characters;char=' . $context['character']['id_character'] . ';u=' . $context['id_member'] . ($context['is_topics'] ? ';sa=topics' : ';sa=posts') . (!empty($board) ? ';board=' . $board : ''), $context['start'], $msgCount, $maxIndex);
+	$context['current_page'] = $context['start'] / $maxIndex;
+
+	// Reverse the query if we're past 50% of the pages for better performance.
+	$start = $context['start'];
+	$reverse = $_REQUEST['start'] > $msgCount / 2;
+	if ($reverse)
+	{
+		$maxIndex = $msgCount < $context['start'] + $maxPerPage + 1 && $msgCount > $context['start'] ? $msgCount - $context['start'] : $maxPerPage;
+		$start = $msgCount < $context['start'] + $maxPerPage + 1 || $msgCount < $context['start'] + $maxPerPage ? 0 : $msgCount - $context['start'] - $maxPerPage;
+	}
+
+	// Guess the range of messages to be shown.
+	if ($msgCount > 1000)
+	{
+		$margin = floor(($max_msg_member - $min_msg_member) * (($start + $maxPerPage) / $msgCount) + .1 * ($max_msg_member - $min_msg_member));
+		// Make a bigger margin for topics only.
+		if ($context['is_topics'])
+		{
+			$margin *= 5;
+			$range_limit = $reverse ? 't.id_first_msg < ' . ($min_msg_member + $margin) : 't.id_first_msg > ' . ($max_msg_member - $margin);
+		}
+		else
+			$range_limit = $reverse ? 'm.id_msg < ' . ($min_msg_member + $margin) : 'm.id_msg > ' . ($max_msg_member - $margin);
+	}
+
+	// Find this user's posts.  The left join on categories somehow makes this faster, weird as it looks.
+	$looped = false;
+	while (true)
+	{
+		if ($context['is_topics'])
+		{
+			$request = $smcFunc['db_query']('', '
+				SELECT
+					b.id_board, b.name AS bname, c.id_cat, c.name AS cname, t.id_member_started, t.id_first_msg, t.id_last_msg,
+					t.approved, m.body, m.smileys_enabled, m.subject, m.poster_time, m.id_topic, m.id_msg
+				FROM {db_prefix}topics AS t
+					INNER JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
+					LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+					INNER JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
+				WHERE m.id_character = {int:current_member}' . (!empty($board) ? '
+					AND t.id_board = {int:board}' : '') . (empty($range_limit) ? '' : '
+					AND ' . $range_limit) . '
+					AND {query_see_board}' . (!$modSettings['postmod_active'] || $context['user']['is_owner'] ? '' : '
+					AND t.approved = {int:is_approved} AND m.approved = {int:is_approved}') . '
+				ORDER BY t.id_first_msg ' . ($reverse ? 'ASC' : 'DESC') . '
+				LIMIT ' . $start . ', ' . $maxIndex,
+				array(
+					'current_member' => $context['character']['id_character'],
+					'is_approved' => 1,
+					'board' => $board,
+				)
+			);
+		}
+		else
+		{
+			$request = $smcFunc['db_query']('', '
+				SELECT
+					b.id_board, b.name AS bname, c.id_cat, c.name AS cname, m.id_topic, m.id_msg,
+					t.id_member_started, t.id_first_msg, t.id_last_msg, m.body, m.smileys_enabled,
+					m.subject, m.poster_time, m.approved
+				FROM {db_prefix}messages AS m
+					INNER JOIN {db_prefix}topics AS t ON (t.id_topic = m.id_topic)
+					INNER JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
+					LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+				WHERE m.id_character = {int:current_member}' . (!empty($board) ? '
+					AND b.id_board = {int:board}' : '') . (empty($range_limit) ? '' : '
+					AND ' . $range_limit) . '
+					AND {query_see_board}' . (!$modSettings['postmod_active'] || $context['user']['is_owner'] ? '' : '
+					AND t.approved = {int:is_approved} AND m.approved = {int:is_approved}') . '
+				ORDER BY m.id_msg ' . ($reverse ? 'ASC' : 'DESC') . '
+				LIMIT ' . $start . ', ' . $maxIndex,
+				array(
+					'current_member' => $context['character']['id_character'],
+					'is_approved' => 1,
+					'board' => $board,
+				)
+			);
+		}
+
+		// Make sure we quit this loop.
+		if ($smcFunc['db_num_rows']($request) === $maxIndex || $looped)
+			break;
+		$looped = true;
+		$range_limit = '';
+	}
+
+	// Start counting at the number of the first message displayed.
+	$counter = $reverse ? $context['start'] + $maxIndex + 1 : $context['start'];
+	$context['posts'] = array();
+	$board_ids = array('own' => array(), 'any' => array());
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		// Censor....
+		censorText($row['body']);
+		censorText($row['subject']);
+
+		// Do the code.
+		$row['body'] = parse_bbc($row['body'], $row['smileys_enabled'], $row['id_msg']);
+
+		// And the array...
+		$context['posts'][$counter += $reverse ? -1 : 1] = array(
+			'body' => $row['body'],
+			'counter' => $counter,
+			'category' => array(
+				'name' => $row['cname'],
+				'id' => $row['id_cat']
+			),
+			'board' => array(
+				'name' => $row['bname'],
+				'id' => $row['id_board']
+			),
+			'topic' => $row['id_topic'],
+			'subject' => $row['subject'],
+			'start' => 'msg' . $row['id_msg'],
+			'time' => timeformat($row['poster_time']),
+			'timestamp' => forum_time(true, $row['poster_time']),
+			'id' => $row['id_msg'],
+			'can_reply' => false,
+			'can_mark_notify' => !$context['user']['is_guest'],
+			'can_delete' => false,
+			'delete_possible' => ($row['id_first_msg'] != $row['id_msg'] || $row['id_last_msg'] == $row['id_msg']) && (empty($modSettings['edit_disable_time']) || $row['poster_time'] + $modSettings['edit_disable_time'] * 60 >= time()),
+			'approved' => $row['approved'],
+			'css_class' => $row['approved'] ? 'windowbg' : 'approvebg',
+		);
+
+		if ($user_info['id'] == $row['id_member_started'])
+			$board_ids['own'][$row['id_board']][] = $counter;
+		$board_ids['any'][$row['id_board']][] = $counter;
+	}
+	$smcFunc['db_free_result']($request);
+
+	// All posts were retrieved in reverse order, get them right again.
+	if ($reverse)
+		$context['posts'] = array_reverse($context['posts'], true);
+
+	// These are all the permissions that are different from board to board..
+	if ($context['is_topics'])
+		$permissions = array(
+			'own' => array(
+				'post_reply_own' => 'can_reply',
+			),
+			'any' => array(
+				'post_reply_any' => 'can_reply',
+			)
+		);
+	else
+		$permissions = array(
+			'own' => array(
+				'post_reply_own' => 'can_reply',
+				'delete_own' => 'can_delete',
+			),
+			'any' => array(
+				'post_reply_any' => 'can_reply',
+				'delete_any' => 'can_delete',
+			)
+		);
+
+	// For every permission in the own/any lists...
+	foreach ($permissions as $type => $list)
+	{
+		foreach ($list as $permission => $allowed)
+		{
+			// Get the boards they can do this on...
+			$boards = boardsAllowedTo($permission);
+
+			// Hmm, they can do it on all boards, can they?
+			if (!empty($boards) && $boards[0] == 0)
+				$boards = array_keys($board_ids[$type]);
+
+			// Now go through each board they can do the permission on.
+			foreach ($boards as $board_id)
+			{
+				// There aren't any posts displayed from this board.
+				if (!isset($board_ids[$type][$board_id]))
+					continue;
+
+				// Set the permission to true ;).
+				foreach ($board_ids[$type][$board_id] as $counter)
+					$context['posts'][$counter][$allowed] = true;
+			}
+		}
+	}
+
+	// Clean up after posts that cannot be deleted and quoted.
+	$quote_enabled = empty($modSettings['disabledBBC']) || !in_array('quote', explode(',', $modSettings['disabledBBC']));
+	foreach ($context['posts'] as $counter => $dummy)
+	{
+		$context['posts'][$counter]['can_delete'] &= $context['posts'][$counter]['delete_possible'];
+		$context['posts'][$counter]['can_quote'] = $context['posts'][$counter]['can_reply'] && $quote_enabled;
+	}
+
+	// Allow last minute changes.
+	call_integration_hook('integrate_profile_showPosts');
 }
 
 ?>
