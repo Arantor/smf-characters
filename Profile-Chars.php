@@ -195,6 +195,7 @@ function character_profile($memID) {
 	$subactions = array(
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
+		'delete' => 'char_delete',
 	);
 	if (isset($_GET['sa'], $subactions[$_GET['sa']])) {
 		$func = $subactions[$_GET['sa']];
@@ -365,6 +366,70 @@ function char_edit() {
 
 	$context['char_updated'] = !empty($_SESSION['char_updated']);
 	unset ($_SESSION['char_updated']);
+}
+
+function char_delete() {
+	global $context, $smcFunc, $txt, $sourcedir, $user_info, $modSettings;
+
+	// If they don't have permission to be here, goodbye.
+	if (!$context['character']['editable']) {
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	// Check the session; this is actually a less hardcore action than
+	// editing so we don't really need the token thing - the character
+	// cannot have done anything at this point in order to be removed.
+	checkSession('get');
+
+	// Can't delete main accounts
+	if ($context['character']['is_main'])
+	{
+		fatal_lang_error('this_character_cannot_delete_main', false);
+	}
+
+	// Let's see how many posts they have (for really realz, not what their post count says)
+	$result = $smcFunc['db_query']('', '
+		SELECT COUNT(id_msg)
+		FROM {db_prefix}messages
+		WHERE id_character = {int:char}',
+		array(
+			'char' => $context['character']['id_character'],
+		)
+	);
+	list ($count) = $smcFunc['db_fetch_row']($result);
+	$smcFunc['db_free_result']($result);
+
+	if ($count > 0)
+	{
+		fatal_lang_error('this_character_cannot_delete_posts', false);
+	}
+
+	// Is the character currently in action?
+	$result = $smcFunc['db_query']('', '
+		SELECT current_character
+		FROM {db_prefix}members
+		WHERE id_member = {int:member}',
+		array(
+			'member' => $context['id_member'],
+		)
+	);
+	list ($current_character) = $smcFunc['db_fetch_row']($result);
+	$smcFunc['db_free_result']($result);
+	if ($current_character == $context['character']['id_character'])
+	{
+		fatal_lang_error($context['user']['is_owner'] ? 'this_character_cannot_delete_active_self' : 'this_character_cannot_delete_active', false);
+	}
+
+	// So we can delete them.
+	$smcFunc['db_query']('', '
+		DELETE FROM {db_prefix}characters
+		WHERE id_character = {int:char}',
+		array(
+			'char' => $context['character']['id_character'],
+		)
+	);
+
+	redirectexit('action=profile;u=' . $context['id_member']);
 }
 
 function char_theme() {
