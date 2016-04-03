@@ -14,6 +14,9 @@ Features (not all implemented yet!):
  * Merge accounts in case users register a second account, expecting typical sub-account behaviour.
  * Move the logout button to the profile area up top rather than the main menu.
 
+# Caveats
+ * Requestable groups/joinable groups are only ever handled at account level, never character level.
+
 # Disclaimer
 
 This was built for one site in particular for roleplay use. If you want to run a roleplay site with this mod, there are a few caveats.
