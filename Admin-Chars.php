@@ -3,6 +3,13 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+function integrate_chars_admin_actions(&$admin_areas)
+{
+	global $txt;
+	if (allowedTo('admin_forum'))
+		$admin_areas['members']['areas']['membergroups']['subsections']['badges'] = array($txt['badges'], 'admin_forum');
+}
+
 function integrate_chars_permissions(&$permissionGroups, &$permissionList, &$leftPermissionGroups, &$hiddenPermissions, &$relabelPermissions)
 {
 	// Personal text isn't a thing.
@@ -70,6 +77,64 @@ function integrate_delete_members_chars($users)
 			'users' => $users,
 		)
 	);
+}
+
+function MembergroupBadges()
+{
+	global $smcFunc, $context, $txt, $settings;
+
+	$context['groups'] = array(
+		'accounts' => array(),
+		'characters' => array(),
+	);
+
+	if (isset($_POST['group']) && is_array($_POST['group']))
+	{
+		$order = 1;
+		foreach ($_POST['group'] as $group) {
+			$group = (int) $group;
+			$smcFunc['db_query']('', '
+				UPDATE {db_prefix}membergroups
+				SET badge_order = {int:order}
+				WHERE id_group = {int:group}',
+				array(
+					'order' => $order,
+					'group' => $group,
+				)
+			);
+			$order++;
+		}
+	}
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_group, group_name, online_color, icons, is_character
+		FROM {db_prefix}membergroups
+		WHERE min_posts = -1
+			AND id_group != {int:moderator_group}
+		ORDER BY badge_order',
+		array(
+			'moderator_group' => 3
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$row['parsed_icons'] = '';
+		if (!empty($row['icons']))
+		{
+			list($qty, $badge) = explode('#', $row['icons']);
+			if (!empty($qty))
+				$row['parsed_icons'] = str_repeat('<img src="' . $settings['default_images_url'] . '/membericons/' . $badge . '" alt="*">', $qty);
+		}
+		$context['groups'][$row['is_character'] ? 'characters' : 'accounts'][$row['id_group']] = $row;
+	}
+	$smcFunc['db_free_result']($request);
+
+	loadTemplate('Profile-Chars');
+	$context['page_title'] = $txt['badges'];
+	$context['sub_template'] = 'membergroup_badges';
+	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
+	addInlineJavascript('
+	$(\'.sortable\').sortable({handle: ".handle"});', true);
 }
 
 ?>

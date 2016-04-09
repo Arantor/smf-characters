@@ -47,6 +47,9 @@ $txt['trackEdit_action_char_avatar'] = '%1$s - avatar';
 $txt['trackEdit_action_char_main_char_group'] = '%1$s - primary group';
 $txt['trackEdit_action_char_char_groups'] = '%1$s - additional groups';
 
+$txt['badges'] = 'Badges';
+$txt['no_badge'] = '(no badge)';
+
 $txt['char_editing_error'] = 'This character could not be updated because:';
 $txt['char_error_character_must_have_name'] = 'Your character must have a name.';
 $txt['char_error_duplicate_character_name'] = 'Your character cannot have the same name as another character.';

@@ -98,6 +98,12 @@ function integrate_chars()
 		'$sourcedir/Profile-Chars.php'
 	);
 	add_integration_function(
+		'integrate_admin_areas',
+		'integrate_chars_admin_actions',
+		false,
+		'$sourcedir/Admin-Chars.php'
+	);
+	add_integration_function(
 		'integrate_load_profile_fields',
 		'chars_profile_field',
 		false,

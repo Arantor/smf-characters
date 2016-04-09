@@ -45,3 +45,29 @@
 	top: auto;
 	margin-right: 10px;
 }
+
+#admin_content .character_group {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.3);
+	margin-bottom: 10px;
+}
+
+#admin_content .character_group:last-of-type {
+	margin-bottom: 0;
+}
+
+#admin_content .character_group .group_name {
+	display: inline-block;
+	min-width: 200px;
+}
+#admin_content .character_group .group_icons {
+	display: inline-block;
+	min-width: 200px;
+}
+
+#admin_content .character_group .handle {
+	margin-top: -7px;
+	float: right;
+	cursor: ns-resize;
+}

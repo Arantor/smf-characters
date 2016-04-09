@@ -951,6 +951,13 @@
 		'is_character' => $row['is_character'],
 		'description']]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA['members' => array('MembergroupMembers', 'manage_membergroups', 'Groups.php'),
+		'settings' => array('ModifyMembergroupsettings', 'admin_forum'),]]></search>
+			<add><![CDATA['members' => array('MembergroupMembers', 'manage_membergroups', 'Groups.php'),
+		'badges' => array('MembergroupBadges', 'admin_forum'),
+		'settings' => array('ModifyMembergroupsettings', 'admin_forum'),]]></add>
+		</operation>
 	</file>
 	<file name="$themedir/ManageMembergroups.template.php">
 		<operation>
