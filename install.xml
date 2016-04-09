@@ -870,6 +870,19 @@
 	</file>
 
 	<!-- Character-level membergroups are... interesting. -->
+	<file name="$sourcedir/Subs-Membergroups.php">
+		<operation>
+			<search position="replace"><![CDATA[mg.icons, COALESCE(gm.id_member, 0) AS can_moderate, 0 AS num_members]]></search>
+			<add><![CDATA[mg.icons, COALESCE(gm.id_member, 0) AS can_moderate, 0 AS num_members, is_character]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[			'id_group' => $row['id_group'],
+			'group_name' => $row['group_name'],]]></search>
+			<add><![CDATA[			'id_group' => $row['id_group'],
+			'is_character' => $row['is_character'],
+			'group_name' => $row['group_name'],]]></add>
+		</operation>
+	</file>
 	<file name="$sourcedir/ManageMembergroups.php">
 		<operation>
 			<search position="replace"><![CDATA[				'sort' => array(
