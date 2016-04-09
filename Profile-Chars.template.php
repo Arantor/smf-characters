@@ -1,41 +1,57 @@
 <?php
 
-function template_characters_popup() {
+function character_popup_row($id_character, $char) {
 	global $context, $scripturl, $txt, $user_info, $cur_profile, $modSettings;
 	echo '
-		<div id="posting_as">', sprintf($txt['you_are_posting_as'], $user_info['character_name']), '
-		<div id="my_characters">', $txt['my_characters'], '</div>
-		<div id="chars_container">
-			<ul>';
-	foreach ($cur_profile['characters'] as $id_character => $char)
-	{
-		echo '
 				<li>
 					<div class="character">
 						<span class="avatar">
 							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="" />' : '<img src="' . $modSettings['avatar_url'] . '/default.png" alt="" />', '
 						</span>
 						<a href="', $scripturl, $char['character_url'], '">', $char['character_name'], '</a>';
-		if (!empty($char['is_main']))
-		{
-			echo '
+	if (!empty($char['is_main']))
+	{
+		echo '
 						(<abbr title="', $txt['main_char_desc'], '">', $txt['main_char'], '</abbr>)';
-		}
-		if ($id_character != $user_info['id_character'])
-			echo '
+	}
+	if ($id_character != $user_info['id_character'])
+		echo '
 						<span class="switch">
 							<span data-href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch;char=', $id_character, ';', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['switch_chars'], '</a>
 						</span>';
 
-		echo '
+	echo '
 					</div>
 				</li>';
+}
+
+function template_characters_popup() {
+	global $context, $scripturl, $txt, $user_info, $cur_profile, $modSettings;
+	echo '
+		<div id="posting_as">', sprintf($txt['you_are_posting_as'], $user_info['character_name']), '
+		<div id="my_account" class="chars_container">
+			<ul>';
+	foreach ($cur_profile['characters'] as $id_character => $char)
+	{
+		if (!empty($char['is_main']))
+			character_popup_row($id_character, $char);
+	}
+	echo '
+			</ul>
+		</div>
+		<div id="my_characters">', $txt['my_characters'], '</div>
+		<div id="chars_container" class="chars_container">
+			<ul>';
+	foreach ($cur_profile['characters'] as $id_character => $char)
+	{
+		if (empty($char['is_main']))
+			character_popup_row($id_character, $char);
 	}
 	echo '
 			</ul>
 		</div>
 		<script>
-		$("#chars_container .switch span.button").on("click", function() {
+		$(".chars_container .switch span.button").on("click", function() {
 			$.ajax({
 				url: $(this).data("href")
 			}).done(function( data ) {

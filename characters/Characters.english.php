@@ -8,7 +8,7 @@ $txt['char_name'] = 'Character Name:';
 $txt['date_created'] = 'Date Created:';
 $txt['switch_chars'] = 'switch';
 $txt['change_theme'] = 'change';
-$txt['main_char'] = 'main';
+$txt['main_char'] = 'OOC account';
 $txt['main_char_desc'] = 'This is your \'main\' account, and should be used for posting in the Out Of Character (OOC) areas.';
 
 $txt['switch_to_char'] = 'Switch to this character';

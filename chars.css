@@ -2,24 +2,24 @@
 	margin-top: 10px;
 }
 
-#chars_container span.avatar {
+.chars_container span.avatar {
 	width: 25px;
 	height: 25px;
 	display: inline-block;
 	text-align: center;
 }
 
-#chars_container span.avatar img {
+.chars_container span.avatar img {
 	max-width: 100%;
 	max-height: 100%;
 	margin-bottom: -7px;
 }
 
-#chars_container li {
+.chars_container li {
 	margin-top: 7px;
 }
 
-#chars_container .switch {
+.chars_container .switch {
 	float: right;
 }
 
