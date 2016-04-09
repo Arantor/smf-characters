@@ -1033,4 +1033,163 @@
 	// The account page allows the change of your id_group - but not to a protected group!]]></add>
 		</operation>
 	</file>
+	<file name="$sourcedir/Groups.php">
+		<operation>
+			<search position="replace"><![CDATA[SELECT id_group AS id, group_name AS name, CASE WHEN min_posts = {int:min_posts} THEN 1 ELSE 0 END AS assignable, hidden, online_color,
+			icons, description, CASE WHEN min_posts != {int:min_posts} THEN 1 ELSE 0 END AS is_post_group, group_type]]></search>
+			<add><![CDATA[SELECT id_group AS id, group_name AS name, CASE WHEN min_posts = {int:min_posts} THEN 1 ELSE 0 END AS assignable, hidden, online_color,
+			is_character, icons, description, CASE WHEN min_posts != {int:min_posts} THEN 1 ELSE 0 END AS is_post_group, group_type]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	// The where on the query is interesting. Non-moderators should only see people who are in this group as primary.
+	if ($context['group']['can_moderate'])
+		$where = $context['group']['is_post_group'] ? 'id_post_group = {int:group}' : 'id_group = {int:group} OR FIND_IN_SET({int:group}, additional_groups) != 0';
+	else
+		$where = $context['group']['is_post_group'] ? 'id_post_group = {int:group}' : 'id_group = {int:group}';]]></search>
+			<add><![CDATA[	// Depending on whether this group is a character group or not...
+	// we might have different queries...
+	if ($context['group']['is_character'])
+	{
+		// The where on the query is interesting. Non-moderators should only see people who are in this group as primary.
+		if ($context['group']['can_moderate'])
+			$where = 'main_char_group = {int:group} OR FIND_IN_SET({int:group}, char_groups) != 0';
+		else
+			$where = 'main_char_group = {int:group}';
+	}
+	else
+	{
+		// The where on the query is interesting. Non-moderators should only see people who are in this group as primary.
+		if ($context['group']['can_moderate'])
+			$where = $context['group']['is_post_group'] ? 'id_post_group = {int:group}' : 'id_group = {int:group} OR FIND_IN_SET({int:group}, additional_groups) != 0';
+		else
+			$where = $context['group']['is_post_group'] ? 'id_post_group = {int:group}' : 'id_group = {int:group}';
+	}]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[SELECT COUNT(*)
+		FROM {db_prefix}members]]></search>
+			<add><![CDATA[SELECT COUNT(*)
+		FROM ' . ($context['group']['is_character'] ? '{db_prefix}characters' : '{db_prefix}members') . ']]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	// Load up all members of this group.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_member, member_name, real_name, email_address, member_ip, date_registered, last_login,
+			posts, is_activated, real_name
+		FROM {db_prefix}members
+		WHERE ' . $where . '
+		ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
+		LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+		array(
+			'group' => $_REQUEST['group'],
+		)
+	);]]></search>
+			<add><![CDATA[	// Load up all members of this group.
+	if ($context['group']['is_character'])
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT mem.id_member, member_name, real_name, email_address, member_ip, date_registered, last_login,
+				chars.posts, is_activated, real_name, id_character, character_name
+			FROM {db_prefix}members AS mem
+				INNER JOIN {db_prefix}characters AS chars ON (chars.id_member = mem.id_member)
+			WHERE ' . $where . '
+			ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
+			LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+			array(
+				'group' => $_REQUEST['group'],
+			)
+		);
+	} else {
+		$request = $smcFunc['db_query']('', '
+			SELECT id_member, member_name, real_name, email_address, member_ip, date_registered, last_login,
+				posts, is_activated, real_name
+			FROM {db_prefix}members
+			WHERE ' . $where . '
+			ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
+			LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+			array(
+				'group' => $_REQUEST['group'],
+			)
+		);
+	}
+	]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		$context['members'][] = array(
+			'id' => $row['id_member'],
+			'name' => '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['real_name'] . '</a>',
+			'email' => $row['email_address'],]]></search>
+			<add><![CDATA[		$context['members'][] = array(
+			'id' => $row['id_member'],
+			'name' => '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['real_name'] . '</a>',
+			'character' => !empty($row['id_character']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . ';area=characters;char=' . $row['id_character'] . '">' . $row['character_name'] . '</a>' : '',
+			'email' => $row['email_address'],]]></add>
+		</operation>
+	</file>
+	<file name="$themedir/ManageMembergroups.template.php">
+		<operation>
+			<search position="replace"><![CDATA[						<th><a href="', $scripturl, '?action=', $context['current_action'], (isset($context['admin_area']) ? ';area=' . $context['admin_area'] : ''), ';sa=members;start=', $context['start'], ';sort=name', $context['sort_by'] == 'name' && $context['sort_direction'] == 'up' ? ';desc' : '', ';group=', $context['group']['id'], '">', $txt['name'], $context['sort_by'] == 'name' ? ' <span class="generic_icons sort_' . $context['sort_direction'] . '"></span>' : '', '</a></th>';
+
+	if ($context['can_send_email'])]]></search>
+			<add><![CDATA[						<th><a href="', $scripturl, '?action=', $context['current_action'], (isset($context['admin_area']) ? ';area=' . $context['admin_area'] : ''), ';sa=members;start=', $context['start'], ';sort=name', $context['sort_by'] == 'name' && $context['sort_direction'] == 'up' ? ';desc' : '', ';group=', $context['group']['id'], '">', $txt['name'], $context['sort_by'] == 'name' ? ' <span class="generic_icons sort_' . $context['sort_direction'] . '"></span>' : '', '</a></th>';
+
+	if ($context['group']['is_character'])
+		echo '
+						<th>', rtrim($txt['char_name'], ':'), '</th>';
+
+	if ($context['can_send_email'])]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[<td>', $member['name'], '</td>';
+		if ($context['can_send_email'])]]></search>
+			<add><![CDATA[<td>', $member['name'], '</td>';
+		if (!empty($member['character']))
+			echo '
+						<td>
+							', $member['character'], '
+						</td>';
+
+		if ($context['can_send_email'])]]></add>
+		</operation>
+	</file>
+	<file name="$sourcedir/Subs-Membergroups.php">
+		<operation>
+			<search position="replace"><![CDATA[			// Only do additional groups if we can moderate...]]></search>
+			<add><![CDATA[			// And collect all the characters too.
+			$query = $smcFunc['db_query']('', '
+				SELECT main_char_group, COUNT(*) AS num_members
+				FROM {db_prefix}characters
+				WHERE main_char_group IN ({array_int:group_list})
+				GROUP BY main_char_group',
+				array(
+					'group_list' => $group_ids,
+				)
+			);
+			while ($row = $smcFunc['db_fetch_assoc']($query))
+				$groups[$row['main_char_group']]['num_members'] += $row['num_members'];
+			$smcFunc['db_free_result']($query);
+
+			if ($context['can_moderate'])
+			{
+				$query = $smcFunc['db_query']('', '
+					SELECT mg.id_group, COUNT(*) AS num_members
+					FROM {db_prefix}membergroups AS mg
+						INNER JOIN {db_prefix}characters AS chars ON (chars.char_groups != {string:blank_string}
+							AND chars.main_char_group != mg.id_group
+							AND FIND_IN_SET(mg.id_group, chars.char_groups) != 0)
+					WHERE mg.id_group IN ({array_int:group_list})
+					GROUP BY mg.id_group',
+					array(
+						'group_list' => $group_ids,
+						'blank_string' => '',
+					)
+				);
+				while ($row = $smcFunc['db_fetch_assoc']($query))
+					$groups[$row['id_group']]['num_members'] += $row['num_members'];
+				$smcFunc['db_free_result']($query);
+			}
+
+			// Only do additional groups if we can moderate...]]></add>
+		</operation>
+	</file>
 </modification>
