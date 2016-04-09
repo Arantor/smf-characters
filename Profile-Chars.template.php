@@ -176,7 +176,52 @@ function template_edit_char() {
 	echo '
 		</div>
 		<div id="detailedinfo">
-			<form id="creator" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" method="post" accept-charset="', $context['character_set'], '">
+			<form id="creator" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" method="post" accept-charset="', $context['character_set'], '">';
+
+	if ($context['character']['groups_editable'])
+	{
+		echo '
+				<dl>
+					<dt>
+						<strong>', $txt['primary_membergroup'], ': </strong><br>
+					</dt>
+					<dd>
+						<select name="id_group">';
+
+		// Fill the select box with all primary member groups that can be assigned to a member.
+		foreach ($context['member_groups'] as $member_group)
+			if (!empty($member_group['can_be_primary']))
+				echo '
+							<option value="', $member_group['id'], '"', $member_group['is_primary'] ? ' selected' : '', '>
+								', $member_group['name'], '
+							</option>';
+		echo '
+						</select>
+					</dd>
+					<dt>
+						<strong>', $txt['additional_membergroups'], ':</strong>
+					</dt>
+					<dd>
+						<span id="additional_groupsList">
+							<input type="hidden" name="additional_groups[]" value="0">';
+
+		// For each membergroup show a checkbox so members can be assigned to more than one group.
+		foreach ($context['member_groups'] as $member_group)
+			if ($member_group['can_be_additional'])
+				echo '
+							<label for="additional_groups-', $member_group['id'], '"><input type="checkbox" name="additional_groups[]" value="', $member_group['id'], '" id="additional_groups-', $member_group['id'], '"', $member_group['is_additional'] ? ' checked' : '', ' class="input_check"> ', $member_group['name'], '</label><br>';
+		echo '
+						</span>
+						<a href="javascript:void(0);" onclick="document.getElementById(\'additional_groupsList\').style.display = \'block\'; document.getElementById(\'additional_groupsLink\').style.display = \'none\'; return false;" id="additional_groupsLink" style="display: none;" class="toggle_down">', $txt['additional_membergroups_show'], '</a>
+						<script>
+							document.getElementById("additional_groupsList").style.display = "none";
+							document.getElementById("additional_groupsLink").style.display = "";
+						</script>
+					</dd>
+				</dl>';
+	}
+
+	echo '
 				<dl>
 					<dt>', $txt['char_name'], '</dt>
 					<dd>

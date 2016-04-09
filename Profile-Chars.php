@@ -246,6 +246,13 @@ function char_edit() {
 	$context['sub_template'] = 'edit_char';
 	loadJavascriptFile('chars.js', array('default_theme' => true), 'chars');
 
+	$context['character']['groups_editable'] = false;
+	if (allowedTo('manage_membergroups') && !$context['character']['is_main'])
+	{
+		$context['character']['groups_editable'] = true;
+		profileLoadCharGroups();
+	}
+
 	require_once($sourcedir . '/Subs-Post.php');
 	require_once($sourcedir . '/Profile-Modify.php');
 	profileLoadSignatureData();
@@ -283,6 +290,32 @@ function char_edit() {
 				$changes['character_name'] = $new_name;
 		}
 
+		if ($context['character']['groups_editable'])
+		{
+			// Editing groups is a little bit complicated.
+			$new_id_group = isset($_POST['id_group'], $context['member_groups'][$_POST['id_group']]) && $context['member_groups'][$_POST['id_group']]['can_be_primary'] ? (int) $_POST['id_group'] : $context['character']['main_char_group'];
+			$new_char_groups = array();
+			if (isset($_POST['additional_groups']) && is_array($_POST['additional_groups']))
+			{
+				foreach ($_POST['additional_groups'] as $id_group)
+				{
+					if (!isset($context['member_groups'][$id_group]))
+						continue;
+					if (!$context['member_groups'][$id_group]['can_be_additional'])
+						continue;
+					if ($id_group == $new_id_group)
+						continue;
+					$new_char_groups[] = (int) $id_group;
+				}
+			}
+			$new_char_groups = implode(',', $new_char_groups);
+
+			if ($new_id_group != $context['character']['main_char_group'])
+				$changes['main_char_group'] = $new_id_group;
+			if ($new_char_groups != $context['character']['char_groups'])
+			$changes['char_groups'] = $new_char_groups;
+		}
+
 		$new_age = !empty($_POST['age']) ? $smcFunc['htmlspecialchars'](trim($_POST['age']), ENT_QUOTES) : '';
 		if ($new_age != $context['character']['age'])
 			$changes['age'] = $new_age;
@@ -318,6 +351,26 @@ function char_edit() {
 						'id_character' => $context['character']['id_character'],
 						'character_name' => !empty($changes['character_name']) ? $changes['character_name'] : $context['character']['character_name'],
 					);
+					if ($key == 'main_char_group')
+					{
+						$change_array['previous'] = $context['member_groups'][$context['character'][$key]]['name'];
+						$change_array['new'] = $context['member_groups'][$changes[$key]]['name'];
+					}
+					if ($key == 'char_groups')
+					{
+						$previous = array();
+						$new = array();
+						foreach (explode(',', $context['character']['char_groups']) as $id_group)
+							if (isset($context['member_groups'][$id_group]))
+								$previous[] = $context['member_groups'][$id_group]['name'];
+
+						foreach (explode(',', $changes['char_groups']) as $id_group)
+							if (isset($context['member_groups'][$id_group]))
+								$new[] = $context['member_groups'][$id_group]['name'];
+
+						$change_array['previous'] = implode(', ', $previous);
+						$change_array['new'] = implode(', ', $new);
+					}
 					$rows[] = array(
 						'id_log' => 2, // 2 = profile edits log
 						'log_time' => time(),
@@ -348,6 +401,14 @@ function char_edit() {
 
 		// Put the new values back in for the form
 		$context['character'] = array_merge($context['character'], $changes);
+		if (isset($changes['main_char_group']) || isset($changes['char_groups']))
+		{
+			foreach (array_keys($context['member_groups']) as $id_group)
+			{
+				$context['member_groups']['is_primary'] = $id_group == $new_id_group;
+				$context['member_groups']['is_additional'] = in_array($id_group, $new_char_groups);
+			}
+		}
 	}
 
 	$form_value = !empty($context['character']['signature']) ? $context['character']['signature'] : '';
@@ -760,6 +821,55 @@ function char_posts()
 
 	// Allow last minute changes.
 	call_integration_hook('integrate_profile_showPosts');
+}
+
+function profileLoadCharGroups()
+{
+	global $cur_profile, $txt, $context, $smcFunc, $user_settings;
+
+	$context['member_groups'] = array(
+		0 => array(
+			'id' => 0,
+			'name' => $txt['no_primary_character_group'],
+			'is_primary' => $context['character']['main_char_group'] == 0,
+			'can_be_additional' => false,
+			'can_be_primary' => true,
+		)
+	);
+	$curGroups = explode(',', $context['character']['char_groups']);
+
+	// Load membergroups, but only those groups the user can assign.
+	$request = $smcFunc['db_query']('', '
+		SELECT group_name, id_group, hidden
+		FROM {db_prefix}membergroups
+		WHERE id_group != {int:moderator_group}
+			AND min_posts = {int:min_posts}
+			AND is_character = 1' . (allowedTo('admin_forum') ? '' : '
+			AND group_type != {int:is_protected}') . '
+		ORDER BY min_posts, CASE WHEN id_group < {int:newbie_group} THEN id_group ELSE 4 END, group_name',
+		array(
+			'moderator_group' => 3,
+			'min_posts' => -1,
+			'is_protected' => 1,
+			'newbie_group' => 4,
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$context['member_groups'][$row['id_group']] = array(
+			'id' => $row['id_group'],
+			'name' => $row['group_name'],
+			'is_primary' => $context['character']['main_char_group'] == $row['id_group'],
+			'is_additional' => in_array($row['id_group'], $curGroups),
+			'can_be_additional' => true,
+			'can_be_primary' => $row['hidden'] != 2,
+		);
+	}
+	$smcFunc['db_free_result']($request);
+
+	$context['member']['group_id'] = $user_settings['id_group'];
+
+	return true;
 }
 
 ?>

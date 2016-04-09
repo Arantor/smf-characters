@@ -27,6 +27,7 @@ $txt['char_profile'] = 'Character Profile';
 
 $txt['immersive_mode'] = 'Enable immersive mode:';
 $txt['immersive_mode_desc'] = 'In immersive mode, you can only see the areas of the forum your character could see.';
+$txt['no_primary_character_group'] = '(no primary character group)';
 
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
@@ -43,6 +44,8 @@ $txt['trackEdit_action_char_signature'] = '%1$s - signature';
 $txt['trackEdit_action_char_age'] = '%1$s - age';
 $txt['trackEdit_action_char_character_name'] = '%1$s - character name';
 $txt['trackEdit_action_char_avatar'] = '%1$s - avatar';
+$txt['trackEdit_action_char_main_char_group'] = '%1$s - primary group';
+$txt['trackEdit_action_char_char_groups'] = '%1$s - additional groups';
 
 $txt['char_editing_error'] = 'This character could not be updated because:';
 $txt['char_error_character_must_have_name'] = 'Your character must have a name.';
