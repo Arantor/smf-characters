@@ -108,7 +108,7 @@ $columns[] = array(
 );
 $columns[] = array(
 	'table_name' => '{db_prefix}members',
-	'column_info' => db_field('immersive_mode', 'tinyint'),
+	'column_info' => db_field('immersive_mode', 'tinyint', 3, true, false, 1),
 	'parameters' => array(),
 	'if_exists' => 'ignore',
 	'error' => 'fatal',
