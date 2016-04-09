@@ -46,6 +46,97 @@ function updateCharacterData($char_id, $data)
 	);
 }
 
+function addCharactersToGroup($characters, $group)
+{
+	global $smcFunc, $sourcedir;
+
+	updateSettings(array('settings_updated' => time()));
+
+	if (!is_array($characters))
+		$characters = array((int) $characters);
+	else
+		$characters = array_unique(array_map('intval', $characters));
+
+	$group = (int) $group;
+	if (in_array($group, array(-1, 0, 3)))
+		return false;
+
+	// Check against protected groups
+	if (!allowedTo('admin_forum') && !$ignoreProtected)
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT group_type
+			FROM {db_prefix}membergroups
+			WHERE id_group = {int:current_group}
+			LIMIT {int:limit}',
+			array(
+				'current_group' => $group,
+				'limit' => 1,
+			)
+		);
+		list ($is_protected) = $smcFunc['db_fetch_row']($request);
+		$smcFunc['db_free_result']($request);
+
+		// Is it protected?
+		if ($is_protected == 1)
+			return false;
+	}
+
+	// Do the dirty deed
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET char_groups = CASE WHEN char_groups = {string:blank_string} THEN {string:id_group_string} ELSE CONCAT(char_groups, {string:id_group_string_extend}) END
+		WHERE id_character IN ({array_int:char_list})
+			AND main_char_group != {int:id_group}
+			AND FIND_IN_SET({int:id_group}, char_groups) = 0',
+		array(
+			'char_list' => $characters,
+			'id_group' => $group,
+			'id_group_string' => (string) $group,
+			'id_group_string_extend' => ',' . $group,
+			'blank_string' => '',
+		)
+	);
+
+	// Get the members for these characters.
+	$members = array();
+	$request = $smcFunc['db_query']('', '
+		SELECT id_member, id_character, character_name
+		FROM {db_prefix}characters
+		WHERE id_character IN ({array_int:char_list})',
+		array(
+			'char_list' => $characters,
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$members[$row['id_character']] = $row;
+	$smcFunc['db_free_result']($request);
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_group, group_name, min_posts
+		FROM {db_prefix}membergroups
+		WHERE id_group = {int:current_group}',
+		array(
+			'current_group' => $group,
+		)
+	);
+	$group_names = array();
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$group_names[$row['id_group']] = $row['group_name'];
+	}
+	$smcFunc['db_free_result']($request);
+
+	// Log the data.
+	require_once($sourcedir . '/Logging.php');
+	foreach ($characters as $character)
+	{
+		logAction('char_added_to_group', array('group' => $group_names[$group], 'member' => $members[$character]['id_member'], 'character' => $members[$character]['character_name']), 'admin');
+	}
+
+	return true;
+}
+
 function integrate_chars()
 {
 	global $user_info, $user_settings, $txt, $modSettings;

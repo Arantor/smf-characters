@@ -5,6 +5,50 @@ if (!defined('SMF'))
 
 function integrate_character_autosuggest(&$searchTypes) {
 	$searchTypes['memberchar'] = 'MemberChar';
+	$searchTypes['character'] = 'Character';
+}
+
+function AutoSuggest_Search_Character()
+{
+	global $user_info, $smcFunc, $context;
+
+	$_REQUEST['search'] = trim($smcFunc['strtolower']($_REQUEST['search'])) . '*';
+	$_REQUEST['search'] = strtr($_REQUEST['search'], array('%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;'));
+
+	$xml_data = array(
+		'items' => array(
+			'identifier' => 'item',
+			'children' => array(),
+		),
+	);
+
+	// Find the characters
+	$request = $smcFunc['db_query']('', '
+		SELECT chars.id_character, chars.id_member, chars.character_name, mem.real_name
+		FROM {db_prefix}characters AS chars
+		INNER JOIN {db_prefix}members AS mem ON (chars.id_member = mem.id_member)
+		WHERE {raw:real_name} LIKE {string:search}
+			AND mem.is_activated IN (1, 11)
+		LIMIT ' . ($smcFunc['strlen']($_REQUEST['search']) <= 2 ? '100' : '800'),
+		array(
+			'real_name' => $smcFunc['db_case_sensitive'] ? 'LOWER(character_name)' : 'character_name',
+			'search' => $_REQUEST['search'],
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$row['display_name'] = strtr($row['character_name'] . ' (' . $row['real_name'] . ')', array('&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;'));
+
+		$xml_data['items']['children'][$row['id_member']] = array(
+			'attributes' => array(
+				'id' => $row['id_member'] . ';area=characters;char=' . $row['id_character'],
+			),
+			'value' => $row['display_name'],
+		);
+	}
+	$smcFunc['db_free_result']($request);
+
+	return $xml_data;
 }
 
 function AutoSuggest_Search_MemberChar()
