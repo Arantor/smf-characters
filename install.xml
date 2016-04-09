@@ -34,16 +34,6 @@
 			);]]></add>
 		</operation>
 		<operation>
-			<search position="replace"><![CDATA[		// Because history has proven that it is possible for groups to go bad - clean up in case.]]></search>
-			<add><![CDATA[		// Now splice in the current character's groups if they have any.
-		if (!empty($user_settings['main_char_group']))
-			$user_info['groups'][] = $user_settings['main_char_group'];
-		if (!empty($user_settings['char_groups']))
-			$user_info['groups'] = array_merge($user_info['groups'], explode(',', $user_settings['char_groups']));
-
-		// Because history has proven that it is possible for groups to go bad - clean up in case.]]></add>
-		</operation>
-		<operation>
 			<search position="replace"><![CDATA[
 	if (!empty($new_loaded_ids) && $set !== 'minimal')
 	{]]></search>

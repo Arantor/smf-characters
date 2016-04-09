@@ -48,7 +48,7 @@ function updateCharacterData($char_id, $data)
 
 function integrate_chars()
 {
-	global $user_info, $user_settings, $txt;
+	global $user_info, $user_settings, $txt, $modSettings;
 
 	$user_info += array(
 		'id_character' => isset($user_settings['id_character']) ? (int) $user_settings['id_character'] : 0,
@@ -56,7 +56,35 @@ function integrate_chars()
 		'char_avatar' => isset($user_settings['char_avatar']) ? $user_settings['char_avatar'] : '',
 		'char_signature' => isset($user_settings['char_signature']) ? $user_settings['char_signature'] : '',
 		'char_is_main' => !empty($user_settings['is_main']),
+		'immersive_mode' => !empty($user_settings['immersive_mode']),
 	);
+
+	// Because we're messing with member groups, we need to tweak a few things.
+	// We need to glue their groups together for the purposes of permissions.
+	// But we also need to consider whether they're in immersive mode or not
+	// to recalculate board access.
+
+	$original_groups = $user_info['groups'];
+	$with_char_groups = $user_info['groups'];
+	if (!empty($user_settings['main_char_group']))
+		$with_char_groups[] = $user_settings['main_char_group'];
+	if (!empty($user_settings['char_groups']))
+		$with_char_groups = array_merge($with_char_groups, array_diff(array_map('intval', explode(',', $user_settings['char_groups'])), array(0)));
+
+	// At this point, we already built access based on account level groups
+	// but if we're in immersive mode we need to include character groups
+	// - unless admin, because admin implicitly has everything anyway.
+	if ($user_info['immersive_mode'] && !$user_info['is_admin'])
+	{
+		$user_info['query_see_board'] = '((FIND_IN_SET(' . implode(', b.member_groups) != 0 OR FIND_IN_SET(', $with_char_groups) . ', b.member_groups) != 0)' . (!empty($modSettings['deny_boards_access']) ? ' AND (FIND_IN_SET(' . implode(', b.deny_member_groups) = 0 AND FIND_IN_SET(', $with_char_groups) . ', b.deny_member_groups) = 0)' : '') . (isset($user_info['mod_cache']) ? ' OR ' . $user_info['mod_cache']['mq'] : '') . ')';
+
+		if (empty($user_info['ignoreboards']))
+			$user_info['query_wanna_see_board'] = $user_info['query_see_board'];
+		else
+			$user_info['query_wanna_see_board'] = '(' . $user_info['query_see_board'] . ' AND b.id_board NOT IN (' . implode(',', $user_info['ignoreboards']) . '))';
+	}
+	// And now glue account plus current character together for permissions.
+	$user_info['groups'] = $with_char_groups;
 
 	// And since this is now done early in the process, but after language is identified...
 	loadLanguage('characters/Characters');

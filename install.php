@@ -107,6 +107,13 @@ $columns[] = array(
 	'error' => 'fatal',
 );
 $columns[] = array(
+	'table_name' => '{db_prefix}members',
+	'column_info' => db_field('immersive_mode', 'tinyint'),
+	'parameters' => array(),
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+);
+$columns[] = array(
 	'table_name' => '{db_prefix}log_online',
 	'column_info' => db_field('id_character', 'int'),
 	'parameters' => array(),
