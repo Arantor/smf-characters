@@ -269,7 +269,13 @@ function integrate_create_post_character(&$msgOptions, &$topicOptions, &$posterO
 function integrate_load_member_data_chars(&$select_columns, &$select_tables, &$set)
 {
 	if ($set != 'minimal')
-		$select_columns .= ', lo.id_character AS online_character';
+	{
+		$select_columns .= ', lo.id_character AS online_character, chars.is_main, chars.main_char_group, chars.char_groups,
+			cg.online_color AS char_group_color, COALESCE(cg.group_name, {string:blank_string}) AS character_group';
+		$select_tables .= '
+			LEFT JOIN {db_prefix}characters AS chars ON (lo.id_character = chars.id_character)
+			LEFT JOIN {db_prefix}membergroups AS cg ON (chars.main_char_group = cg.id_group)';
+	}
 }
 
 function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
@@ -536,4 +542,25 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 	);
 }
 
+function get_char_membergroup_data() {
+	// We will want to get all the membergroups since potentially we're doing display
+	// of multiple per character. We need to fetch them in the order laid down
+	// by admins for display purposes and we will need to cache it.
+	if (($groups = cache_get_data('char_membergroups', 300)) === null)
+	{
+		$groups = array();
+		$request = $smcFunc['db_query']('', '
+			SELECT id_group, group_name, online_color, min_posts, icons
+			FROM {db_prefix}membergroups
+			WHERE hidden != 2
+			ORDER BY badge_order');
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+			$groups[$row['id_group']] = $row;
+
+		$smcFunc['db_free_result']($request);
+		cache_put_data('char_membergroups', $groups, 300);
+	}
+
+	return $groups;
+}
 ?>

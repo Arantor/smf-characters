@@ -22,7 +22,7 @@
 			<add><![CDATA[
 			$request = $smcFunc['db_query']('', '
 				SELECT mem.*, chars.id_character, chars.character_name, chars.avatar AS char_avatar, chars.signature AS char_signature,
-					chars.id_theme, chars.is_main, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
+					chars.id_theme, chars.is_main, chars.main_char_group, chars.char_groups, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
 				FROM {db_prefix}members AS mem
 					LEFT JOIN {db_prefix}attachments AS a ON (a.id_member = {int:id_member})
 					LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = mem.current_character)
@@ -34,14 +34,37 @@
 			);]]></add>
 		</operation>
 		<operation>
+			<search position="replace"><![CDATA[		// Because history has proven that it is possible for groups to go bad - clean up in case.]]></search>
+			<add><![CDATA[		// Now splice in the current character's groups if they have any.
+		if (!empty($user_settings['main_char_group']))
+			$user_info['groups'][] = $user_settings['main_char_group'];
+		if (!empty($user_settings['char_groups']))
+			$user_info['groups'] = array_merge($user_info['groups'], explode(',', $user_settings['char_groups']));
+
+		// Because history has proven that it is possible for groups to go bad - clean up in case.]]></add>
+		</operation>
+		<operation>
 			<search position="replace"><![CDATA[
 	if (!empty($new_loaded_ids) && $set !== 'minimal')
 	{]]></search>
 			<add><![CDATA[
 	if (!empty($new_loaded_ids) && $set !== 'minimal')
 	{
+		foreach ($new_loaded_ids as $new_id)
+		{
+			// We might need to juggle the colours around - but only for
+			// non main characters. Main will inherit the account so no
+			// changes required. This is to fix things like who's online
+			// colour; we'll have to fix icon display elsewhere separately.
+			if (empty($user_profile[$new_id]['is_main']))
+			{
+				$user_profile[$new_id]['member_group_color'] = $user_profile[$new_id]['char_group_color'];
+				$user_profile[$new_id]['member_group'] = $user_profile[$new_id]['character_group'];
+			}
+		}
 		$request = $smcFunc['db_query']('', '
-			SELECT id_member, id_character, character_name, avatar, signature, id_theme, posts, age, date_created, last_active, is_main
+			SELECT id_member, id_character, character_name, avatar, signature, id_theme, posts, age, date_created,
+				last_active, is_main
 			FROM {db_prefix}characters
 			WHERE id_member IN ({array_int:loaded_ids})
 			ORDER BY NULL',
@@ -125,12 +148,13 @@
 			<add><![CDATA[
 		SELECT
 			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, lo.id_character, COALESCE(chars.character_name, mem.real_name) AS real_name,
-			lo.session, mg.online_color, COALESCE(mem.show_online, 1) AS show_online,
+			lo.session, IF(chars.is_main, mg.online_color, cg.online_color) AS online_color, COALESCE(mem.show_online, 1) AS show_online,
 			lo.id_spider
 		FROM {db_prefix}log_online AS lo
 			LEFT JOIN {db_prefix}members AS mem ON (lo.id_member = mem.id_member)
 			LEFT JOIN {db_prefix}membergroups AS mg ON (mg.id_group = CASE WHEN mem.id_group = {int:regular_member} THEN mem.id_post_group ELSE mem.id_group END)
-			LEFT JOIN {db_prefix}characters AS chars ON (lo.id_character = chars.id_character)' . (!empty($conditions) ? ']]></add>
+			LEFT JOIN {db_prefix}characters AS chars ON (lo.id_character = chars.id_character)
+			LEFT JOIN {db_prefix}membergroups AS cg ON (chars.main_char_group = cg.id_group)' . (!empty($conditions) ? ']]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
@@ -847,6 +871,35 @@
 	}
 
 	// all done]]></add>
+		</operation>
+	</file>
+
+	<!-- Character-level membergroups are... interesting. -->
+	<file name="$sourcedir/ManageMembergroups.php">
+		<operation>
+			<search position="replace"><![CDATA[				'sort' => array(
+					'default' => 'CASE WHEN mg.id_group < 4 THEN mg.id_group ELSE 4 END, mg.group_name',
+					'reverse' => 'CASE WHEN mg.id_group < 4 THEN mg.id_group ELSE 4 END, mg.group_name DESC',
+				),
+			),
+			'icons' => array(]]></search>
+			<add><![CDATA[				'sort' => array(
+					'default' => 'CASE WHEN mg.id_group < 4 THEN mg.id_group ELSE 4 END, mg.group_name',
+					'reverse' => 'CASE WHEN mg.id_group < 4 THEN mg.id_group ELSE 4 END, mg.group_name DESC',
+				),
+			),
+			'level' => array(
+				'header' => array(
+					'value' => $txt['char_group_level'],
+				),
+				'data' => array(
+					'function' => function($rowData) use ($txt)
+					{
+						return empty($rowData['is_character']) ? $txt['char_group_level_acct'] : $txt['char_group_level_char'];
+					},
+				),
+			),
+			'icons' => array(]]></add>
 		</operation>
 	</file>
 </modification>

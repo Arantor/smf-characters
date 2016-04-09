@@ -72,6 +72,8 @@ $tables[] = array(
 		db_field('date_created', 'int'),
 		db_field('last_active', 'int'),
 		db_field('is_main', 'tinyint'),
+		db_field('main_char_group', 'smallint'),
+		db_field('char_groups', 'varchar', 255),
 	),
 	'indexes' => array(
 		array(
@@ -114,6 +116,20 @@ $columns[] = array(
 $columns[] = array(
 	'table_name' => '{db_prefix}boards',
 	'column_info' => db_field('in_character', 'tinyint'),
+	'parameters' => array(),
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+);
+$columns[] = array(
+	'table_name' => '{db_prefix}membergroups',
+	'column_info' => db_field('is_character', 'tinyint'),
+	'parameters' => array(),
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+);
+$columns[] = array(
+	'table_name' => '{db_prefix}membergroups',
+	'column_info' => db_field('badge_order', 'smallint'),
 	'parameters' => array(),
 	'if_exists' => 'ignore',
 	'error' => 'fatal',
