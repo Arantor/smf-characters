@@ -997,4 +997,33 @@
 	if ($context['group']['id'] != 3 && $context['group']['id'] != 4)]]></add>
 		</operation>
 	</file>
+	<file name="$sourcedir/Profile-Modify.php">
+		<operation>
+			<search position="replace"><![CDATA[AND min_posts = {int:min_posts}' . (allowedTo('admin_forum') ? '' : ']]></search>
+			<add><![CDATA[AND min_posts = {int:min_posts}
+			AND is_character = 0' . (allowedTo('admin_forum') ? '' : ']]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	// The account page allows the change of your id_group - but not to a protected group!]]></search>
+			<add><![CDATA[	// We can't have users adding anyone to character groups
+	$char_groups = [];
+	$request = $smcFunc['db_query']('', '
+		SELECT id_group
+		FROM {db_prefix}membergroups
+		WHERE is_character = 1');
+	while ($row = $smcFunc['db_fetch_row']($request))
+		$char_groups[] = $row[0];
+	$smcFunc['db_free_result']($request);
+
+	// No primary character group for you!
+	if (in_array($value, $char_groups))
+		$value = $old_profile['id_group'];
+
+	// No secondary character groups for you!
+	if (isset($_POST['additional_groups']) && is_array($_POST['additional_groups']))
+		$_POST['additional_groups'] = array_diff($_POST['additional_groups'], $char_groups);
+
+	// The account page allows the change of your id_group - but not to a protected group!]]></add>
+		</operation>
+	</file>
 </modification>
