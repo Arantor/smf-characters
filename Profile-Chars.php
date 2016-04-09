@@ -9,6 +9,7 @@ function chars_profile_field(&$profile_fields)
 	$profile_fields['immersive_mode'] = array(
 		'type' => 'check',
 		'label' => $txt['immersive_mode'],
+		'subtext' => $txt['immersive_mode_desc'],
 		'permission' => 'profile_identity',
 	);
 }
