@@ -3,6 +3,16 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
+function chars_profile_field(&$profile_fields)
+{
+	global $txt;
+	$profile_fields['immersive_mode'] = array(
+		'type' => 'check',
+		'label' => $txt['immersive_mode'],
+		'permission' => 'profile_identity',
+	);
+}
+
 function chars_profile_menu(&$profile_areas) {
 	global $context, $cur_profile, $scripturl, $txt;
 

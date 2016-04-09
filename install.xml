@@ -493,6 +493,13 @@
 			<search position="replace"><![CDATA['id_theme', 'smiley_set', 'hr',]]></search>
 			<add><![CDATA['smiley_set', 'hr',]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA['email_address', 'show_online', 'hr',
+			'tfa', 'hr',]]></search>
+			<add><![CDATA['email_address', 'show_online', 'hr',
+			'immersive_mode', 'hr',
+			'tfa', 'hr',]]></add>
+		</operation>
 	</file>
 	<file name="$sourcedir/Profile-View.php">
 		<operation>

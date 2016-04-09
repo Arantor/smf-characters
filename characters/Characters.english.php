@@ -25,6 +25,8 @@ $txt['showPosts_char'] = 'Character Posts';
 $txt['showTopics_char'] = 'Character Topics';
 $txt['char_profile'] = 'Character Profile';
 
+$txt['immersive_mode'] = 'Enable immersive mode';
+
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
 $txt['no_avatar_yet'] = 'You don\'t have an avatar yet, add the link above';

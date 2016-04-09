@@ -98,6 +98,12 @@ function integrate_chars()
 		'$sourcedir/Profile-Chars.php'
 	);
 	add_integration_function(
+		'integrate_load_profile_fields',
+		'chars_profile_field',
+		false,
+		'$sourcedir/Profile-Chars.php'
+	);
+	add_integration_function(
 		'integrate_autosuggest',
 		'integrate_character_autosuggest',
 		false,
@@ -326,7 +332,7 @@ function integrate_load_member_data_chars(&$select_columns, &$select_tables, &$s
 	if ($set != 'minimal')
 	{
 		$select_columns .= ', lo.id_character AS online_character, chars.is_main, chars.main_char_group, chars.char_groups,
-			cg.online_color AS char_group_color, COALESCE(cg.group_name, {string:blank_string}) AS character_group';
+			cg.online_color AS char_group_color, COALESCE(cg.group_name, {string:blank_string}) AS character_group, mem.immersive_mode';
 		$select_tables .= '
 			LEFT JOIN {db_prefix}characters AS chars ON (lo.id_character = chars.id_character)
 			LEFT JOIN {db_prefix}membergroups AS cg ON (chars.main_char_group = cg.id_group)';
