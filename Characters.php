@@ -191,7 +191,7 @@ function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_paramet
 }
 
 function integrate_display_chars_messages(&$output, &$message, $counter) {
-	global $memberContext, $smcFunc, $txt, $scripturl, $board_info;
+	global $memberContext, $smcFunc, $txt, $scripturl, $board_info, $user_profile;
 
 	$output['id_character'] = $message['id_character'];
 
@@ -215,6 +215,33 @@ function integrate_display_chars_messages(&$output, &$message, $counter) {
 					'url' => $character['avatar'],
 				);
 			}
+			// We need to fix display of badges and everything - for reasons
+			// of online behaviour we can't trust what we might have now.
+			// In any case this lets us handle multiple badges.
+			if (!empty($character['is_main']))
+			{
+				// We use the main account groups for this.
+				$group_list = array_merge(
+					array($user_profile[$message['id_member']]['id_group']),
+					!empty($user_profile[$message['id_member']]['additional_groups']) ? explode(',', $user_profile[$message['id_member']]['additional_groups']) : array()
+				);
+			}
+			else
+			{
+				// We use the character's group(s)
+				$group_list = array_merge(
+					array($character['main_char_group']),
+					!empty($character['char_groups']) ? explode(',', $character['char_groups']) : array()
+				);
+			}
+			$group_info = get_labels_and_badges($group_list);
+			$output['member']['username_color'] = '<span ' . (!empty($group_info['color']) ? 'style="color:' . $group_info['color'] . ';"' : '') . '>' . $character['character_name'] . '</span>';
+			$output['member']['name_color'] = '<span ' . (!empty($group_info['color']) ? 'style="color:' . $group_info['color'] . ';"' : '') . '>' . $character['character_name'] . '</span>';
+			$output['member']['group'] = $group_info['title'];
+			$output['member']['group_color'] = $group_info['color'];
+			$output['member']['group_icons'] = $group_info['badges'];
+			$output['member']['link_color'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . '"' . (!empty($group_info['color']) ? ' style="color:' . $group_info['color'] . ';"' : '') . '>' . $character['character_name'] . '</a>';
+
 			$output['member']['link'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . '">' . $character['character_name'] . '</a>';
 			$output['member']['signature'] = $character['sig_parsed'];
 			$output['member']['posts'] = comma_format($character['posts']);
@@ -543,6 +570,7 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 }
 
 function get_char_membergroup_data() {
+	global $smcFunc;
 	// We will want to get all the membergroups since potentially we're doing display
 	// of multiple per character. We need to fetch them in the order laid down
 	// by admins for display purposes and we will need to cache it.
@@ -550,7 +578,7 @@ function get_char_membergroup_data() {
 	{
 		$groups = array();
 		$request = $smcFunc['db_query']('', '
-			SELECT id_group, group_name, online_color, min_posts, icons
+			SELECT id_group, group_name, online_color, icons
 			FROM {db_prefix}membergroups
 			WHERE hidden != 2
 			ORDER BY badge_order');
@@ -562,5 +590,57 @@ function get_char_membergroup_data() {
 	}
 
 	return $groups;
+}
+
+function get_labels_and_badges($group_list)
+{
+	global $settings, $context;
+
+	$group_title = null;
+	$group_color = '';
+	$groups = get_char_membergroup_data();
+	$group_limit = 2;
+
+	$badges = '';
+	$badges_done = 0;
+	foreach ($group_list as $id_group) {
+		if (empty($groups[$id_group]))
+			continue;
+
+		if ($group_title === null) {
+			$group_title = $groups[$id_group]['group_name'];
+			$group_color = $groups[$id_group]['online_color'];
+		}
+
+		if (empty($groups[$id_group]['icons']))
+			continue;
+
+		list($qty, $badge) = explode('#', $groups[$id_group]['icons']);
+		if ($qty == 0)
+			continue;
+
+		if (file_exists($settings['actual_theme_dir'] . '/images/membericons/' . $badge))
+			$group_icon_url = $settings['images_url'] . '/membericons/' . $badge;
+		elseif (isset($profile['icons'][1]))
+			$group_icon_url = $settings['default_images_url'] . '/membericons/' . $badge;
+		else
+			$group_icon_url = '';
+
+		if (empty($group_icon_url))
+			continue;
+
+		$badges .= '<div>' . str_repeat('<img src="' . str_replace('$language', $context['user']['language'], $group_icon_url) . '" alt="*">', $qty) . '</div>';
+
+		$badges_done++;
+		if ($badges_done >= $group_limit) {
+			break;
+		}
+	}
+
+	return array(
+		'title' => $group_title,
+		'color' => $group_color,
+		'badges' => $badges,
+	);
 }
 ?>
