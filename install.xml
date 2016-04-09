@@ -909,5 +909,85 @@
 			),
 			'icons' => array(]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA[			array(
+				'id_group' => 'int', 'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
+				'icons' => 'string', 'online_color' => 'string', 'group_type' => 'int',
+			),
+			array(
+				$id_group, '', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
+				'1#icon.png', '', $_POST['group_type'],
+			),]]></search>
+			<add><![CDATA[			array(
+				'id_group' => 'int', 'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
+				'icons' => 'string', 'online_color' => 'string', 'group_type' => 'int', 'is_character' => 'int',
+			),
+			array(
+				$id_group, '', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
+				'1#icon.png', '', $_POST['group_type'], !empty($_POST['group_level']) ? 1 : 0,
+			),]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	$request = $smcFunc['db_query']('', '
+		SELECT group_name, description, min_posts, online_color, max_messages, icons, group_type, hidden, id_parent, tfa_required]]></search>
+			<add><![CDATA[	$request = $smcFunc['db_query']('', '
+		SELECT group_name, is_character, description, min_posts, online_color, max_messages, icons, group_type, hidden, id_parent, tfa_required]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	$context['group'] = array(
+		'id' => $_REQUEST['group'],
+		'name' => $row['group_name'],
+		'description']]></search>
+			<add><![CDATA[	$context['group'] = array(
+		'id' => $_REQUEST['group'],
+		'name' => $row['group_name'],
+		'is_character' => $row['is_character'],
+		'description']]></add>
+		</operation>
+	</file>
+	<file name="$themedir/ManageMembergroups.template.php">
+		<operation>
+			<search position="replace"><![CDATA[					<dd>
+						<input type="text" name="group_name" id="group_name_input" size="30" class="input_text">
+					</dd>';
+	if ($context['undefined_group'])]]></search>
+			<add><![CDATA[					<dd>
+						<input type="text" name="group_name" id="group_name_input" size="30" class="input_text">
+					</dd>';
+
+	if (!$context['post_group'])
+	{
+		echo '
+					<dt>
+						<label for="group_level_input"><strong>', $txt['char_group_level'], ':</strong></label>
+					</dt>
+					<dd>
+						<select name="group_level" id="group_level_input">
+							<option value="0">', $txt['char_group_level_acct'], '</option>
+							<option value="1">', $txt['char_group_level_char'], '</option>
+						</select>
+					</dd>';
+	}
+	if ($context['undefined_group'])]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[					<dd>
+						<input type="text" name="group_name" id="group_name_input" value="', $context['group']['editable_name'], '" size="30" class="input_text">
+					</dd>';
+
+	if ($context['group']['id'] != 3 && $context['group']['id'] != 4)]]></search>
+			<add><![CDATA[					<dd>
+						<input type="text" name="group_name" id="group_name_input" value="', $context['group']['editable_name'], '" size="30" class="input_text">
+					</dd>';
+
+	if (!$context['group']['is_post_group'])
+	{
+		echo '
+					<dt><strong>', $txt['char_group_level'], ':</strong></dt>
+					<dd>', !empty($context['group']['is_character']) ? $txt['char_group_level_char'] : $txt['char_group_level_acct'], '</dd>';
+	}
+
+	if ($context['group']['id'] != 3 && $context['group']['id'] != 4)]]></add>
+		</operation>
 	</file>
 </modification>
