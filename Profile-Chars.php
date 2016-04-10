@@ -177,6 +177,9 @@ function char_switch($memID, $char = null, $return = false) {
 	if (!empty($modSettings['cache_enable']) && $modSettings['cache_enable'] >= 2)
 		cache_put_data('user_settings-' . $id_member, null, 60);
 
+	// Whatever they had in session for theme, disregard it.
+	unset ($_SESSION['id_theme']);
+
 	if ($return)
 		return true;
 	else
@@ -519,11 +522,62 @@ function char_delete() {
 }
 
 function char_theme() {
-	global $context, $smcFunc;
+	global $context, $smcFunc, $modSettings;
 
 	// If they don't have permission to be here, goodbye.
 	if (!$context['character']['editable']) {
 		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	$known_themes = explode(',', $modSettings['knownThemes']);
+	$context['themes'] = array();
+	foreach ($known_themes as $id_theme) {
+		$context['themes'][$id_theme] = array(
+			'name' => '',
+			'theme_dir' => '',
+			'images_url' => '',
+			'thumbnail' => ''
+		);
+	}
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_theme, variable, value
+		FROM {db_prefix}themes
+		WHERE id_member = 0
+			AND variable IN ({array_string:vars})',
+		array(
+			'vars' => array('name', 'images_url', 'theme_dir'),
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$context['themes'][$row['id_theme']][$row['variable']] = $row['value'];
+	$smcFunc['db_free_result']($request);
+
+	foreach ($context['themes'] as $id_theme => $theme)
+	{
+		if (empty($theme['name']) || empty($theme['images_url']) || !file_exists($theme['theme_dir']))
+			unset ($context['themes'][$id_theme]);
+
+		foreach (array('.png', '.gif', '.jpg') as $ext)
+			if (file_exists($theme['theme_dir'] . '/images/thumbnail' . $ext))
+			{
+				$context['themes'][$id_theme]['thumbnail'] = $theme['images_url'] . '/thumbnail' . $ext;
+				break;
+			}
+
+		if (empty($context['themes'][$id_theme]['thumbnail']))
+			unset ($context['themes'][$id_theme]);
+	}
+
+	if (!empty($_POST['theme']) && is_array($_POST['theme']))
+	{
+		checkSession();
+		list($id_theme) = array_keys($_POST['theme']);
+		if (isset($context['themes'][$id_theme]))
+		{
+			updateCharacterData($context['character']['id_character'], array('id_theme' => $id_theme));
+			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+		}
 	}
 
 	$context['sub_template'] = 'char_theme';

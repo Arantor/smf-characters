@@ -345,8 +345,10 @@ function template_edit_char() {
 				</div>';
 }
 
-function template_char_theme() {
-	
+function template_char_theme()
+{
+	global $context, $txt, $scripturl;
+
 	echo '
 		<div id="admin_content">
 					<div class="cat_bar">
@@ -356,10 +358,19 @@ function template_char_theme() {
 					</div>
 
 	<div id="profileview" class="roundframe flow_auto">
-		<div id="basicinfo">';
+		<form id="char_theme_wrapper" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=theme" method="post">';
 
+	foreach ($context['themes'] as $id_theme => $theme)
+	{
+		echo '
+			<div class="char_theme_container">
+				<button name="theme[', $id_theme, ']" class="button"><img src="', $theme['thumbnail'], '" alt=""></button>
+				', $theme['name'], '
+			</div>';
+	}
 	echo '
-		</div>
+			<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+		</form>
 	</div>
 <div class="clear"></div>
 				</div>';

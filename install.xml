@@ -18,11 +18,12 @@
 				array(
 					'id_member' => $id_member,
 				)
-			);]]></search>
+			);
+			$user_settings = $smcFunc['db_fetch_assoc']($request);]]></search>
 			<add><![CDATA[
 			$request = $smcFunc['db_query']('', '
 				SELECT mem.*, chars.id_character, chars.character_name, chars.avatar AS char_avatar, chars.signature AS char_signature,
-					chars.id_theme, chars.is_main, chars.main_char_group, chars.char_groups, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
+					chars.id_theme AS char_theme, chars.is_main, chars.main_char_group, chars.char_groups, COALESCE(a.id_attach, 0) AS id_attach, a.filename, a.attachment_type
 				FROM {db_prefix}members AS mem
 					LEFT JOIN {db_prefix}attachments AS a ON (a.id_member = {int:id_member})
 					LEFT JOIN {db_prefix}characters AS chars ON (chars.id_character = mem.current_character)
@@ -31,7 +32,9 @@
 				array(
 					'id_member' => $id_member,
 				)
-			);]]></add>
+			);
+			$user_settings = $smcFunc['db_fetch_assoc']($request);
+			$user_settings['id_theme'] = $user_settings['char_theme'];]]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[
@@ -70,6 +73,7 @@
 				'avatar' => $row['avatar'],
 				'signature' => $row['signature'],
 				'sig_parsed' => !empty($row['signature']) ? parse_bbc($row['signature'], true, 'sig_char_' . $row['id_character']) : '',
+				'id_theme' => $row['id_theme'],
 				'posts' => $row['posts'],
 				'age' => $row['age'],
 				'date_created' => $row['date_created'],

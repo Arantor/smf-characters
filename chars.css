@@ -71,3 +71,33 @@
 	float: right;
 	cursor: ns-resize;
 }
+
+#char_theme_wrapper {
+	text-align: center;
+}
+
+.char_theme_container {
+	width: 280px;
+	display: inline-block;
+	margin: 10px;
+	text-align: center;
+}
+
+.char_theme_container button {
+	display: block;
+	margin: 0 auto;
+	padding: 8px;
+	height: auto;
+	line-height: 1;
+}
+
+div#char_theme_wrapper {
+	text-align: center;
+}
+
+.char_theme_container img {
+	max-width: 120px;
+	max-height: 120px;
+	margin: 0;
+	padding: 0;
+}
