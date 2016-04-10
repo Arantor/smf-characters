@@ -1291,4 +1291,59 @@
 		}]]></add>
 		</operation>
 	</file>
+
+	<!-- And make sure we search on characters rather than members. -->
+	<file name="$sourcedir/Search.php">
+		<operation>
+			<search position="replace"><![CDATA[		// Retrieve a list of possible members.
+		$request = $smcFunc['db_query']('', '
+			SELECT id_member
+			FROM {db_prefix}members
+			WHERE {raw:match_possible_users}',
+			array(
+				'match_possible_users' => 'real_name LIKE ' . implode(' OR real_name LIKE ', $realNameMatches),
+			)
+		);]]></search>
+			<add><![CDATA[		// Retrieve a list of possible members.
+		$request = $smcFunc['db_query']('', '
+			SELECT id_character
+			FROM {db_prefix}characters
+			WHERE {raw:match_possible_users}
+			GROUP BY id_member',
+			array(
+				'match_possible_users' => 'character_name LIKE ' . implode(' OR character_name LIKE ', $realNameMatches),
+			)
+		);]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[				$memberlist[] = $row['id_member'];
+			$userQuery = $smcFunc['db_quote'](
+				'(m.id_member IN ({array_int:matched_members}) OR (m.id_member = {int:id_member_guest} AND ({raw:match_possible_guest_names})))',
+				array(
+					'matched_members' => $memberlist,
+					'id_member_guest' => 0,
+					'match_possible_guest_names' => 'm.poster_name LIKE ' . implode(' OR m.poster_name LIKE ', $realNameMatches),
+				)
+			);]]></search>
+			<add><![CDATA[				$memberlist[] = $row['id_character'];
+			$userQuery = $smcFunc['db_quote'](
+				'(m.id_character IN ({array_int:matched_members}) OR (m.id_member = {int:id_member_guest} AND ({raw:match_possible_guest_names})))',
+				array(
+					'matched_members' => $memberlist,
+					'id_member_guest' => 0,
+					'match_possible_guest_names' => 'm.poster_name LIKE ' . implode(' OR m.poster_name LIKE ', $realNameMatches),
+				)
+			);]]></add>
+		</operation>
+	</file>
+	<file name="$themedir/Search.template.php">
+		<operation>
+			<search position="replace"><![CDATA[sSearchType: \'member\',]]></search>
+			<add><![CDATA[sSearchType: \'rawcharacter\',]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[$txt['by_user'], ':</label>]]></search>
+			<add><![CDATA[$txt['search_by_character'], ':</label>]]></add>
+		</operation>
+	</file>
 </modification>

@@ -30,6 +30,8 @@ $txt['immersive_mode'] = 'Enable immersive mode:';
 $txt['immersive_mode_desc'] = 'In immersive mode, you can only see the areas of the forum your character could see.';
 $txt['no_primary_character_group'] = '(no primary character group)';
 
+$txt['search_by_character'] = 'By character';
+
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
 $txt['no_avatar_yet'] = 'You don\'t have an avatar yet, add the link above';
