@@ -46,6 +46,135 @@ function updateCharacterData($char_id, $data)
 	);
 }
 
+function removeCharactersFromGroups($characters, $groups)
+{
+	global $smcFunc, $sourcedir, $modSettings;
+
+	updateSettings(array('settings_updated' => time()));
+
+	if (!is_array($characters))
+		$characters = array((int) $characters);
+	else
+		$characters = array_unique(array_map('intval', $characters));
+
+	if (!is_array($groups))
+		$groups = array((int) $groups);
+	else
+		$groups = array_unique(array_map('intval', $groups));
+
+	$groups = array_diff($groups, array(-1, 0, 3));
+
+	// Check against protected groups
+	if (!allowedTo('admin_forum'))
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT group_type
+			FROM {db_prefix}membergroups
+			WHERE id_group IN ({array_int:current_group})',
+			array(
+				'current_group' => $groups,
+			)
+		);
+		$protected = array();
+		while ($row = $smcFunc['db_fetch_row']($request))
+			$protected[] = $row[0];
+		$smcFunc['db_free_result']($request);
+
+		$groups = array_diff($groups, $protected);
+	}
+
+	if (empty($groups) || empty($characters))
+		return false;
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_group, group_name, min_posts
+		FROM {db_prefix}membergroups
+		WHERE id_group IN ({array_int:current_group})',
+		array(
+			'current_group' => $groups,
+		)
+	);
+	$group_names = array();
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$group_names[$row['id_group']] = $row['group_name'];
+	}
+	$smcFunc['db_free_result']($request);
+
+	// First, reset those who have this as their primary group - this is the easy one.
+	$log_inserts = array();
+	$request = $smcFunc['db_query']('', '
+		SELECT id_member, id_character, character_name, main_char_group
+		FROM {db_prefix}characters AS characters
+		WHERE main_char_group IN ({array_int:group_list})
+			AND id_character IN ({array_int:char_list})',
+		array(
+			'group_list' => $groups,
+			'char_list' => $characters,
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$log_inserts[] = array('group' => $group_names[$row['id_group']], 'member' => $row['id_member'], 'character' => $row['character_name']);
+	$smcFunc['db_free_result']($request);
+
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET main_char_group = {int:regular_member}
+		WHERE main_char_group IN ({array_int:group_list})
+			AND id_character IN ({array_int:char_list})',
+		array(
+			'group_list' => $groups,
+			'char_list' => $characters,
+			'regular_member' => 0,
+		)
+	);
+
+	// Those who have it as part of their additional group must be updated the long way... sadly.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_member, id_character, character_name, char_groups
+		FROM {db_prefix}characters
+		WHERE (FIND_IN_SET({raw:additional_groups_implode}, char_groups) != 0)
+			AND id_character IN ({array_int:char_list})
+		LIMIT ' . count($characters),
+		array(
+			'char_list' => $characters,
+			'additional_groups_implode' => implode(', char_groups) != 0 OR FIND_IN_SET(', $groups),
+		)
+	);
+	$updates = array();
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		// What log entries must we make for this one, eh?
+		foreach (explode(',', $row['char_groups']) as $id_group)
+			if (in_array($id_group, $groups))
+				$log_inserts[] = array('group' => $group_names[$id_group], 'member' => $row['id_member'], 'character' => $row['character_name']);
+
+		$updates[$row['char_groups']][] = $row['id_member'];
+	}
+	$smcFunc['db_free_result']($request);
+
+	foreach ($updates as $char_groups => $memberArray)
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}characters
+			SET char_groups = {string:char_groups}
+			WHERE id_member IN ({array_int:member_list})',
+			array(
+				'member_list' => $memberArray,
+				'char_groups' => implode(',', array_diff(explode(',', $char_groups), $groups)),
+			)
+		);
+
+	// Do the log.
+	if (!empty($log_inserts) && !empty($modSettings['modlog_enabled']))
+	{
+		require_once($sourcedir . '/Logging.php');
+		foreach ($log_inserts as $extra)
+			logAction('char_removed_from_group', $extra, 'admin');
+	}
+
+	return true;
+}
+
 function addCharactersToGroup($characters, $group)
 {
 	global $smcFunc, $sourcedir;
@@ -62,7 +191,7 @@ function addCharactersToGroup($characters, $group)
 		return false;
 
 	// Check against protected groups
-	if (!allowedTo('admin_forum') && !$ignoreProtected)
+	if (!allowedTo('admin_forum'))
 	{
 		$request = $smcFunc['db_query']('', '
 			SELECT group_type

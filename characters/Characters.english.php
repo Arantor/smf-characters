@@ -62,6 +62,7 @@ $txt['no_character_added'] = 'You didn\'t add a name for your first roleplay cha
 
 $txt['modlog_ac_char_reattribute'] = 'Reattributed &quot;{message}&quot; by &quot;{member}&quot; from &quot;{old_character}&quot; to &quot;{new_character}&quot;';
 $txt['modlog_ac_char_added_to_group'] = 'Added &quot;{character}&quot; ({member}) to the &quot;{group}&quot; group';
+$txt['modlog_ac_char_removed_from_group'] = 'Removed &quot;{character}&quot; ({member}) from the &quot;{group}&quot; group';
 
 $txt['char_group_level'] = 'Group Level';
 $txt['char_group_level_acct'] = 'Account-Bound';

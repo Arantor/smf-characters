@@ -1122,6 +1122,7 @@
 			<add><![CDATA[		$context['members'][] = array(
 			'id' => $row['id_member'],
 			'name' => '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . '">' . $row['real_name'] . '</a>',
+			'id_character' => !empty($row['id_character']) ? $row['id_character'] : 0,
 			'character' => !empty($row['id_character']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . ';area=characters;char=' . $row['id_character'] . '">' . $row['character_name'] . '</a>' : '',
 			'email' => $row['email_address'],]]></add>
 		</operation>
@@ -1150,6 +1151,20 @@
 						</td>';
 
 		if ($context['can_send_email'])]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		if (!empty($context['group']['assignable']))
+			echo '
+						<td style="width: 4%"><input type="checkbox" name="rem[]" value="', $member['id'], '" class="input_check" ', ($context['user']['id'] == $member['id'] && $context['group']['id'] == 1 ? 'onclick="if (this.checked) return confirm(\'' . $txt['membergroups_members_deadmin_confirm'] . '\')" ' : ''), '/></td>';]]></search>
+			<add><![CDATA[		if (!empty($context['group']['assignable']))
+		{
+			if ($context['group']['is_character'])
+				echo '
+						<td style="width: 4%"><input type="checkbox" name="rem[]" value="', $member['id_character'], '" class="input_check" /></td>';
+			else
+				echo '
+						<td style="width: 4%"><input type="checkbox" name="rem[]" value="', $member['id'], '" class="input_check" ', ($context['user']['id'] == $member['id'] && $context['group']['id'] == 1 ? 'onclick="if (this.checked) return confirm(\'' . $txt['membergroups_members_deadmin_confirm'] . '\')" ' : ''), '/></td>';
+		}]]></add>
 		</operation>
 	</file>
 	<file name="$sourcedir/Subs-Membergroups.php">
@@ -1253,6 +1268,19 @@
 		}
 
 		// Any passed by ID?]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		require_once($sourcedir . '/Subs-Membergroups.php');
+		removeMembersFromGroups($_REQUEST['rem'], $_REQUEST['group'], true);]]></search>
+			<add><![CDATA[		if ($context['group']['is_character'])
+		{
+			removeCharactersFromGroups($_REQUEST['rem'], $_REQUEST['group']);
+		}
+		else
+		{
+			require_once($sourcedir . '/Subs-Membergroups.php');
+			removeMembersFromGroups($_REQUEST['rem'], $_REQUEST['group'], true);
+		}]]></add>
 		</operation>
 	</file>
 </modification>
