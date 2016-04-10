@@ -24,6 +24,7 @@ $txt['showPosts_help_char'] = 'This section allows you to view all posts made by
 $txt['showPosts_char'] = 'Character Posts';
 $txt['showTopics_char'] = 'Character Topics';
 $txt['char_profile'] = 'Character Profile';
+$txt['char_stats'] = 'Character Stats';
 
 $txt['immersive_mode'] = 'Enable immersive mode:';
 $txt['immersive_mode_desc'] = 'In immersive mode, you can only see the areas of the forum your character could see.';
