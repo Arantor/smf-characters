@@ -423,6 +423,11 @@ function integrate_chars()
 		'integrate_post_register_chars',
 		false
 	);
+	add_integration_function(
+		'integrate_change_member_data',
+		'integrate_chars_change_member_data',
+		false
+	);
 }
 
 function integrate_chars_actions(&$actionArray)
@@ -902,5 +907,43 @@ function get_labels_and_badges($group_list)
 		'color' => $group_color,
 		'badges' => $badges,
 	);
+}
+
+function integrate_chars_change_member_data($member_names, $var, &$data, &$knownInts, &$knownFloat)
+{
+	global $smcFunc;
+
+	// We're only interested in the real name here.
+	if ($var != 'real_name')
+		return;
+
+	// We need to translate the member_names into member_ids
+	$map = array();
+	$request = $smcFunc['db_query']('', '
+		SELECT id_member, real_name
+		FROM {db_prefix}members
+		WHERE real_name IN ({array_string:members})',
+		array(
+			'members' => $member_names,
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$map[$row['real_name']] = (int) $row['id_member'];
+	$smcFunc['db_free_result']($request);
+
+	// Now we have member ids, let's update them
+	foreach ($map as $id_member)
+	{
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}characters
+			SET character_name = {string:name}
+			WHERE id_member = {int:member}
+				AND is_main = 1',
+			array(
+				'name' => $data,
+				'member' => $id_member,
+			)
+		);
+	}
 }
 ?>

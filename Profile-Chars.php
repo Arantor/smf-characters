@@ -339,6 +339,11 @@ function char_edit() {
 
 		if (!empty($changes) && empty($context['form_errors']))
 		{
+			if ($context['character']['is_main'])
+			{
+				if (isset($changes['character_name']))
+					updateMemberData($context['id_member'], array('real_name' => $changes['character_name']));
+			}
 			if (!empty($modSettings['userlog_enabled'])) {
 				$rows = array();
 				foreach ($changes as $key => $new_value)
@@ -376,7 +381,7 @@ function char_edit() {
 						'log_time' => time(),
 						'id_member' => $context['id_member'],
 						'ip' => $user_info['ip'],
-						'action' => 'char_' . $key,
+						'action' => $context['character']['is_main'] && $key == 'character_name' ? 'real_name' : 'char_' . $key,
 						'id_board' => 0,
 						'id_topic' => 0,
 						'id_msg' => 0,
