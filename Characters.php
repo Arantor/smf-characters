@@ -312,6 +312,11 @@ function integrate_chars()
 	// We can now also hook the rest of the characters stuff, meaning we
 	// only need to remember and manage one hook in the installer.
 	add_integration_function(
+		'integrate_buffer',
+		'integrate_chars_buffer',
+		false
+	);
+	add_integration_function(
 		'integrate_pre_profile_areas',
 		'chars_profile_menu',
 		false,
@@ -450,6 +455,26 @@ function integrate_remove_logout(&$buttons)
 	$(\'#top_info\').append(\'<li><a href="' . $scripturl . '?action=logout;' . $context['session_var'] . '=' . $context['session_id'] . '">' . $txt['logout'] . '</a></li>\');
 	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");', true);
 	}
+}
+
+function integrate_chars_buffer($buffer)
+{
+	global $context, $scripturl, $user_info, $txt;
+
+	if ($context['user']['is_guest'])
+		return $buffer;
+
+	$ul_pos = strpos($buffer, 'id="top_info"');
+	$first_li = stripos($buffer, '</li>', $ul_pos);
+	if ($ul_pos === false || $first_li === false)
+		return $buffer;
+
+	return substr($buffer, 0, $first_li + 5) . '
+			<li>
+				<a href="' . $scripturl . '?action=profile;area=characters" id="characters_menu_top" onclick="return false;">
+				'  . sprintf($txt['posting_as'], $user_info['character_name']) . ' &#9660;</a>
+				<div id="characters_menu" class="top_menu"></div>
+			</li>' . substr($buffer, $first_li + 5);
 }
 
 function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_parameters) {

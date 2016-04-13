@@ -295,23 +295,6 @@
 		</operation>
 	</file>
 
-	<!-- The user's menu -->
-	<file name="$themedir/index.template.php">
-		<operation>
-			<search position="replace"><![CDATA[
-		// Secondly, PMs if we're doing them]]></search>
-			<add><![CDATA[
-		echo '
-			<li>
-				<a href="', $scripturl, '?action=profile;area=characters" id="characters_menu_top" onclick="return false;">
-				', sprintf($txt['posting_as'], $GLOBALS['user_info']['character_name']), ' &#9660;</a>
-				<div id="characters_menu" class="top_menu"></div>
-			</li>';
-
-		// Secondlyish, PMs if we're doing them]]></add>
-		</operation>
-	</file>
-
 	<!-- Adding character details to saving -->
 	<file name="$sourcedir/Post.php">
 		<operation>
