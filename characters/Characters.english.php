@@ -70,4 +70,10 @@ $txt['modlog_ac_char_removed_from_group'] = 'Removed &quot;{character}&quot; ({m
 $txt['char_group_level'] = 'Group Level';
 $txt['char_group_level_acct'] = 'Account-Bound';
 $txt['char_group_level_char'] = /* 'Soul-bound' */ 'Character-Bound';
+
+$txt['char_unknown'] = '[Unknown]';
+$txt['alert_msg_quotechr'] = '{char_link} quoted {your_chr} in the post {msg_msg}';
+$txt['alert_msg_mentionchr'] = '{char_link} mentioned {your_chr} in the post {msg_msg}';
+$txt['alert_msg_likechr'] = '{member_link} liked {your_chr}\'s post {msg_msg}';
+
 ?>

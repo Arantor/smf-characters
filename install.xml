@@ -1316,4 +1316,117 @@
 			<add><![CDATA[$txt['search_by_character'], ':</label>]]></add>
 		</operation>
 	</file>
+
+	<!-- Alerts can go to characters -->
+	<file name="$sourcedir/Profile-View.php">
+		<operation>
+			<search position="replace"><![CDATA[	$msgs = array();
+	foreach ($alerts as $id_alert => $alert)
+	{
+		if (isset($alert['extra']['board']))]]></search>
+			<add><![CDATA[	$msgs = array();
+	$chars = array();
+	foreach ($alerts as $id_alert => $alert)
+	{
+		if (isset($alert['extra']['chars_src']))
+			$chars[$alert['extra']['chars_src']] = $txt['char_unknown'];
+		if (isset($alert['extra']['chars_dest']))
+			$chars[$alert['extra']['chars_dest']] = $txt['char_unknown'];
+		if (isset($alert['extra']['board']))]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	// Now to go back through the alerts, reattach this extra information and then try to build the string out of it (if a hook didn't already)]]></search>
+			<add><![CDATA[	// Now to handle characters
+	if (!empty($chars))
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT chars.id_character, chars.id_member, chars.character_name
+			FROM {db_prefix}characters AS chars
+			WHERE id_character IN ({array_int:chars})',
+			array(
+				'chars' => array_keys($chars),
+			)
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+			$chars[$row['id_character']] = '<a href="' . $scripturl . '?action=profile;u=' . $row['id_member'] . ';area=characters;char=' . $row['id_character'] . '">' . $row['character_name'] . '</a>';
+		$smcFunc['db_free_result']($request);
+	}
+
+	// Now to go back through the alerts, reattach this extra information and then try to build the string out of it (if a hook didn't already)]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[$string = 'alert_' . $alert['content_type'] . '_' . $alert['content_action'];]]></search>
+			<add><![CDATA[$string = 'alert_' . $alert['content_type'] . '_' . $alert['content_action'];
+		if (isset($alert['extra']['chars_src']) || isset($alert['extra']['chars_dest']))
+			$string .= 'chr';]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[			$search = array('{member_link}', '{scripturl}');
+			$repl = array(!empty($alert['sender_id']) ? '<a href="' . $scripturl . '?action=profile;u=' . $alert['sender_id'] . '">' . $alert['sender_name'] . '</a>' : $alert['sender_name'], $scripturl);
+			foreach ($extra as $k => $v)]]></search>
+			<add><![CDATA[			$search = array('{member_link}', '{scripturl}');
+			$repl = array(!empty($alert['sender_id']) ? '<a href="' . $scripturl . '?action=profile;u=' . $alert['sender_id'] . '">' . $alert['sender_name'] . '</a>' : $alert['sender_name'], $scripturl);
+			if (isset($alert['extra']['chars_src']))
+			{
+				$search[] = '{char_link}';
+				$repl[] = $chars[$alert['extra']['chars_src']];
+			}
+			if (isset($alert['extra']['chars_dest']))
+			{
+				$search[] = '{your_chr}';
+				$repl[] = $chars[$alert['extra']['chars_dest']];
+			}
+			foreach ($extra as $k => $v)]]></add>
+		</operation>
+	</file>
+	<file name="$sourcedir/tasks/Likes-Notify.php">
+		<operation>
+			<search position="replace"><![CDATA[$request = $smcFunc['db_query']('', '
+				SELECT mem.id_member, mem.id_group, mem.id_post_group, mem.additional_groups, b.member_groups
+				FROM {db_prefix}messages AS m
+					INNER JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
+					INNER JOIN {db_prefix}boards AS b ON (m.id_board = b.id_board)
+				WHERE id_msg = {int:msg}',
+				array(
+					'msg' => $this->_details['content_id'],
+				)
+			);]]></search>
+			<add><![CDATA[$request = $smcFunc['db_query']('', '
+				SELECT mem.id_member, mem.id_group, mem.id_post_group, mem.additional_groups, b.member_groups,
+					m.id_character, chars.is_main
+				FROM {db_prefix}messages AS m
+					INNER JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
+					INNER JOIN {db_prefix}boards AS b ON (m.id_board = b.id_board)
+					INNER JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character)
+				WHERE id_msg = {int:msg}',
+				array(
+					'msg' => $this->_details['content_id'],
+				)
+			);]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		// Issue, update, move on.
+		$smcFunc['db_insert']('insert',
+			'{db_prefix}user_alerts',
+			array('alert_time' => 'int', 'id_member' => 'int', 'id_member_started' => 'int', 'member_name' => 'string',
+				'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
+			array($this->_details['time'], $author, $this->_details['sender_id'], $this->_details['sender_name'],
+				$this->_details['content_type'], $this->_details['content_id'], 'like', 0, ''),
+			array('id_alert')
+		);]]></search>
+			<add><![CDATA[		// Issue, update, move on.
+		$extra = array();
+		if (!empty($row['id_character']) && empty($row['is_main']))
+			$extra['chars_dest'] = $row['id_character'];
+
+		$smcFunc['db_insert']('insert',
+			'{db_prefix}user_alerts',
+			array('alert_time' => 'int', 'id_member' => 'int', 'id_member_started' => 'int', 'member_name' => 'string',
+				'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
+			array($this->_details['time'], $author, $this->_details['sender_id'], $this->_details['sender_name'],
+				$this->_details['content_type'], $this->_details['content_id'], 'like', 0, !empty($extra) ? json_encode($extra) : ''),
+			array('id_alert')
+		);]]></add>
+		</operation>
+	</file>
 </modification>
