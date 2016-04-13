@@ -437,7 +437,7 @@ function integrate_chars_actions(&$actionArray)
 
 function integrate_remove_logout(&$buttons)
 {
-	global $context, $scripturl;
+	global $context, $scripturl, $txt;
 
 	$buttons['logout']['show'] = false;
 
@@ -447,6 +447,7 @@ function integrate_remove_logout(&$buttons)
 	{
 		loadCSSFile('chars.css', array('default_theme' => true), 'chars');
 		addInlineJavascript('
+	$(\'#top_info\').append(\'<li><a href="' . $scripturl . '?action=logout;' . $context['session_var'] . '=' . $context['session_id'] . '">' . $txt['logout'] . '</a></li>\');
 	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");', true);
 	}
 }

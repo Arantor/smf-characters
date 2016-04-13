@@ -527,23 +527,6 @@
 		</operation>
 	</file>
 
-	<!-- Moving that fscking logout button -->
-	<file name="$themedir/index.template.php">
-		<operation>
-			<search position="replace"><![CDATA[
-		// And now we're done.
-		echo '
-		</ul>';]]></search>
-			<add><![CDATA[
-		// And now we're done.
-		echo '
-			<li>
-				<a href="', $scripturl, '?action=logout;', $context['session_var'], '=', $context['session_id'], '">', $txt['logout'], '</a>
-			</li>
-		</ul>';]]></add>
-		</operation>
-	</file>
-
 	<!-- Marking boards as OOC -->
 	<file name="$sourcedir/Load.php">
 		<operation>
