@@ -100,7 +100,7 @@
 				$user_profile[$id_member]['characters'] = array();
 			} else {
 				uasort($user_profile[$id_member]['characters'], function ($a, $b) {
-					return $a['character_name'] > $b['character_name'] ? 1 : ($a['character_name'] < $a['character_name'] ? -1 : 0);
+					return $a['is_main'] ? -1 : ($a['character_name'] > $b['character_name'] ? 1 : ($a['character_name'] < $a['character_name'] ? -1 : 0));
 				});
 			}
 		}]]></add>
