@@ -533,6 +533,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter) {
 			$output['member']['group_icons'] = $group_info['badges'];
 			$output['member']['link_color'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . '"' . (!empty($group_info['color']) ? ' style="color:' . $group_info['color'] . ';"' : '') . '>' . $character['character_name'] . '</a>';
 
+			$output['member']['href'] = $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'];
 			$output['member']['link'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . '">' . $character['character_name'] . '</a>';
 			$output['member']['signature'] = $character['sig_parsed'];
 			$output['member']['posts'] = comma_format($character['posts']);

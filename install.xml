@@ -353,37 +353,6 @@
 	</file>
 
 	<!-- Now display the character poster -->
-	<file name="$themedir/Display.template.php">
-		<operation>
-			<search position="replace"><![CDATA[
-	// Show the user's avatar.
-	if (!empty($modSettings['show_user_images']) && empty($options['show_no_avatars']) && !empty($message['member']['avatar']['image']))
-		echo '
-								<li class="avatar">
-									<a href="', $scripturl, '?action=profile;u=', $message['member']['id'], '">', $message['member']['avatar']['image'], '</a>
-								</li>';]]></search>
-			<add><![CDATA[
-	// Show the user's avatar.
-	if (!empty($modSettings['show_user_images']) && empty($options['show_no_avatars']))
-	{
-		if (isset($message['member']['characters'][$message['id_character']]))
-		{
-			$character = $message['member']['characters'][$message['id_character']];
-			$profile_link = $character['character_url'];
-		}
-		else
-			$profile_link = '?action=profile;u=' . $message['member']['id'];
-
-		if (!empty($message['member']['avatar']['image']))
-		{
-			echo '
-								<li class="avatar">
-									<a href="', $scripturl, $profile_link, '">', $message['member']['avatar']['image'], '</a>
-								</li>';
-		}
-	}]]></add>
-		</operation>
-	</file>
 	<file name="$sourcedir/Post.php">
 		<operation>
 			<search position="replace"><![CDATA[
