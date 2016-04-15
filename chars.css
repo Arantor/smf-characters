@@ -101,3 +101,12 @@ div#char_theme_wrapper {
 	margin: 0;
 	padding: 0;
 }
+
+#basicinfo .badges {
+	margin-top: 10px;
+	margin-bottom: -10px;
+}
+
+#basicinfo  div.position {
+	margin-top: 10px;
+}

@@ -87,9 +87,13 @@
 				'main_char_group' => $row['main_char_group'],
 				'char_groups' => $row['char_groups'],
 			);
-			if ($row['is_main'] && !empty($row['avatar']))
+			if ($row['is_main'])
 			{
-				$user_profile[$row['id_member']]['avatar'] = $row['avatar'];
+				$user_profile[$row['id_member']]['main_char'] = $row['id_character'];
+				if (!empty($row['avatar']))
+				{
+					$user_profile[$row['id_member']]['avatar'] = $row['avatar'];
+				}
 			}
 		}
 		$smcFunc['db_free_result']($request);

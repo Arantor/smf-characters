@@ -17,6 +17,9 @@ function chars_profile_field(&$profile_fields)
 function chars_profile_menu(&$profile_areas) {
 	global $context, $cur_profile, $scripturl, $txt;
 
+	// Replacing with our wrapper
+	$profile_areas['info']['areas']['summary']['function'] = 'char_summary';
+
 	// Classical array of own/any
 	$own_only = array(
 		'own' => 'is_not_guest',
@@ -1086,6 +1089,29 @@ function char_stats()
 
 	// Put it in the right order.
 	ksort($context['posts_by_time']);
+}
+
+function char_summary($memID)
+{
+	global $context, $user_profile;
+	$cur_profile = $user_profile[$memID];
+	$main_char = $cur_profile['characters'][$cur_profile['main_char']];
+	loadTemplate('Profile-Chars');
+	summary($memID);
+	$context['member']['signature'] = $main_char['sig_parsed'];
+	$user_groups = array();
+	if (!empty($main_char['main_char_group']))
+		$user_groups[] = $main_char['main_char_group'];
+	if (!empty($cur_profile['id_group']))
+		$user_groups[] = $cur_profile['id_group'];
+	if (!empty($cur_profile['additional_groups']))
+		$user_groups = array_merge($user_groups, explode(',', $cur_profile['additional_groups']));
+	if (!empty($main_char['char_groups']))
+		$user_groups = array_merge($user_groups, explode(',', $main_char['char_groups']));
+
+	$details = get_labels_and_badges($user_groups);
+	$context['member']['group'] = $details['title'];
+	$context['member']['badges'] = $details['badges'];
 }
 
 ?>
