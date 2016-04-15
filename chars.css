@@ -110,3 +110,37 @@ div#char_theme_wrapper {
 #basicinfo  div.position {
 	margin-top: 10px;
 }
+
+#detailedinfo .character_list {
+	margin-top: 12px;
+	margin-bottom: 12px;
+	padding-top: 12px;
+	border-top: 1px solid #bfbfbf;
+}
+
+#detailedinfo .char_avatar {
+	display: table-cell;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+}
+
+#detailedinfo .char_avatar img {
+	max-width: 50px;
+	max-height: 50px;
+}
+
+#detailedinfo .char_name, #detailedinfo .char_group {
+	display: table-cell;
+	padding-left: 20px;
+	vertical-align: middle;
+}
+
+#detailedinfo .char_created {
+	font-size: 80%;
+}
+
+#detailedinfo ul.characters li {
+	display: table;
+	margin-bottom: 6px;
+}

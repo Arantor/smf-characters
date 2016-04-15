@@ -10,6 +10,7 @@ $txt['switch_chars'] = 'switch';
 $txt['change_theme'] = 'change';
 $txt['main_char'] = 'OOC account';
 $txt['main_char_desc'] = 'This is your \'main\' account, and should be used for posting in the Out Of Character (OOC) areas.';
+$txt['char_created'] = 'Character created at: %s';
 
 $txt['switch_to_char'] = 'Switch to this character';
 $txt['switch_to_char_menu'] = 'Reattribute to...';
