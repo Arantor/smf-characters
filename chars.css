@@ -130,6 +130,9 @@ div#char_theme_wrapper {
 	max-height: 50px;
 }
 
+#detailedinfo .char_name {
+	width: 300px;
+}
 #detailedinfo .char_name, #detailedinfo .char_group {
 	display: table-cell;
 	padding-left: 20px;
