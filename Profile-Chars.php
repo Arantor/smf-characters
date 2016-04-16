@@ -333,7 +333,29 @@ function char_edit() {
 		if ($new_avatar != $context['character']['avatar'])
 		{
 			if (filter_var($validatable_avatar, FILTER_VALIDATE_URL))
-				$changes['avatar'] = $new_avatar;
+			{
+				$size = get_avatar_url_size($new_avatar);
+				if (!$size)
+					$context['form_errors'][] = $txt['char_error_avatar_link_invalid'];
+				elseif (!empty($modSettings['avatar_max_width_external']))
+				{
+					if ($size[0] > $modSettings['avatar_max_width_external'] || $size[1] > $modSettings['avatar_max_height_external'])
+					{
+						$txt['char_error_avatar_oversize'] = sprintf(
+							$txt['char_error_avatar_oversize'],
+							$size[0],
+							$size[1],
+							$modSettings['avatar_max_width_external'],
+							$modSettings['avatar_max_height_external']
+						);
+						$context['form_errors'][] = $txt['char_error_avatar_oversize'];
+					}
+					else
+						$changes['avatar'] = $new_avatar;
+				}
+				else
+					$changes['avatar'] = $new_avatar;
+			}
 			elseif ($new_avatar != '')
 				$context['form_errors'][] = $txt['char_error_avatar_must_be_real_url'];
 		}
@@ -1128,4 +1150,77 @@ function char_summary($memID)
 	}
 }
 
+function get_avatar_url_size($url)
+{
+	global $sourcedir;
+	require_once($sourcedir . '/Class-CurlFetchWeb.php');
+
+	$fetch_data = new curl_fetch_web_data(array(
+		CURLOPT_CONNECTTIMEOUT => 5,
+		CURLOPT_TIMEOUT => 5,
+		CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246',
+		CURLOPT_RANGE => '0-16383',
+	));
+
+	$fetch_data->get_url_data($url);
+	if (in_array($fetch_data->result('code'), array(200, 206)) && !$fetch_data->result('error'))
+	{
+		$data = $fetch_data->result('body');
+		return get_image_size_from_string($data);
+	}
+	else
+		return false;
+}
+
+function get_image_size_from_string($data) {
+	if (empty($data)) {
+		return false;
+	}
+	if (strpos($data, 'GIF8') === 0) {
+		// It's a GIF. Doesn't really matter which subformat though. Note that things are little endian.
+		$width = (ord(substr($data, 7, 1)) << 8) + (ord(substr($data, 6, 1)));
+		$height = (ord(substr($data, 9, 1)) << 8) + (ord(substr($data, 8, 1)));
+		if (!empty($width)) {
+			return array($width, $height);
+		}
+	}
+
+	if (strpos($data, "\x89PNG") === 0) {
+		// Seems to be a PNG. Let's look for the signature of the header chunk, minimum 12 bytes in. PNG max sizes are (signed) 32 bits each way.
+		$pos = strpos($data, 'IHDR');
+		if ($pos >= 12) {
+			$width = (ord(substr($data, $pos + 4, 1)) << 24) + (ord(substr($data, $pos + 5, 1)) << 16) + (ord(substr($data, $pos + 6, 1)) << 8) + (ord(substr($data, $pos + 7, 1)));
+			$height = (ord(substr($data, $pos + 8, 1)) << 24) + (ord(substr($data, $pos + 9, 1)) << 16) + (ord(substr($data, $pos + 10, 1)) << 8) + (ord(substr($data, $pos + 11, 1)));
+			if ($width > 0 && $height > 0) {
+				return array($width, $height);
+			}
+		}
+	}
+
+	if (strpos($data, "\xFF\xD8") === 0)
+	{
+		// JPEG? Hmm, JPEG is tricky. Well, we found the SOI marker as expected and an APP0 marker, so good chance it is JPEG compliant.
+		// Need to step through the file looking for JFIF blocks.
+		$pos = 2;
+		$filelen = strlen($data);
+		while ($pos < $filelen) {
+			$length = (ord(substr($data, $pos + 2, 1)) << 8) + (ord(substr($data, $pos + 3, 1)));
+			$block = substr($data, $pos, 2);
+			if ($block == "\xFF\xC0" || $block == "\xFF\xC2") {
+				break;
+			}
+			$pos += $length + 2;
+		}
+		if ($pos > 2) {
+			// Big endian. SOF block is marker (2 bytes), block size (2 bytes), bits/pixel density (1 byte), image height (2 bytes), image width (2 bytes)
+			$width = (ord(substr($data, $pos + 7, 1)) << 8) + (ord(substr($data, $pos + 8, 1)));
+			$height = (ord(substr($data, $pos + 5, 1)) << 8) + (ord(substr($data, $pos + 6, 1)));
+			if ($width > 0 && $height > 0) {
+				return array($width, $height);
+			}
+		}
+	}
+
+	return false;
+}
 ?>

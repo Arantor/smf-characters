@@ -58,6 +58,9 @@ $txt['char_editing_error'] = 'This character could not be updated because:';
 $txt['char_error_character_must_have_name'] = 'Your character must have a name.';
 $txt['char_error_duplicate_character_name'] = 'Your character cannot have the same name as another character.';
 $txt['char_error_avatar_must_be_real_url'] = 'Your avatar must have a proper URL, beginning with http:// or https://.';
+$txt['char_error_avatar_link_invalid'] = 'That link doesn\'t point to an avatar.';
+$txt['char_error_avatar_oversize'] = 'That avatar is too big - it is %1$sx%2$s pixels but the maximum size is %3$sx%4$s pixels.';
+$txt['max_avatar_size'] = 'Maximum size: %1$sx%2$s pixels';
 
 $txt['char_register_nickname'] = 'Your nickname';
 $txt['char_register_charname'] = 'Your first character\'s name';

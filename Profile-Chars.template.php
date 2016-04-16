@@ -142,7 +142,7 @@ function template_character_profile() {
 }
 
 function template_edit_char() {
-	global $context, $txt, $scripturl;
+	global $context, $txt, $scripturl, $modSettings;
 
 	if ($context['char_updated'])
 	{
@@ -227,7 +227,20 @@ function template_edit_char() {
 					<dd>
 						<input type="text" name="char_name" id="char_name" size="50" value="', $context['character']['character_name'], '" maxlength="50" class="input_text">
 					</dd>
-					<dt>', $txt['avatar_link'], '</dt>
+					<dt>
+						', $txt['avatar_link'];
+	if (!empty($modSettings['avatar_max_width_external']))
+	{
+		echo '
+						<div class="smalltext">', sprintf(
+							$txt['max_avatar_size'],
+							$modSettings['avatar_max_width_external'],
+							$modSettings['avatar_max_height_external']
+						), '</div>';
+	}
+
+	echo '
+					</dt>
 					<dd>
 						<input type="text" name="avatar" id="avatar" size="50" value="', !empty($context['character']['avatar']) ? $context['character']['avatar'] : '', '" maxlength="255" class="input_type">
 					</dd>
