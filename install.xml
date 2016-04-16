@@ -1412,4 +1412,109 @@
 		);]]></add>
 		</operation>
 	</file>
+
+	<!-- Fixing post counts on post removal/restoration -->
+	<file name="$sourcedir/RemoveTopic.php">
+		<operation>
+			<search position="replace"><![CDATA[SELECT
+			m.id_member, m.icon, m.poster_time, m.subject,]]></search>
+			<add><![CDATA[SELECT
+			m.id_member, m.id_character, m.icon, m.poster_time, m.subject,]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[	if (!empty($row['id_member']) && $decreasePostCount && empty($row['count_posts']) && $row['approved'])
+		updateMemberData($row['id_member'], array('posts' => '-'));]]></search>
+			<add><![CDATA[	if (!empty($row['id_member']) && $decreasePostCount && empty($row['count_posts']) && $row['approved'])
+	{
+		updateMemberData($row['id_member'], array('posts' => '-'));
+		updateCharacterData($row['id_character'], array('posts' => '-'));
+	}]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		$requestMembers = $smcFunc['db_query']('', '
+			SELECT m.id_member, COUNT(*) AS posts
+			FROM {db_prefix}messages AS m
+				INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board)
+			WHERE m.id_topic IN ({array_int:topics})' . (!empty($recycle_board) ? '
+				AND m.id_board != {int:recycled_board}' : '') . '
+				AND b.count_posts = {int:do_count_posts}
+				AND m.approved = {int:is_approved}
+			GROUP BY m.id_member',
+			array(
+				'do_count_posts' => 0,
+				'recycled_board' => $recycle_board,
+				'topics' => $topics,
+				'is_approved' => 1,
+			)
+		);
+		if ($smcFunc['db_num_rows']($requestMembers) > 0)
+		{
+			while ($rowMembers = $smcFunc['db_fetch_assoc']($requestMembers))
+				updateMemberData($rowMembers['id_member'], array('posts' => 'posts - ' . $rowMembers['posts']));
+		}
+		$smcFunc['db_free_result']($requestMembers);]]></search>
+			<add><![CDATA[		$requestMembers = $smcFunc['db_query']('', '
+			SELECT m.id_member, m.id_character, COUNT(*) AS posts
+			FROM {db_prefix}messages AS m
+				INNER JOIN {db_prefix}boards AS b ON (b.id_board = m.id_board)
+			WHERE m.id_topic IN ({array_int:topics})' . (!empty($recycle_board) ? '
+				AND m.id_board != {int:recycled_board}' : '') . '
+				AND b.count_posts = {int:do_count_posts}
+				AND m.approved = {int:is_approved}
+			GROUP BY m.id_member, m.id_character',
+			array(
+				'do_count_posts' => 0,
+				'recycled_board' => $recycle_board,
+				'topics' => $topics,
+				'is_approved' => 1,
+			)
+		);
+		if ($smcFunc['db_num_rows']($requestMembers) > 0)
+		{
+			while ($rowMembers = $smcFunc['db_fetch_assoc']($requestMembers))
+			{
+				updateMemberData($rowMembers['id_member'], array('posts' => 'posts - ' . $rowMembers['posts']));
+				updateCharacterData($rowMembers['id_character'], array('posts' => 'posts - ' . $rowMembers['posts']));
+			}
+		}
+		$smcFunc['db_free_result']($requestMembers);]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[				// Lets get the members that need their post count restored.
+				$request2 = $smcFunc['db_query']('', '
+					SELECT id_member, COUNT(id_msg) AS post_count
+					FROM {db_prefix}messages
+					WHERE id_topic = {int:topic}
+						AND approved = {int:is_approved}
+					GROUP BY id_member',
+					array(
+						'topic' => $row['id_topic'],
+						'is_approved' => 1,
+					)
+				);
+
+				while ($member = $smcFunc['db_fetch_assoc']($request2))
+					updateMemberData($member['id_member'], array('posts' => 'posts + ' . $member['post_count']));
+				$smcFunc['db_free_result']($request2);]]></search>
+			<add><![CDATA[				// Lets get the members that need their post count restored.
+				$request2 = $smcFunc['db_query']('', '
+					SELECT id_member, id_character, COUNT(id_msg) AS post_count
+					FROM {db_prefix}messages
+					WHERE id_topic = {int:topic}
+						AND approved = {int:is_approved}
+					GROUP BY id_member, id_character',
+					array(
+						'topic' => $row['id_topic'],
+						'is_approved' => 1,
+					)
+				);
+
+				while ($member = $smcFunc['db_fetch_assoc']($request2))
+				{
+					updateMemberData($member['id_member'], array('posts' => 'posts + ' . $member['post_count']));
+					updateCharacterData($member['id_character'], array('posts' => 'posts + ' . $member['post_count']));
+				}
+				$smcFunc['db_free_result']($request2);]]></add>
+		</operation>
+	</file>
 </modification>
