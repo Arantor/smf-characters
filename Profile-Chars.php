@@ -1489,7 +1489,7 @@ function CharacterList()
 	list($context['char_count']) = $smcFunc['db_fetch_row']($request);
 	$smcFunc['db_free_result']($request);
 
-	$context['items_per_page'] = 5;
+	$context['items_per_page'] = 12;
 	$context['page_index'] = constructPageIndex($scripturl . '?action=characters;start=%1$d', $_REQUEST['start'], $context['char_count'], $context['items_per_page'], true);
 	$vars['start'] = $_REQUEST['start'];
 	$vars['limit'] = $context['items_per_page'];
