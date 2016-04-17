@@ -482,7 +482,7 @@ function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_paramet
 }
 
 function integrate_display_chars_messages(&$output, &$message, $counter) {
-	global $memberContext, $smcFunc, $txt, $scripturl, $board_info, $user_profile;
+	global $memberContext, $smcFunc, $txt, $scripturl, $board_info, $user_profile, $modSettings;
 
 	$output['id_character'] = $message['id_character'];
 
@@ -504,6 +504,15 @@ function integrate_display_chars_messages(&$output, &$message, $counter) {
 					'image' => '<img class="avatar" src="' . $character['avatar'] . '" alt="">',
 					'href' => $character['avatar'],
 					'url' => $character['avatar'],
+				);
+			}
+			else
+			{
+				$output['member']['avatar'] = array(
+					'name' => '',
+					'image' => '<img class="avatar" src="' . $modSettings['avatar_url'] . '/default.png" alt="">',
+					'href' => $modSettings['avatar_url'] . '/default.png',
+					'url' => $modSettings['avatar_url'] . '/default.png',
 				);
 			}
 			// We need to fix display of badges and everything - for reasons

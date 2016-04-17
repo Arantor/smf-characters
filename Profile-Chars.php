@@ -15,7 +15,7 @@ function chars_profile_field(&$profile_fields)
 }
 
 function chars_profile_menu(&$profile_areas) {
-	global $context, $cur_profile, $scripturl, $txt;
+	global $context, $cur_profile, $scripturl, $txt, $modSettings;
 
 	// Replacing with our wrapper
 	$profile_areas['info']['areas']['summary']['function'] = 'char_summary';
@@ -73,7 +73,8 @@ function chars_profile_menu(&$profile_areas) {
 	// Now we need to add the user's characters to the profile menu, "creatively".
 	if (!empty($cur_profile['characters'])) {
 		addInlineCss('
-span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }');
+span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }
+span.char_unknown { background-image: url(' . $modSettings['avatar_url'] . '/default.png); }');
 		foreach ($cur_profile['characters'] as $id_character => $character) {
 			if (!empty($character['avatar'])) {
 				addInlineCss('
@@ -82,7 +83,7 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 			$insert_array['chars']['areas']['character_' . $id_character] = array(
 				'function' => 'character_profile',
 				'label' => $character['character_name'],
-				'icon' => !empty($character['avatar']) ? 'char_avatar character_' . $id_character : '',
+				'icon' => !empty($character['avatar']) ? 'char_avatar character_' . $id_character : 'char_avatar char_unknown',
 				'enabled' => true,
 				'permission' => $own_any,
 				'select' => 'characters',

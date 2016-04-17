@@ -63,7 +63,7 @@ function template_characters_popup() {
 }
 
 function template_character_profile() {
-	global $context, $txt, $user_profile, $scripturl, $user_info;
+	global $context, $txt, $user_profile, $scripturl, $user_info, $modSettings;
 
 	echo '
 		<div id="admin_content">
@@ -84,7 +84,7 @@ function template_character_profile() {
 			<img class="avatar" src="', $context['character']['avatar'], '" alt=""><br /><br />';
 	else
 		echo '
-			<img class="avatar" src="', $context['member']['avatar']['href'], '" alt=""><br /><br />';
+			<img class="avatar" src="', $modSettings['avatar_url'], '/default.png" alt=""><br /><br />';
 
 	if ($context['user']['is_owner'] && $user_info['id_character'] != $context['character']['id_character'])
 	{
@@ -986,7 +986,7 @@ function template_char_summary()
 			echo '
 					<li>
 						<div class="char_avatar">
-							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="">' : '', '
+							', !empty($char['avatar']) ? '<img src="' . $char['avatar'] . '" alt="">' : '<img src="' . $modSettings['avatar_url'] . '/default.png" alt="">', '
 						</div>
 						<div class="char_name">
 							<a href="', $scripturl, $char['character_url'], '">', $char['character_name'], '</a>
