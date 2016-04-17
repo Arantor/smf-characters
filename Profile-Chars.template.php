@@ -1011,4 +1011,67 @@ function template_char_summary()
 <div class="clear"></div>';
 }
 
+function template_char_merge_account()
+{
+	global $scripturl, $txt, $context;
+
+	echo '
+		<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=merge_acct;save" method="post" accept-charset="', $context['character_set'], '" name="creator" id="creator">
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['merge_char_account'], '
+				</h3>
+			</div>
+			<p class="information">', $txt['merge_char_account_desc'], '</p>
+			<div class="windowbg2">
+				<div class="alert">', $txt['deleteAccount_warning'], '</div>
+				<br>
+				<dl>
+					<dt>', $txt['merge_char_from'], '</dt>
+					<dd>
+						<input type="text" class="input_text" name="merge_acct" id="merge_acct">
+					</dd>
+				</dl>
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+				<input type="submit" value="', $txt['merge_char_account'], '" class="button_submit">
+			</div>
+		</form>
+		<script>
+			var oMergeMemberSuggest = new smc_AutoSuggest({
+				sSelf: \'oMergeMemberSuggest\',
+				sSessionId: smf_session_id,
+				sSessionVar: smf_session_var,
+				sControlId: \'merge_acct\',
+				sSearchType: \'member\',
+				bItemList: false
+			});
+		</script>';
+}
+
+function template_char_merge_account_confirm()
+{
+	global $scripturl, $txt, $context;
+
+	echo '
+		<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=merge_acct;save" method="post" accept-charset="', $context['character_set'], '" name="creator" id="creator">
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['merge_char_account'], '
+				</h3>
+			</div>
+			<p class="information">', $txt['merge_char_account_desc'], '</p>
+			<div class="windowbg2">
+				<div class="alert">', $txt['deleteAccount_warning'], '</div>
+				<br>
+				<div>', sprintf($txt['merge_are_you_sure'],
+					'<a class="new_win" target="_blank" href="' . $scripturl . '?action=profile;u=' . $context['id_member'] . '">' . $context['member']['name'] . '</a>',
+					'<a class="new_win" target="_blank" href="' . $scripturl . '?action=profile;u=' . $context['merge_destination_id'] . '">' . $context['merge_destination']['real_name'] . '</a>'
+				), '
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+				<input type="hidden" name="merge_acct_id" value="', $context['merge_destination_id'], '">
+				<input type="submit" value="', $txt['merge_char_account'], '" class="button_submit">
+			</div>
+		</form>';
+}
+
 ?>

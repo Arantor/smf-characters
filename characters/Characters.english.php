@@ -33,6 +33,11 @@ $txt['no_primary_character_group'] = '(no primary character group)';
 
 $txt['search_by_character'] = 'By character';
 
+$txt['merge_char_account'] = 'Merge account';
+$txt['merge_char_account_desc'] = 'From here you can merge this account into another, moving all the characters and posts across.';
+$txt['merge_char_from'] = 'Which account do you want to merge this one into?';
+$txt['merge_are_you_sure'] = 'Are you sure you want to merge all the posts and characters from %1$s into %2$s\'s account?';
+
 $txt['avatar_link'] = 'Avatar link:';
 $txt['avatar_preview'] = 'Avatar preview:';
 $txt['no_avatar_yet'] = 'You don\'t have an avatar yet, add the link above';
@@ -61,6 +66,15 @@ $txt['char_error_avatar_must_be_real_url'] = 'Your avatar must have a proper URL
 $txt['char_error_avatar_link_invalid'] = 'That link doesn\'t point to an avatar.';
 $txt['char_error_avatar_oversize'] = 'That avatar is too big - it is %1$sx%2$s pixels but the maximum size is %3$sx%4$s pixels.';
 $txt['max_avatar_size'] = 'Maximum size: %1$sx%2$s pixels';
+
+$txt['cannot_merge_admin'] = 'You cannot merge from an admin account, only to an admin account.';
+$txt['cannot_merge_self'] = 'You cannot merge from your own account into another.';
+$txt['cannot_merge_not_found'] = 'Sorry, the account to merge into could not be found.';
+$txt['cannot_merge_no_same'] = 'Sorry, you can\'t merge an account onto itself.';
+$txt['cannot_merge_no_exist'] = 'Sorry, one of the accounts you\'re trying to merge doesn\'t exist.';
+$txt['cannot_merge_admin'] = 'Sorry, you can\'t merge from an admin account.';
+$txt['cannot_merge_no_main'] = 'Sorry, there is a problem with the accounts you\'re trying to merge, no OOC character is present.';
+$txt['merge_success'] = 'The characters from %1$s were successfully merged into this account.';
 
 $txt['char_register_nickname'] = 'Your nickname';
 $txt['char_register_charname'] = 'Your first character\'s name';

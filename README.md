@@ -16,6 +16,7 @@ Features (not all implemented yet!):
 
 # Caveats
  * Requestable groups/joinable groups are only ever handled at account level, never character level.
+ * Merging accounts does not preserve the source (from) account's likes or poll votes. PMs are preserved; PM labels are not.
 
 # Disclaimer
 

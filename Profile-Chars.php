@@ -29,6 +29,10 @@ function chars_profile_menu(&$profile_areas) {
 		'own' => 'is_not_guest',
 		'any' => 'profile_view',
 	);
+	$not_own_admin_only = array(
+		'own' => array(),
+		'any' => array('admin_forum'),
+	);
 
 	$profile_areas['info']['areas']['characters_popup'] = array(
 		'function' => 'characters_popup',
@@ -47,6 +51,12 @@ function chars_profile_menu(&$profile_areas) {
 		'permission' => $own_only,
 		'enabled' => $context['user']['is_owner'],
 		'select' => 'summary',
+	);
+	$profile_areas['profile_action']['areas']['merge_acct'] = array(
+		'label' => $txt['merge_char_account'],
+		'function' => 'char_merge_account',
+		'permission' => $not_own_admin_only,
+		'icon' => 'merge',
 	);
 
 	$insert_array['chars'] = array(
@@ -1116,6 +1126,13 @@ function char_stats()
 function char_summary($memID)
 {
 	global $context, $user_profile;
+
+	if (!empty($_SESSION['merge_success']))
+	{
+		$context['profile_updated'] = $_SESSION['merge_success'];
+		unset ($_SESSION['merge_success']);
+	}
+
 	$cur_profile = $user_profile[$memID];
 	$main_char = $cur_profile['characters'][$cur_profile['main_char']];
 	loadTemplate('Profile-Chars');
@@ -1148,6 +1165,222 @@ function char_summary($memID)
 		$details = get_labels_and_badges($user_groups);
 		$context['member']['display_group'] = $details['title'];
 	}
+}
+
+function char_merge_account($memID)
+{
+	global $context, $txt, $user_profile, $smcFunc;
+
+	// Some basic sanity checks.
+	if ($context['user']['is_owner'])
+		fatal_lang_error('cannot_merge_self', false);
+	if ($user_profile[$memID]['id_group'] == 1 || in_array('1', explode(',', $user_profile[$memID]['additional_groups'])))
+		fatal_lang_error('cannot_merge_admin', false);
+
+	loadTemplate('Profile-Chars');
+	loadJavascriptFile('suggest.js', array('default_theme' => true, 'defer' => false), 'smf_suggest');
+	$context['page_title'] = $txt['merge_char_account'];
+
+	if (isset($_POST['merge_acct_id']))
+	{
+		checkSession();
+		$result = merge_char_accounts($context['id_member'], $_POST['merge_acct_id']);
+		if ($result !== true)
+			fatal_lang_error('cannot_merge_' . $result, false);
+
+		$_SESSION['merge_success'] = sprintf($txt['merge_success'], $context['member']['name']);
+
+		redirectexit('action=profile;u=' . $_POST['merge_acct_id']);
+	}
+	elseif (isset($_POST['merge_acct']))
+	{
+		checkSession();
+
+		// We picked an account to merge, let's see if we can find and if we can,
+		// get its details so that we can check for sure it's what the user wants.
+		$name = $smcFunc['htmlspecialchars']($_POST['merge_acct'], ENT_QUOTES);
+		$request = $smcFunc['db_query']('', '
+			SELECT id_member
+			FROM {db_prefix}members
+			WHERE real_name = {string:name}',
+			array(
+				'name' => $name,
+			)
+		);
+		if ($smcFunc['db_num_rows']($request) == 0)
+			fatal_lang_error('cannot_merge_not_found', false);
+
+		list ($dest) = $smcFunc['db_fetch_row']($request);
+		$smcFunc['db_free_result']($request);
+
+		loadMemberData($dest);
+
+		$context['merge_destination_id'] = $dest;
+		$context['merge_destination'] = $user_profile[$dest];
+		$context['sub_template'] = 'char_merge_account_confirm';
+	}
+}
+
+function merge_char_accounts($source, $dest)
+{
+	global $user_profile, $sourcedir, $smcFunc;
+
+	if ($source == $dest)
+		return 'no_same';
+
+	$loaded = loadMemberData(array($source, $dest));
+	if (!in_array($source, $loaded) || !in_array($dest, $loaded))
+		return 'no_exist';
+
+	if ($user_profile[$source]['id_group'] == 1 || in_array('1', explode(',', $user_profile[$source]['additional_groups'])))
+		return 'no_merge_admin';
+
+	// Work out which the main characters are.
+	$source_main = 0;
+	$dest_main = 0;
+	foreach ($user_profile[$source]['characters'] as $id_char => $char)
+	{
+		if ($char['is_main'])
+		{
+			$source_main = $id_char;
+			break;
+		}
+	}
+	foreach ($user_profile[$dest]['characters'] as $id_char => $char)
+	{
+		if ($char['is_main'])
+		{
+			$dest_main = $id_char;
+			break;
+		}
+	}
+	if (empty($source_main) || empty($dest_main))
+		return 'no_main';
+
+	// Move characters
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET id_member = {int:dest}
+		WHERE id_member = {int:source}
+			AND id_character != {int:source_main}',
+		array(
+			'source' => $source,
+			'source_main' => $source_main,
+			'dest' => $dest,
+			'dest_main' => $dest_main,
+		)
+	);
+
+	// Move posts over - main
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}messages
+		SET id_member = {int:dest},
+			id_character = {int:dest_main}
+		WHERE id_member = {int:source}
+			AND id_character = {int:source_main}',
+		array(
+			'source' => $source,
+			'source_main' => $source_main,
+			'dest' => $dest,
+			'dest_main' => $dest_main,
+		)
+	);
+
+	// Move posts over - characters (i.e. whatever's left)
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}messages
+		SET id_member = {int:dest}
+		WHERE id_member = {int:source}',
+		array(
+			'source' => $source,
+			'dest' => $dest,
+		)
+	);
+
+	// Fix post counts of destination accounts
+	$total_posts = 0;
+	foreach ($user_profile[$source]['characters'] as $char)
+		$total_posts += $char['posts'];
+
+	if (!empty($total_posts))
+		updateMemberData($dest, array('posts' => 'posts + ' . $total_posts));
+
+	if (!empty($user_profile[$source]['characters'][$source_main]['posts']))
+		updateCharacterData($dest_main, array('posts' => 'posts + ' . $user_profile[$source]['characters'][$source_main]['posts']));
+
+	// Reassign topics
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}topics
+		SET id_member_started = {int:dest}
+		WHERE id_member_started = {int:source}',
+		array(
+			'source' => $source,
+			'dest' => $dest,
+		)
+	);
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}topics
+		SET id_member_updated = {int:dest}
+		WHERE id_member_updated = {int:source}',
+		array(
+			'source' => $source,
+			'dest' => $dest,
+		)
+	);
+
+	// Move PMs - sent items
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}personal_messages
+		SET id_member_from = {int:dest}
+		WHERE id_member_from = {int:source}',
+		array(
+			'source' => $source,
+			'dest' => $dest,
+		)
+	);
+
+	// Move PMs - received items
+	// First we have to get all the existing recipient rows
+	$rows = array();
+	$request = $smcFunc['db_query']('', '
+		SELECT id_pm, bcc, is_read, is_new, deleted
+		FROM {db_prefix}pm_recipients
+		WHERE id_member = {int:source}',
+		array(
+			'source' => $source,
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$rows[] = array(
+			'id_pm' => $row['id_pm'],
+			'id_member' => $dest,
+			'bcc' => $row['bcc'],
+			'is_read' => $row['is_read'],
+			'is_new' => $row['is_new'],
+			'deleted' => $row['deleted'],
+			'is_inbox' => 1,
+		);
+	}
+	$smcFunc['db_free_result']($request);
+	if (!empty($rows))
+	{
+		$smcFunc['db_insert']('ignore',
+			'{db_prefix}pm_recipients',
+			array(
+				'id_pm' => 'int', 'id_member' => 'int', 'bcc' => 'int', 'is_read' => 'int',
+				'is_new' => 'int', 'deleted' => 'int', 'is_inbox' => 'int',
+			),
+			$rows,
+			array('id_pm', 'id_member')
+		);
+	}
+
+	// Delete the source user
+	require_once($sourcedir . '/Subs-Members.php');
+	deleteMembers($source);
+
+	return true;
 }
 
 function get_avatar_url_size($url)
