@@ -1457,4 +1457,80 @@ function get_image_size_from_string($data) {
 
 	return false;
 }
+
+function CharacterList()
+{
+	global $context, $smcFunc, $txt, $scripturl, $modSettings;
+	global $image_proxy_enabled, $image_proxy_secret;
+
+	isAllowedTo('view_mlist');
+	loadTemplate('Profile-Chars');
+
+	$context['page_title'] = $txt['chars_menu_title'];
+	$context['sub_template'] = 'character_list';
+	$context['linktree'][] = array(
+		'name' => $txt['chars_menu_title'],
+		'url' => $scripturl . '?action=characters',
+	);
+
+	$clauses = array(
+		'chars.is_main = {int:not_main}',
+	);
+	$vars = array(
+		'not_main' => 0,
+	);
+
+	$request = $smcFunc['db_query']('', '
+		SELECT COUNT(id_character)
+		FROM {db_prefix}characters AS chars
+		WHERE ' . implode(' AND ', $clauses),
+		$vars
+	);
+	list($context['char_count']) = $smcFunc['db_fetch_row']($request);
+	$smcFunc['db_free_result']($request);
+
+	$context['items_per_page'] = 5;
+	$context['page_index'] = constructPageIndex($scripturl . '?action=characters;start=%1$d', $_REQUEST['start'], $context['char_count'], $context['items_per_page'], true);
+	$vars['start'] = $_REQUEST['start'];
+	$vars['limit'] = $context['items_per_page'];
+
+	$context['char_list'] = array();
+	if (!empty($context['char_count']))
+	{
+		if (!empty($modSettings['avatar_max_width_external']))
+		{
+			addInlineCss('
+.char_list_avatar { width: ' . $modSettings['avatar_max_width_external'] . 'px; height: ' . $modSettings['avatar_max_height_external'] . 'px; }
+.char_list_name { max-width: ' . $modSettings['avatar_max_width_external'] . 'px; }');
+		}
+
+		$request = $smcFunc['db_query']('', '
+			SELECT chars.id_character, chars.id_member, chars.character_name,
+				chars.avatar, chars.posts, chars.date_created,
+				chars.main_char_group, chars.char_groups
+			FROM {db_prefix}characters AS chars
+			WHERE ' . implode(' AND ', $clauses) . '
+			ORDER BY chars.character_name
+			LIMIT {int:start}, {int:limit}',
+			$vars
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			if ($image_proxy_enabled && !empty($row['avatar']) && stripos($row['avatar'], 'http://') !== false)
+				$row['avatar'] = $boardurl . '/proxy.php?request=' . urlencode($row['avatar']) . '&hash=' . md5($row['avatar'] . $image_proxy_secret);
+			elseif (empty($row['avatar']))
+				$row['avatar'] = $modSettings['avatar_url'] . '/default.png';
+
+			$groups = !empty($row['main_char_group']) ? array($row['main_char_group']) : array();
+			$groups = array_merge($groups, explode(',', $row['char_groups']));
+			$details = get_labels_and_badges($groups);
+			$row['group_title'] = $details['title'];
+			$row['group_color'] = $details['color'];
+			$row['group_badges'] = $details['badges'];
+			$context['char_list'][] = $row;
+		}
+		$smcFunc['db_free_result']($request);
+	}
+}
+
 ?>

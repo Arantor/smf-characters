@@ -89,6 +89,9 @@ $txt['char_group_level'] = 'Group Level';
 $txt['char_group_level_acct'] = 'Account-Bound';
 $txt['char_group_level_char'] = /* 'Soul-bound' */ 'Character-Bound';
 
+$txt['characters_none'] = 'No characters found.';
+$txt['char_no_group'] = 'Just starting out...';
+
 $txt['char_unknown'] = '[Unknown]';
 $txt['alert_msg_quotechr'] = '{char_link} quoted {your_chr} in the post {msg_msg}';
 $txt['alert_msg_mentionchr'] = '{char_link} mentioned {your_chr} in the post {msg_msg}';

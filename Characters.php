@@ -342,7 +342,7 @@ function integrate_chars()
 	);
 	add_integration_function(
 		'integrate_menu_buttons',
-		'integrate_remove_logout',
+		'integrate_chars_main_menu',
 		false
 	);
 	add_integration_function(
@@ -438,9 +438,10 @@ function integrate_chars()
 function integrate_chars_actions(&$actionArray)
 {
 	$actionArray['reattributepost'] = array('Characters.php', 'ReattributePost');
+	$actionArray['characters'] = array('Profile-Chars.php', 'CharacterList');
 }
 
-function integrate_remove_logout(&$buttons)
+function integrate_chars_main_menu(&$buttons)
 {
 	global $context, $scripturl, $txt;
 
@@ -455,6 +456,25 @@ function integrate_remove_logout(&$buttons)
 	$(\'#top_info\').append(\'<li><a href="' . $scripturl . '?action=logout;' . $context['session_var'] . '=' . $context['session_id'] . '">' . $txt['logout'] . '</a></li>\');
 	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");', true);
 	}
+
+	// Now add a characters menu, to effectively replace the members menu.
+	$temp_buttons = array();
+	foreach ($buttons as $k => $v)
+	{
+		if ($k == 'mlist')
+		{
+			$temp_buttons['characters'] = array(
+				'title' => $txt['chars_menu_title'],
+				'icon' => 'mlist',
+				'href' => $scripturl . '?action=characters',
+				'show' => $context['allow_memberlist'],
+				'sub_buttons' => array(),
+			);
+			continue;
+		}
+		$temp_buttons[$k] = $v;
+	}
+	$buttons = $temp_buttons;
 }
 
 function integrate_chars_buffer($buffer)

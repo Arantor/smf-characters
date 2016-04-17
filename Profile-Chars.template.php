@@ -1074,4 +1074,41 @@ function template_char_merge_account_confirm()
 		</form>';
 }
 
+function template_character_list()
+{
+	global $context, $txt, $scripturl;
+
+	echo '
+		<div class="cat_bar">
+			<h3 class="catbg">
+				<span class="generic_icons mlist"></span>
+				', $txt['chars_menu_title'], '
+			</h3>
+		</div>';
+
+	if (empty($context['char_list']))
+	{
+		echo '
+		<div class="windowbg2">', $txt['characters_none'], '</div>';
+	}
+	else
+	{
+		echo $context['page_index'], '
+			<div class="char_list_container">';
+		foreach ($context['char_list'] as $char)
+		{
+			echo '
+				<div class="windowbg2 char_list">
+					<div class="char_list_name"><a href="', $scripturl, '?action=profile;u=', $char['id_member'], ';area=characters;char=', $char['id_character'], '">', $char['character_name'], '</a></div>
+					<div class="char_list_avatar"><img src="', $char['avatar'], '" class="avatar"></div>
+					<div class="char_list_group">', !empty($char['group_title']) ? $char['group_title'] : '<em>' . $txt['char_no_group'] . '</em>', '</div>
+					<div class="char_list_posts">', $txt['member_postcount'], ': ', $char['posts'], '</div>
+					<div class="char_list_created">', timeformat($char['date_created']), '</div>
+				</div>';
+		}
+		echo '
+			</div>';
+	}
+}
+
 ?>
