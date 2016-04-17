@@ -872,6 +872,11 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 
 function get_char_membergroup_data() {
 	global $smcFunc;
+	static $groups = null;
+
+	if ($groups !== null)
+		return $groups;
+
 	// We will want to get all the membergroups since potentially we're doing display
 	// of multiple per character. We need to fetch them in the order laid down
 	// by admins for display purposes and we will need to cache it.
