@@ -1004,22 +1004,6 @@ function template_char_summary()
 		echo '
 				</ul>';
 	}
-	/*
-  'id_character' => string '2' (length=1)
-  'character_name' => string 'Edward Prendergast' (length=18)
-  'character_url' => string '?action=profile;u=1;area=characters;char=2' (length=42)
-  'avatar' => string 'http://i227.photobucket.com/albums/dd247/declanodwyer/chars/Declan/reznorsigs/463522356-Copy.png' (length=96)
-  'signature' => string 'My [b]signature[/b] goes here<br><br>And I have &quot;multiple&quot; &#39;lines&#39; of signature.' (length=98)
-  'sig_parsed' => string 'My <b>signature</b> goes here<br><br>And I have &quot;multiple&quot; &#39;lines&#39; of signature.' (length=98)
-  'id_theme' => string '0' (length=1)
-  'posts' => string '5' (length=1)
-  'age' => string '26' (length=2)
-  'date_created' => string '1445691781' (length=10)
-  'last_active' => string '1460760695' (length=10)
-  'is_main' => string '0' (length=1)
-  'main_char_group' => string '0' (length=1)
-  'char_groups' => string '11' (length=2)
-	*/
 
 	echo '
 		</div>
