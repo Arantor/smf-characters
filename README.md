@@ -12,7 +12,6 @@ Features (not all implemented yet!):
  * Edits to characters show up in the profile edit log.
  * Designate boards as 'out of character' so that only the 'main character' (aka account itself) can post there.
  * Merge accounts in case users register a second account, expecting typical sub-account behaviour.
- * Move the logout button to the profile area up top rather than the main menu.
 
 # Caveats
  * Requestable groups/joinable groups are only ever handled at account level, never character level.
