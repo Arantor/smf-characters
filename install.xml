@@ -117,15 +117,15 @@
 			<search position="replace"><![CDATA[
 		$smcFunc['db_insert']($do_delete ? 'ignore' : 'replace',
 			'{db_prefix}log_online',
-			array('session' => 'string', 'id_member' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'raw', 'url' => 'string'),
-			array($session_id, $user_info['id'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'COALESCE(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
+			array('session' => 'string', 'id_member' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'inet', 'url' => 'string'),
+			array($session_id, $user_info['id'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), $user_info['ip'], $serialized),
 			array('session')
 		);]]></search>
 			<add><![CDATA[
 		$smcFunc['db_insert']($do_delete ? 'ignore' : 'replace',
 			'{db_prefix}log_online',
-			array('session' => 'string', 'id_member' => 'int', 'id_character' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'raw', 'url' => 'string'),
-			array($session_id, $user_info['id'], $user_info['id_character'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), 'COALESCE(INET_ATON(\'' . $user_info['ip'] . '\'), 0)', $serialized),
+			array('session' => 'string', 'id_member' => 'int', 'id_character' => 'int', 'id_spider' => 'int', 'log_time' => 'int', 'ip' => 'inet', 'url' => 'string'),
+			array($session_id, $user_info['id'], $user_info['id_character'], empty($_SESSION['id_robot']) ? 0 : $_SESSION['id_robot'], time(), $user_info['ip'], $serialized),
 			array('session')
 		);]]></add>
 		</operation>
@@ -149,7 +149,7 @@
 		<operation>
 			<search position="replace"><![CDATA[
 		SELECT
-			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, mem.real_name,
+			lo.log_time, lo.id_member, lo.url, lo.ip AS ip, mem.real_name,
 			lo.session, mg.online_color, COALESCE(mem.show_online, 1) AS show_online,
 			lo.id_spider
 		FROM {db_prefix}log_online AS lo
@@ -157,7 +157,7 @@
 			LEFT JOIN {db_prefix}membergroups AS mg ON (mg.id_group = CASE WHEN mem.id_group = {int:regular_member} THEN mem.id_post_group ELSE mem.id_group END)' . (!empty($conditions) ? ']]></search>
 			<add><![CDATA[
 		SELECT
-			lo.log_time, lo.id_member, lo.url, INET_NTOA(lo.ip) AS ip, lo.id_character, COALESCE(chars.character_name, mem.real_name) AS real_name,
+			lo.log_time, lo.id_member, lo.url, lo.ip AS ip, lo.id_character, COALESCE(chars.character_name, mem.real_name) AS real_name,
 			lo.session, IF(chars.is_main, mg.online_color, cg.online_color) AS online_color, COALESCE(mem.show_online, 1) AS show_online,
 			lo.id_spider
 		FROM {db_prefix}log_online AS lo
@@ -1032,9 +1032,11 @@
 		FROM {db_prefix}members
 		WHERE ' . $where . '
 		ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
-		LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+		LIMIT {int:start}, {int:max}',
 		array(
 			'group' => $_REQUEST['group'],
+			'start' => $context['start'],
+			'max' => $modSettings['defaultMaxMembers'],
 		)
 	);]]></search>
 			<add><![CDATA[	// Load up all members of this group.
@@ -1047,9 +1049,11 @@
 				INNER JOIN {db_prefix}characters AS chars ON (chars.id_member = mem.id_member)
 			WHERE ' . $where . '
 			ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
-			LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+			LIMIT {int:start}, {int:max}',
 			array(
 				'group' => $_REQUEST['group'],
+				'start' => $context['start'],
+				'max' => $modSettings['defaultMaxMembers'],
 			)
 		);
 	} else {
@@ -1059,9 +1063,11 @@
 			FROM {db_prefix}members
 			WHERE ' . $where . '
 			ORDER BY ' . $querySort . ' ' . ($context['sort_direction'] == 'down' ? 'DESC' : 'ASC') . '
-			LIMIT ' . $context['start'] . ', ' . $modSettings['defaultMaxMembers'],
+			LIMIT {int:start}, {int:max}',
 			array(
 				'group' => $_REQUEST['group'],
+				'start' => $context['start'],
+				'max' => $modSettings['defaultMaxMembers'],
 			)
 		);
 	}
