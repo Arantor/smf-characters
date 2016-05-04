@@ -947,7 +947,7 @@ function get_labels_and_badges($group_list)
 
 		if (file_exists($settings['actual_theme_dir'] . '/images/membericons/' . $badge))
 			$group_icon_url = $settings['images_url'] . '/membericons/' . $badge;
-		elseif (isset($profile['icons'][1]))
+		elseif (file_exists($settings['default_images_url'] . '/membericons/' . $badge))
 			$group_icon_url = $settings['default_images_url'] . '/membericons/' . $badge;
 		else
 			$group_icon_url = '';
