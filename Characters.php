@@ -891,7 +891,7 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 }
 
 function get_char_membergroup_data() {
-	global $smcFunc;
+	global $smcFunc, $settings, $context;
 	static $groups = null;
 
 	if ($groups !== null)
@@ -909,7 +909,29 @@ function get_char_membergroup_data() {
 			WHERE hidden != 2
 			ORDER BY badge_order');
 		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			$row['parsed_icons'] = '';
+			if (!empty($row['icons']))
+			{
+				list($qty, $badge) = explode('#', $row['icons']);
+				if ($qty > 0)
+				{
+					if (file_exists($settings['actual_theme_dir'] . '/images/membericons/' . $badge))
+						$group_icon_url = $settings['images_url'] . '/membericons/' . $badge;
+					elseif (file_exists($settings['default_images_url'] . '/membericons/' . $badge))
+						$group_icon_url = $settings['default_images_url'] . '/membericons/' . $badge;
+					else
+						$group_icon_url = '';
+
+					if (!empty($group_icon_url))
+					{
+						$row['parsed_icons'] = str_repeat('<img src="' . str_replace('$language', $context['user']['language'], $group_icon_url) . '" alt="*">', $qty);
+					}
+				}
+			}
+
 			$groups[$row['id_group']] = $row;
+		}
 
 		$smcFunc['db_free_result']($request);
 		cache_put_data('char_membergroups', $groups, 300);
@@ -938,24 +960,10 @@ function get_labels_and_badges($group_list)
 			$group_color = $groups[$id_group]['online_color'];
 		}
 
-		if (empty($groups[$id_group]['icons']))
+		if (empty($groups[$id_group]['parsed_icons']))
 			continue;
 
-		list($qty, $badge) = explode('#', $groups[$id_group]['icons']);
-		if ($qty == 0)
-			continue;
-
-		if (file_exists($settings['actual_theme_dir'] . '/images/membericons/' . $badge))
-			$group_icon_url = $settings['images_url'] . '/membericons/' . $badge;
-		elseif (file_exists($settings['default_images_url'] . '/membericons/' . $badge))
-			$group_icon_url = $settings['default_images_url'] . '/membericons/' . $badge;
-		else
-			$group_icon_url = '';
-
-		if (empty($group_icon_url))
-			continue;
-
-		$badges .= '<div>' . str_repeat('<img src="' . str_replace('$language', $context['user']['language'], $group_icon_url) . '" alt="*">', $qty) . '</div>';
+		$badges .= '<div>' . $groups[$id_group]['parsed_icons'] . '</div>';
 
 		$badges_done++;
 		if ($badges_done >= $group_limit) {
