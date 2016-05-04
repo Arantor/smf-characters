@@ -168,3 +168,14 @@ div#char_theme_wrapper {
 	margin-left: auto;
 	margin-right: auto;
 }
+#filter_opts .filter_container {
+	width: 230px;
+	display: inline-block;
+	vertical-align:top;
+	margin: 10px;
+}
+#filter_opts label input {
+	float: left;
+	margin-top: 0;
+	margin-right: 5px;
+}

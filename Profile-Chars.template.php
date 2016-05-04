@@ -1086,6 +1086,61 @@ function template_character_list()
 			</h3>
 		</div>';
 
+	if (!empty($context['filterable_groups']))
+	{
+		echo '
+		<div class="information">
+			<form action="', $scripturl, '?action=characters" method="post">
+				<a href="javascript:void(0);" id="filter_opts_link" onclick="$(\'#filter_opts\').show(); $(this).hide(); return false;" class="toggle_down">', $txt['filter_characters'], '</a>
+				<fieldset id="filter_opts" style="display:none">
+					<legend>
+						<a href="javascript:void(0);" onclick="$(this).closest(\'fieldset\').hide();$(\'#filter_opts_link\').show(); return false;" class="toggle_up"> ', $txt['filter_characters'], '</a>
+					</legend>';
+		foreach ($context['filterable_groups'] as $id_group => $group)
+		{
+			if (is_array($context['filter_groups']))
+			{
+				$disabled = false;
+				$checked = in_array($id_group, $context['filter_groups']);
+			}
+			else
+			{
+				$disabled = true;
+				$checked = false;
+			}
+			echo '
+					<div class="filter_container">
+						<label>
+							<input type="checkbox"', $checked ? ' checked' : '', $disabled ? ' disabled' : '', ' name="filter[]" value="', $id_group, '">
+							<div class="group_name">', $group['group_name'], '</div>
+							<div class="group_badge">', $group['parsed_icons'], '</div>
+						</label>
+					</div>';
+		}
+		if (allowedTo('admin_forum'))
+		{
+			echo '
+					<div class="filter_container">
+						<label>
+							<input type="checkbox"', $context['filter_groups'] === true ? ' checked' : '', ' name="filter[]" id="ungroup" value="-1" onchange="$(\'.filter_container input:not(#ungroup)\').prop(\'disabled\', this.checked)">
+							<div class="group_name">', $txt['characters_in_no_groups'], '</div>
+							<div class="group_badge"></div>
+						</label>
+					</div>';
+		}
+		echo '
+					<div class="clearfix">
+						<input type="submit" class="button_submit" value="', $txt['apply_filter'], '">
+					</div>
+				</fieldset>
+			</form>
+		</div>';
+		if (!empty($context['filter_groups']))
+		{
+			addInlineJavascript('$(\'#filter_opts_link\').trigger(\'click\');', true);
+		}
+	}
+
 	if (empty($context['char_list']))
 	{
 		echo '
