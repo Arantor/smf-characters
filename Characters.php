@@ -904,7 +904,7 @@ function get_char_membergroup_data() {
 	{
 		$groups = array();
 		$request = $smcFunc['db_query']('', '
-			SELECT id_group, group_name, online_color, icons
+			SELECT id_group, group_name, online_color, icons, is_character
 			FROM {db_prefix}membergroups
 			WHERE hidden != 2
 			ORDER BY badge_order');

@@ -1473,12 +1473,65 @@ function CharacterList()
 		'url' => $scripturl . '?action=characters',
 	);
 
+	$context['filterable_groups'] = array();
+	foreach (get_char_membergroup_data() as $id_group => $group)
+	{
+		if ($group['is_character'])
+			$context['filterable_groups'][$id_group] = $group;
+	}
+
+	$context['filter_groups'] = array();
+	$filter = array();
+	if (isset($_POST['filter']) && is_array($_POST['filter']))
+	{
+		$filter = $_POST['filter'];
+	}
+	elseif (isset($_GET['filter']))
+	{
+		$filter = explode(',', base64_decode($_GET['filter']));
+	}
+
+	if (!empty($filter))
+	{
+		if (allowedTo('admin_forum') && in_array(-1, $filter))
+			$context['filter_groups'] = true;
+		else
+		{
+			foreach ($filter as $filter_val)
+			{
+				if (isset($context['filterable_groups'][$filter_val]))
+					$context['filter_groups'][] = (int) $filter_val;
+			}
+		}
+	}
+
 	$clauses = array(
 		'chars.is_main = {int:not_main}',
 	);
 	$vars = array(
 		'not_main' => 0,
 	);
+
+	$filter_url = '';
+	if (!empty($context['filter_groups']))
+	{
+		if (is_array($context['filter_groups']))
+		{
+			$vars['filter_groups'] = $context['filter_groups'];
+			$this_clause = array();
+			foreach ($context['filter_groups'] as $group)
+			{
+				$this_clause[] = 'FIND_IN_SET(' . $group . ', chars.char_groups)';
+			}
+			$clauses[] = '(chars.main_char_group IN ({array_int:filter_groups}) OR (' . implode(' OR ', $this_clause) . '))';
+			$filter_url = ';filter=' . base64_encode(implode(',', $context['filter_groups']));
+		}
+		else
+		{
+			$clauses[] = '(chars.main_char_group = 0 AND chars.char_groups = {empty})';
+			$filter_url = ';filter=' . base64_encode('-1');
+		}
+	}
 
 	$request = $smcFunc['db_query']('', '
 		SELECT COUNT(id_character)
@@ -1490,7 +1543,7 @@ function CharacterList()
 	$smcFunc['db_free_result']($request);
 
 	$context['items_per_page'] = 12;
-	$context['page_index'] = constructPageIndex($scripturl . '?action=characters;start=%1$d', $_REQUEST['start'], $context['char_count'], $context['items_per_page'], true);
+	$context['page_index'] = constructPageIndex($scripturl . '?action=characters' . $filter_url . ';start=%1$d', $_REQUEST['start'], $context['char_count'], $context['items_per_page'], true);
 	$vars['start'] = $_REQUEST['start'];
 	$vars['limit'] = $context['items_per_page'];
 
