@@ -279,7 +279,7 @@ $result = $smcFunc['db_query']('', '
 	LEFT JOIN {db_prefix}characters AS chars ON (mem.id_member = chars.id_member)
 	GROUP BY mem.id_member HAVING count = 0');
 while ($row = $smcFunc['db_fetch_assoc']($result)) {
-	$insert_rows[] = array($row['id_member'], $row['real_name'], '', '', 0, 0, '', time(), 0, 1);
+	$insert_rows[] = array($row['id_member'], $row['real_name'], '', '', 0, 0, '', time(), 0, 1, 0, '');
 }
 $smcFunc['db_free_result']($result);
 
@@ -291,7 +291,7 @@ if (!empty($insert_rows)) {
 			array(
 				'id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string', 'signature' => 'string', 
 				'id_theme' => 'int', 'posts' => 'int', 'age' => 'string', 'date_created' => 'int', 'last_active' => 'int',
-				'is_main' => 'int',
+				'is_main' => 'int', 'main_char_group' => 'int', 'char_groups' => 'string',
 			),
 			$new_row,
 			array()
