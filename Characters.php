@@ -852,11 +852,14 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 		'{db_prefix}characters',
 		array('id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
 			'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int', 'age' => 'string',
-			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int'),
+			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int',
+			'main_char_group' => 'int', 'char_groups' => 'string',
+		),
 		array(
 			$memberID, $regOptions['register_vars']['real_name'], '',
 			'', 0, 0, '',
-			time(), 0, 1
+			time(), 0, 1,
+			0, '',
 		),
 		array('id_character')
 	);
