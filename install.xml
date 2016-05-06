@@ -1606,16 +1606,22 @@
 					'content_id' => $msgOptions['id'],
 					'content_action' => 'quote',
 					'is_read' => 0,
-					'extra' => json_encode(array(
+					'extra' => array(
 						'content_subject' => $msgOptions['subject'],
 						'content_link' => $scripturl . '?msg=' . $msgOptions['id'],
-					)),
+					),
 				);
-				if (!empty($member['msgs'][$msgOptions['id']]) && !$member['msgs'][$msgOptions['id']]['is_main'])
+
+				if (!empty($member['msgs']))
 				{
-					$this_alert['extra']['chars_src'] = $posterOptions['char_id'];
-					$this_alert['extra']['chars_dest'] = $member['msgs'][$msgOptions['id']]['id_character'];
+					$quoted_msg = reset($member['msgs']);
+					if (!$quoted_msg['is_main'])
+					{
+						$this_alert['extra']['chars_src'] = $posterOptions['char_id'];
+						$this_alert['extra']['chars_dest'] = $quoted_msg['id_character'];
+					}
 				}
+				$this_alert['extra'] = json_encode($this_alert['extra']);
 				$alert_rows[] = $this_alert;]]></add>
 		</operation>
 	</file>
