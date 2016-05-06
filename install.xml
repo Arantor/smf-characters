@@ -1523,4 +1523,100 @@
 				$smcFunc['db_free_result']($request2);]]></add>
 		</operation>
 	</file>
+
+	<!-- And the create-post notifications handling -->
+	<file name="$sourcedir/tasks/CreatePost-Notify.php">
+		<operation>
+			<search position="replace"><![CDATA[		// Get the messages
+		$request = $smcFunc['db_query']('', '
+			SELECT m.id_member, mem.email_address, mem.lngfile, mem.real_name
+			FROM {db_prefix}messages AS m
+				INNER JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
+			WHERE id_msg IN ({array_int:msgs})
+			LIMIT {int:count}',
+			array(
+				'msgs' => array_unique($id_msgs),
+				'count' => count(array_unique($id_msgs)),
+			)
+		);
+
+		$members = array();
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			if ($posterOptions['id'] == $row['id_member'])
+				continue;
+
+			$members[$row['id_member']] = $row;
+		}]]></search>
+			<add><![CDATA[		// Get the messages
+		$request = $smcFunc['db_query']('', '
+			SELECT m.id_msg, m.id_member, chars.id_character, chars.is_main,
+				mem.email_address, mem.lngfile, mem.real_name
+			FROM {db_prefix}messages AS m
+				INNER JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
+				INNER JOIN {db_prefix}characters AS chars ON (chars.id_character = m.id_character)
+			WHERE id_msg IN ({array_int:msgs})',
+			array(
+				'msgs' => $id_msgs,
+			)
+		);
+
+		$members = array();
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			if ($posterOptions['id'] == $row['id_member'])
+				continue;
+
+			if (!isset($members[$row['id_member']]))
+			{
+				$members[$row['id_member']] = array(
+					'id_member' => $row['id_member'],
+					'email_address' => $row['email_address'],
+					'lngfile' => $row['lngfile'],
+					'real_name' => $row['real_name'],
+				);
+			}
+			$members[$row['id_member']]['msgs'][$row['id_msg']] = array(
+				'id_character' => $row['id_character'],
+				'is_main' => $row['is_main'],
+			);
+		}]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[				$alert_rows[] = array(
+					'alert_time' => time(),
+					'id_member' => $member['id_member'],
+					'id_member_started' => $posterOptions['id'],
+					'member_name' => $posterOptions['name'],
+					'content_type' => 'msg',
+					'content_id' => $msgOptions['id'],
+					'content_action' => 'quote',
+					'is_read' => 0,
+					'extra' => json_encode(array(
+						'content_subject' => $msgOptions['subject'],
+						'content_link' => $scripturl . '?msg=' . $msgOptions['id'],
+					)),
+				);]]></search>
+			<add><![CDATA[				$this_alert = array(
+					'alert_time' => time(),
+					'id_member' => $member['id_member'],
+					'id_member_started' => $posterOptions['id'],
+					'member_name' => $posterOptions['name'],
+					'content_type' => 'msg',
+					'content_id' => $msgOptions['id'],
+					'content_action' => 'quote',
+					'is_read' => 0,
+					'extra' => json_encode(array(
+						'content_subject' => $msgOptions['subject'],
+						'content_link' => $scripturl . '?msg=' . $msgOptions['id'],
+					)),
+				);
+				if (!empty($member['msgs'][$msgOptions['id']]) && !$member['msgs'][$msgOptions['id']]['is_main'])
+				{
+					$this_alert['extra']['chars_src'] = $posterOptions['char_id'];
+					$this_alert['extra']['chars_dest'] = $member['msgs'][$msgOptions['id']]['id_character'];
+				}
+				$alert_rows[] = $this_alert;]]></add>
+		</operation>
+	</file>
 </modification>

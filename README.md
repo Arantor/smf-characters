@@ -17,6 +17,8 @@ Features (not all implemented yet!):
 # Caveats
  * Requestable groups/joinable groups are only ever handled at account level, never character level.
  * Merging accounts does not preserve the source (from) account's likes or poll votes. PMs are preserved; PM labels are not.
+ * If a given account is alerted twice in the same post through two different quotes, only one notification will be generated - for the first quote for that account.
+ * Email notifications are currently not supported for character-specific notifications and may not be in the future.
 
 # Disclaimer
 
