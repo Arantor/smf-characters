@@ -22,6 +22,9 @@
 .chars_container .switch {
 	float: right;
 }
+.chars_container .switch .button {
+	padding: 0 3px;
+}
 
 /* And the profile menu can use some love */
 #profile_menu_top img.avatar, #profile_menu img.avatar {
