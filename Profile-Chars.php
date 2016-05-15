@@ -232,6 +232,8 @@ function character_profile($memID) {
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
 		'sheet' => 'char_sheet',
+		'sheet_edit' => 'char_sheet_edit',
+		'sheet_approve' => 'char_sheet_approve',
 		'delete' => 'char_delete',
 		'posts' => 'char_posts',
 		'topics' => 'char_posts',
@@ -1173,7 +1175,7 @@ function char_summary($memID)
 
 function char_sheet()
 {
-	global $context, $txt, $smcFunc;
+	global $context, $txt, $smcFunc, $scripturl;
 
 	// First, get rid of people shouldn't have a sheet at all - the OOC characters
 	if ($context['character']['is_main'])
@@ -1189,7 +1191,7 @@ function char_sheet()
 	if ($context['user']['is_owner'] || allowedTo('admin_forum'))
 	{
 		$request = $smcFunc['db_query']('', '
-			SELECT id_version, sheet_text, created_time, id_approver, approved_time
+			SELECT id_version, sheet_text, created_time, id_approver, approved_time, approval_state
 			FROM {db_prefix}character_sheet_versions
 			WHERE id_character = {int:character}
 			ORDER BY id_version DESC
@@ -1207,7 +1209,7 @@ function char_sheet()
 	else
 	{
 		$request = $smcFunc['db_query']('', '
-			SELECT id_version, sheet_text, created_time, id_approver, approved_time
+			SELECT id_version, sheet_text, created_time, id_approver, approved_time, approval_state
 			FROM {db_prefix}character_sheet_versions
 			WHERE id_version = {int:version}',
 			array(
@@ -1220,6 +1222,221 @@ function char_sheet()
 
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet';
+
+	$context['sheet_buttons'] = array();
+	if ($context['user']['is_owner'] || allowedTo('admin_forum'))
+	{
+		// Always have an edit button
+		$context['sheet_buttons']['edit'] = array(
+			'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_edit;char=' . $context['character']['id_character'],
+			'text' => 'char_sheet_edit',
+		);
+		// Only have a history button if there's actually some history
+		if (!empty($context['character']['sheet_details']['sheet_text']))
+		{
+			$context['sheet_buttons']['history'] = array(
+				'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_history;char=' . $context['character']['id_character'],
+				'text' => 'char_sheet_history',
+			);
+			// Only have a send-for-approval button if it hasn't been approved
+			// and it hasn't yet been sent for approval either
+			if (empty($context['character']['sheet_details']['id_approver']) && empty($context['character']['sheet_details']['approval_state']))
+			{
+				$context['sheet_buttons']['send_for_approval'] = array(
+					'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_approval;char=' . $context['character']['id_character'],
+					'text' => 'char_sheet_send_for_approval',
+				);
+			}
+		}
+		// Compare to last approved only if we had a previous approval and the
+		// current one isn't approved right now
+		if (empty($context['character']['sheet_details']['id_approver']) && !empty($context['character']['char_sheet']))
+		{
+			$context['sheet_buttons']['compare'] = array(
+				'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_compare;char=' . $context['character']['id_character'],
+				'text' => 'char_sheet_compare',
+			);
+		}
+		// And the infamous approve button
+		if (empty($context['character']['sheet_details']['id_approver']) && allowedTo('admin_forum'))
+		{
+			$context['sheet_buttons']['approve'] = array(
+				'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_approve;version=' . $context['character']['sheet_details']['id_version'] . ';char=' . $context['character']['id_character'] . ';' . $context['session_var'] . '=' . $context['session_id'],
+				'text' => 'char_sheet_approve',
+				'custom' => 'onclick="return confirm(' . JavaScriptEscape($txt['char_sheet_approve_are_you_sure']) . ')"',
+			);
+		}
+	}
+}
+
+function char_sheet_edit()
+{
+	global $context, $txt, $smcFunc, $scripturl, $sourcedir;
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then if we're looking at a character who doesn't have an approved one
+	// and the user couldn't see it... you are the weakest link, goodbye.
+	if (empty($context['character']['char_sheet']) && empty($context['user']['is_owner']) && !allowedTo('admin_forum'))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_version, sheet_text, created_time, id_approver, approved_time, approval_state
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_character = {int:character}
+		ORDER BY id_version DESC
+		LIMIT 1',
+		array(
+			'character' => $context['character']['id_character'],
+		)
+	);
+	if ($smcFunc['db_num_rows']($request) > 0)
+	{
+		$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
+		$smcFunc['db_free_result']($request);
+	}
+
+	// Make an editor box
+	require_once($sourcedir . '/Subs-Post.php');
+	require_once($sourcedir . '/Subs-Editor.php');
+
+	if (isset($_POST['message']))
+	{
+		// Are we saving? Let's see if session's legit first.
+		checkSession();
+		// Then try to get some content.
+		$message = $smcFunc['htmlspecialchars']($_POST['message'], ENT_QUOTES);
+		preparsecode($message);
+
+		if (!empty($message))
+		{
+			// So we have a character sheet. Let's do a comparison against
+			// the last character sheet saved just in case the user did something
+			// a little bit weird/silly.
+			if (empty($context['character']['sheet_details']['sheet_text']) || $message != $context['character']['sheet_details']['sheet_text'])
+			{
+				// It's different, good. So insert it, making it await approval.
+				$smcFunc['db_insert']('insert',
+					'{db_prefix}character_sheet_versions',
+					array(
+						'sheet_text' => 'string', 'id_character' => 'int', 'id_member' => 'int',
+						'created_time' => 'int', 'id_approver' => 'int', 'approved_time' => 'int', 'approval_state' => 'int'
+					),
+					array(
+						$message, $context['character']['id_character'], $context['user']['id'],
+						time(), 0, 0, 0
+					),
+					array('id_version')
+				);
+			}
+		}
+
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
+	}
+
+	// Now create the editor.
+	$editorOptions = array(
+		'id' => 'message',
+		'value' => !empty($context['character']['sheet_details']['sheet_text']) ? un_preparsecode($context['character']['sheet_details']['sheet_text']) : '',
+		'labels' => array(
+			'post_button' => $txt['save'],
+		),
+		// add height and width for the editor
+		'height' => '500px',
+		'width' => '100%',
+		'preview_type' => 0,
+		'required' => true,
+	);
+	create_control_richedit($editorOptions);
+
+	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
+	$context['sub_template'] = 'char_sheet_edit';
+}
+
+function char_sheet_approve()
+{
+	global $context, $smcFunc;
+
+	checkSession('get');
+	isAllowedTo('admin_forum');
+
+	// If we're here, we have a valid character ID on a valid user ID.
+	// We need to check that 1) we have a character sheet to approve,
+	// 2) it requires approving, and 3) it's the most recent one.
+	$version = isset($_GET['version']) ? (int) $_GET['version'] : 0;
+	if (empty($version))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	$request = $smcFunc['db_query']('', '
+		SELECT id_character, id_approver, approval_state
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_version = {int:version}',
+		array(
+			'version' => $version,
+		)
+	);
+	if ($smcFunc['db_num_rows']($request) == 0)
+	{
+		// Doesn't exist, so bail.
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	$row = $smcFunc['db_fetch_assoc']($request);
+	$smcFunc['db_free_result']($request);
+
+	// Correct character?
+	if ($row['id_character'] != $context['character']['id_character'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Has it already been approved?
+	if (!empty($row['id_approver']))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Last test: any other rows for this user
+	$request = $smcFunc['db_query']('', '
+		SELECT COUNT(*)
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_version > {int:version}
+			AND id_character = {int:character}',
+		array(
+			'version' => $version,
+			'character' => $context['character']['id_character'],
+		)
+	);
+	list ($count) = $smcFunc['db_fetch_row']($request);
+	$smcFunc['db_free_result']($request);
+
+	if ($count > 0)
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// OK, so this version is good to go for approval. Approve the sheet...
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}character_sheet_versions
+		SET id_approver = {int:approver},
+			approved_time = {int:time},
+			approval_state = {int:zero}
+		WHERE id_version = {int:version}',
+		array(
+			'approver' => $context['user']['id'],
+			'time' => time(),
+			'zero' => 0,
+			'version' => $version,
+		)
+	);
+	// And the character...
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET char_sheet = {int:version}
+		WHERE id_character = {int:character}',
+		array(
+			'version' => $version,
+			'character' => $context['character']['id_character'],
+		)
+	);
+
+	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
 }
 
 function char_merge_account($memID)

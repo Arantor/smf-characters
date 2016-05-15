@@ -18,6 +18,17 @@ $txt['char_sheet'] = 'Character Sheet';
 $txt['char_sheet_link'] = 'sheet';
 $txt['char_sheet_none'] = 'This character does not have a character sheet yet.';
 $txt['char_sheet_not_approved'] = 'This character sheet has not been approved by an administrator yet.';
+$txt['char_sheet_waiting_approval'] = '(Currently waiting for approval)';
+$txt['char_sheet_send_for_approval'] = 'Send For Approval';
+$txt['char_sheet_edit'] = 'Edit Sheet';
+$txt['char_sheet_history'] = 'Edit History';
+$txt['char_sheet_approve'] = 'Approve';
+$txt['char_sheet_approve_are_you_sure'] = 'Are you sure you want to approve this character sheet?';
+$txt['char_sheet_compare'] = 'Compare to Last Approved';
+$txt['char_sheet_current_version'] = 'Current Version';
+$txt['char_sheet_last_approved_version'] = 'Last Approved Version';
+$txt['char_sheet_comments'] = 'Comments';
+$txt['char_sheet_add_comment'] = 'Add Comment';
 
 $txt['switch_to_char'] = 'Switch to this character';
 $txt['switch_to_char_menu'] = 'Reattribute to...';

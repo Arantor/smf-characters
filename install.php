@@ -93,9 +93,11 @@ $tables[] = array(
 		db_field('id_version', 'int', 0, true, true),
 		db_field('sheet_text', 'mediumtext'),
 		db_field('id_character', 'int'),
+		db_field('id_member', 'mediumint'),
 		db_field('created_time', 'int'),
 		db_field('id_approver', 'mediumint'),
 		db_field('approved_time', 'int'),
+		db_field('approval_state', 'tinyint'),
 	),
 	'indexes' => array(
 		array(

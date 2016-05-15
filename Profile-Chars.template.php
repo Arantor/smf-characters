@@ -1020,7 +1020,7 @@ function template_char_summary()
 
 function template_char_sheet()
 {
-	global $context, $txt;
+	global $context, $txt, $scripturl;
 
 	echo '
 			<div class="cat_bar">
@@ -1035,6 +1035,9 @@ function template_char_sheet()
 			<div class="windowbg2">
 				', $txt['char_sheet_none'], '
 			</div>';
+		template_button_strip($context['sheet_buttons'], 'right');
+		echo '
+			<div class="clear"></div>';
 	}
 	else
 	{
@@ -1043,13 +1046,42 @@ function template_char_sheet()
 			echo '
 			<div class="noticebox">
 				', $txt['char_sheet_not_approved'], '
+				', !empty($context['character']['sheet_details']['approval_state']) ? $txt['char_sheet_waiting_approval'] : '', '
 			</div>';
 		}
+		template_button_strip($context['sheet_buttons'], 'right');
 		echo '
+			<div class="clear"></div>
 			<div class="windowbg">
 				', parse_bbc($context['character']['sheet_details']['sheet_text'], false), '
 			</div>';
 	}
+}
+
+function template_char_sheet_edit()
+{
+	global $context, $txt, $scripturl;
+
+	echo '
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['char_sheet'], ' - ', $context['character']['character_name'], '
+				</h3>
+			</div>
+			<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=sheet_edit" method="post" accept-charset="', $context['character_set'], '" name="postmodify" id="postmodify" class="flow_hidden" onsubmit="submitonce(this);smc_saveEntities(\'postmodify\', [\'message\'], \'options\');">
+				<div id="post_area">
+					<div class="roundframe">';
+
+	template_control_richedit('message', null, 'bbcBox');
+
+	echo '
+						<br class="clear">
+						<input type="submit" class="button_submit" value="', $txt['save'], '" />
+					</div>
+				</div>
+				<br class="clear">
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+			</form>';
 }
 
 function template_char_merge_account()
