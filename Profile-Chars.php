@@ -234,6 +234,7 @@ function character_profile($memID) {
 		'sheet' => 'char_sheet',
 		'sheet_edit' => 'char_sheet_edit',
 		'sheet_approve' => 'char_sheet_approve',
+		'sheet_compare' => 'char_sheet_compare',
 		'delete' => 'char_delete',
 		'posts' => 'char_posts',
 		'topics' => 'char_posts',
@@ -1463,6 +1464,56 @@ function char_sheet_approve()
 	);
 
 	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
+}
+
+function char_sheet_compare()
+{
+	global $context, $txt, $smcFunc, $scripturl, $sourcedir;
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then if we're looking at a character who doesn't have an approved one
+	// and the user couldn't see it... you are the weakest link, goodbye.
+	if (empty($context['character']['char_sheet']) && empty($context['user']['is_owner']) && !allowedTo('admin_forum'))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// So, does the user have a current-not-yet-approved one? We need to get
+	// the latest to find this out.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_version, sheet_text, created_time, id_approver, approved_time, approval_state
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_character = {int:character}
+			AND id_version > {int:current_version}
+		ORDER BY id_version DESC
+		LIMIT 1',
+		array(
+			'character' => $context['character']['id_character'],
+			'current_version' => $context['character']['char_sheet'],
+		)
+	);
+	if ($smcFunc['db_num_rows']($request) == 0)
+	{
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
+	}
+	$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
+	$smcFunc['db_free_result']($request);
+
+	// Now we need to go get the currently approved one too.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_version, sheet_text, created_time, id_approver, approved_time, approval_state
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_version = {int:current_version}',
+		array(
+			'current_version' => $context['character']['char_sheet'],
+		)
+	);
+	$context['character']['original_sheet'] = $smcFunc['db_fetch_assoc']($request);
+	$smcFunc['db_free_result']($request);
+
+	$context['page_title'] = $txt['char_sheet_compare'];
+	$context['sub_template'] = 'char_sheet_compare';
 }
 
 function char_merge_account($memID)
