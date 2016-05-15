@@ -15,6 +15,7 @@ $txt['main_char'] = 'OOC account';
 $txt['main_char_desc'] = 'This is your \'main\' account, and should be used for posting in the Out Of Character (OOC) areas.';
 $txt['char_created'] = 'Character created at: %s';
 $txt['char_sheet'] = 'Character Sheet';
+$txt['char_sheet_link'] = 'sheet';
 $txt['char_sheet_none'] = 'This character does not have a character sheet yet.';
 $txt['char_sheet_not_approved'] = 'This character sheet has not been approved by an administrator yet.';
 

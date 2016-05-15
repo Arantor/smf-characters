@@ -19,6 +19,13 @@ function character_popup_row($id_character, $char) {
 						<span class="switch">
 							<span data-href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch;char=', $id_character, ';', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['switch_chars'], '</a>
 						</span>';
+	if (empty($char['is_main']))
+	{
+		echo '
+						<span class="switch">
+							<a class="button" href="', $scripturl, $char['character_url'], ';sa=sheet">', $txt['char_sheet_link'], '</a>
+						</span>';
+	}
 
 	echo '
 					</div>
