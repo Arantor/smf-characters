@@ -1011,6 +1011,40 @@ function template_char_summary()
 <div class="clear"></div>';
 }
 
+function template_char_sheet()
+{
+	global $context, $txt;
+
+	echo '
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['char_sheet'], ' - ', $context['character']['character_name'], '
+				</h3>
+			</div>';
+
+	if (empty($context['character']['sheet_details']['sheet_text']))
+	{
+		echo '
+			<div class="windowbg2">
+				', $txt['char_sheet_none'], '
+			</div>';
+	}
+	else
+	{
+		if (empty($context['character']['sheet_details']['id_approver']))
+		{
+			echo '
+			<div class="noticebox">
+				', $txt['char_sheet_not_approved'], '
+			</div>';
+		}
+		echo '
+			<div class="windowbg">
+				', parse_bbc($context['character']['sheet_details']['sheet_text'], false), '
+			</div>';
+	}
+}
+
 function template_char_merge_account()
 {
 	global $scripturl, $txt, $context;

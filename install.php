@@ -74,6 +74,7 @@ $tables[] = array(
 		db_field('is_main', 'tinyint'),
 		db_field('main_char_group', 'smallint'),
 		db_field('char_groups', 'varchar', 255),
+		db_field('char_sheet', 'int'),
 	),
 	'indexes' => array(
 		array(
@@ -82,6 +83,27 @@ $tables[] = array(
 		),
 		array(
 			'columns' => array('id_member'),
+			'type' => 'index',
+		),
+	),
+);
+$tables[] = array(
+	'table_name' => '{db_prefix}character_sheet_versions',
+	'columns' => array(
+		db_field('id_version', 'int', 0, true, true),
+		db_field('sheet_text', 'mediumtext'),
+		db_field('id_character', 'int'),
+		db_field('created_time', 'int'),
+		db_field('id_approver', 'mediumint'),
+		db_field('approved_time', 'int'),
+	),
+	'indexes' => array(
+		array(
+			'columns' => array('id_version'),
+			'type' => 'primary',
+		),
+		array(
+			'columns' => array('id_character', 'id_approver'),
 			'type' => 'index',
 		),
 	),

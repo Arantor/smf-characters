@@ -70,6 +70,7 @@ function chars_profile_menu(&$profile_areas) {
 			),
 		),
 	);
+	$char_sheet_override = allowedTo('admin_forum') || $context['user']['is_owner'];
 	// Now we need to add the user's characters to the profile menu, "creatively".
 	if (!empty($cur_profile['characters'])) {
 		addInlineCss('
@@ -90,6 +91,7 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 				'custom_url' => $scripturl . '?action=profile;area=characters;char=' . $id_character,
 				'subsections' => array(
 					'profile' => array($txt['char_profile'], array('is_not_guest', 'profile_view')),
+					'sheet' => array($txt['char_sheet'], !empty($character['char_sheet']) || $char_sheet_override ? array('is_not_guest', 'profile_view') : array('admin_forum'), 'enabled' => empty($character['is_main'])),
 					'posts' => array($txt['showPosts_char'], array('is_not_guest', 'profile_view')),
 					'topics' => array($txt['showTopics_char'], array('is_not_guest', 'profile_view')),
 					'stats' => array($txt['char_stats'], array('is_not_guest', 'profile_view')),
@@ -229,6 +231,7 @@ function character_profile($memID) {
 	$subactions = array(
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
+		'sheet' => 'char_sheet',
 		'delete' => 'char_delete',
 		'posts' => 'char_posts',
 		'topics' => 'char_posts',
@@ -1166,6 +1169,57 @@ function char_summary($memID)
 		$details = get_labels_and_badges($user_groups);
 		$context['member']['display_group'] = $details['title'];
 	}
+}
+
+function char_sheet()
+{
+	global $context, $txt, $smcFunc;
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then if we're looking at a character who doesn't have an approved one
+	// and the user couldn't see it... you are the weakest link, goodbye.
+	if (empty($context['character']['char_sheet']) && empty($context['user']['is_owner']) && !allowedTo('admin_forum'))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Fetch the current character sheet - for the owner + admin, show most recent
+	// whatever, for everyone else show them the most recent approved
+	if ($context['user']['is_owner'] || allowedTo('admin_forum'))
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT id_version, sheet_text, created_time, id_approver, approved_time
+			FROM {db_prefix}character_sheet_versions
+			WHERE id_character = {int:character}
+			ORDER BY id_version DESC
+			LIMIT 1',
+			array(
+				'character' => $context['character']['id_character'],
+			)
+		);
+		if ($smcFunc['db_num_rows']($request) > 0)
+		{
+			$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
+			$smcFunc['db_free_result']($request);
+		}
+	}
+	else
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT id_version, sheet_text, created_time, id_approver, approved_time
+			FROM {db_prefix}character_sheet_versions
+			WHERE id_version = {int:version}',
+			array(
+				'version' => $context['character']['char_sheet'],
+			)
+		);
+		$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
+		$smcFunc['db_free_result']($request);
+	}
+
+	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
+	$context['sub_template'] = 'char_sheet';
 }
 
 function char_merge_account($memID)

@@ -296,6 +296,8 @@ function integrate_chars()
 	// - unless admin, because admin implicitly has everything anyway.
 	if ($user_info['immersive_mode'] && !$user_info['is_admin'])
 	{
+		$user_info['original_query_see_board'] = $user_info['query_see_board'];
+		$user_info['original_query_wanna_see_board'] = $user_info['query_wanna_see_board'];
 		$user_info['query_see_board'] = '((FIND_IN_SET(' . implode(', b.member_groups) != 0 OR FIND_IN_SET(', $with_char_groups) . ', b.member_groups) != 0)' . (!empty($modSettings['deny_boards_access']) ? ' AND (FIND_IN_SET(' . implode(', b.deny_member_groups) = 0 AND FIND_IN_SET(', $with_char_groups) . ', b.deny_member_groups) = 0)' : '') . (isset($user_info['mod_cache']) ? ' OR ' . $user_info['mod_cache']['mq'] : '') . ')';
 
 		if (empty($user_info['ignoreboards']))
@@ -615,8 +617,9 @@ function integrate_load_member_data_chars(&$select_columns, &$select_tables, &$s
 {
 	if ($set != 'minimal')
 	{
-		$select_columns .= ', lo.id_character AS online_character, chars.is_main, chars.main_char_group, chars.char_groups,
-			cg.online_color AS char_group_color, COALESCE(cg.group_name, {string:blank_string}) AS character_group, mem.immersive_mode';
+		$select_columns .= ', lo.id_character AS online_character, chars.is_main, chars.main_char_group,
+			chars.char_groups, cg.online_color AS char_group_color, COALESCE(cg.group_name, {string:blank_string}) AS character_group,
+			chars.char_sheet, mem.immersive_mode';
 		$select_tables .= '
 			LEFT JOIN {db_prefix}characters AS chars ON (lo.id_character = chars.id_character)
 			LEFT JOIN {db_prefix}membergroups AS cg ON (chars.main_char_group = cg.id_group)';
