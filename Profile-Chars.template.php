@@ -1082,6 +1082,27 @@ function template_char_sheet_edit()
 				<br class="clear">
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 			</form>';
+
+	if (!empty($context['sheet_comments']))
+	{
+		echo '
+			<div class="cat_bar">
+				<h3 class="catbg">
+					', $txt['char_sheet_comments'], '
+				</h3>
+			</div>';
+
+		foreach ($context['sheet_comments'] as $id_comment => $comment)
+		{
+			echo '
+			<div class="windowbg">
+				<h4>', $comment['real_name'], ' - ', timeformat($comment['time_posted']), '</h4>
+				<div class="list_posts">
+					', nl2br($comment['sheet_comment']), '
+				</div>
+			</div>';
+		}
+	}
 }
 
 function template_char_merge_account()

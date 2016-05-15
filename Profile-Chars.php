@@ -1258,7 +1258,7 @@ function char_sheet()
 			);
 		}
 		// And the infamous approve button
-		if (empty($context['character']['sheet_details']['id_approver']) && allowedTo('admin_forum'))
+		if (!empty($context['character']['sheet_details']['sheet_text']) && empty($context['character']['sheet_details']['id_approver']) && allowedTo('admin_forum'))
 		{
 			$context['sheet_buttons']['approve'] = array(
 				'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_approve;version=' . $context['character']['sheet_details']['id_version'] . ';char=' . $context['character']['id_character'] . ';' . $context['session_var'] . '=' . $context['session_id'],
@@ -1350,6 +1350,32 @@ function char_sheet_edit()
 		'required' => true,
 	);
 	create_control_richedit($editorOptions);
+
+	// Now fetch the comments
+	$context['sheet_comments'] = array();
+	if (!empty($context['character']['sheet_details']['created_time']) && empty($context['character']['sheet_details']['id_approver']))
+	{
+		$request = $smcFunc['db_query']('', '
+			SELECT id_comment, id_author, mem.real_name, time_posted, sheet_comment
+			FROM {db_prefix}character_sheet_comments AS csc
+				LEFT JOIN {db_prefix}members AS mem ON (csc.id_author = mem.id_member)
+			WHERE id_character = {int:character}
+				AND time_posted > {int:last_approved_time}
+			ORDER BY NULL',
+			array(
+				'character' => $context['character']['id_character'],
+				'last_approved_time' => $context['character']['sheet_details']['created_time'],
+			)
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			if (empty($row['real_name']))
+				$row['real_name'] = $txt['char_unknown'];
+			$context['sheet_comments'][$row['id_comment']] = $row;
+		}
+		$smcFunc['db_free_result']($request);
+		krsort($context['sheet_comments']);
+	}
 
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet_edit';
