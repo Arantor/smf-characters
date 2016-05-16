@@ -276,14 +276,14 @@ function template_edit_char() {
 				', template_control_richedit('char_signature', 'smileyBox_message', 'bbcBox_message');
 
 	echo '
-				<div style="width: 75%">
-					<span class="floatright"><input type="button" name="preview_signature" id="preview_button" value="', $txt['preview_signature'], '" class="button_submit"></span>';
+				<div>';
 	// If there is a limit at all!
 	if (!empty($context['signature_limits']['max_length']))
 		echo '
-				<span class="smalltext">', sprintf($txt['max_sig_characters'], $context['signature_limits']['max_length']), ' <span id="signatureLeft">', $context['signature_limits']['max_length'], '</span></span><br>';
+				<span class="smalltext">', sprintf($txt['max_sig_characters'], $context['signature_limits']['max_length']), ' <span id="signatureLeft">', $context['signature_limits']['max_length'], '</span></span>';
 
 	echo '
+				<span class="floatright"><input type="button" name="preview_signature" id="preview_button" value="', $txt['preview_signature'], '" class="button_submit"></span>
 				</div>';
 
 	if ($context['signature_warning'])
