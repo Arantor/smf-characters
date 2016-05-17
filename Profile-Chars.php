@@ -999,7 +999,7 @@ function char_stats()
 		FROM {db_prefix}topics AS t
 		INNER JOIN {db_prefix}messages AS m ON (t.id_first_msg = m.id_msg)
 		WHERE m.id_character = {int:id_character}' . (!empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0 ? '
-			AND id_board != {int:recycle_board}' : ''),
+			AND t.id_board != {int:recycle_board}' : ''),
 		array(
 			'id_character' => $context['character']['id_character'],
 			'recycle_board' => $modSettings['recycle_board'],
