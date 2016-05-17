@@ -215,7 +215,7 @@ function char_switch_redir($memID) {
 }
 
 function character_profile($memID) {
-	global $user_profile, $context, $scripturl, $modSettings, $smcFunc;
+	global $user_profile, $context, $scripturl, $modSettings, $smcFunc, $txt;
 
 	loadTemplate('Profile-Chars');
 
@@ -228,6 +228,14 @@ function character_profile($memID) {
 	$context['character'] = $user_profile[$memID]['characters'][$char_id];
 	$context['character']['editable'] = $context['user']['is_owner'] || allowedTo('admin_forum');
 
+	$context['linktree'][] = array(
+		'name' => $txt['chars_menu_title'],
+		'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . '#user_char_list',
+	);
+	$context['linktree'][] = array(
+		'name' => $context['character']['character_name'],
+		'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=profile;char=' . $char_id,
+	);
 	$subactions = array(
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
@@ -655,9 +663,21 @@ function char_posts()
 
 	// Set the page title
 	if (isset($_GET['sa']) && array_key_exists($_GET['sa'], $title))
+	{
+		$context['linktree'][] = array(
+			'name' => $txt['show' . $title[$_GET['sa']] . '_char'],
+			'url' => $scripturl . '?action=profile;area=characters;char=' . $context['character']['id_character'] . ';sa=' . $_GET['sa'] . ';u=' . $context['id_member'],
+		);
 		$context['page_title'] = $txt['show' . $title[$_GET['sa']]];
+	}
 	else
+	{
+		$context['linktree'][] = array(
+			'name' => $txt['showPosts_char'],
+			'url' => $scripturl . '?action=profile;area=characters;char=' . $context['character']['id_character'] . ';sa=posts;u=' . $context['id_member'],
+		);
 		$context['page_title'] = $txt['showPosts'];
+	}
 
 	$context['page_title'] .= ' - ' . $context['character']['character_name'];
 
@@ -993,6 +1013,11 @@ function char_stats()
 		'icon' => 'stats_info_hd.png'
 	);
 
+	$context['linktree'][] = array(
+		'name' => $txt['char_stats'],
+		'url' => $scripturl . '?action=profile;area=characters;char=' . $context['character']['id_character'] . ';sa=stats;u=' . $context['id_member'],
+	);
+
 	// Number of topics started.
 	$result = $smcFunc['db_query']('', '
 		SELECT COUNT(*)
@@ -1220,6 +1245,11 @@ function char_sheet()
 		$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
 		$smcFunc['db_free_result']($request);
 	}
+
+	$context['linktree'][] = array(
+		'name' => $txt['char_sheet'],
+		'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet;char=' . $context['character']['id_character'],
+	);
 
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet';

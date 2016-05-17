@@ -982,7 +982,7 @@ function template_char_summary()
 	{
 		echo '
 				<div class="character_list">
-					<h5>', $txt['my_characters'], ':</h5>
+					<h5 id="user_char_list">', $txt['my_characters'], ':</h5>
 				</div>
 				<ul class="characters">';
 		foreach ($context['member']['characters'] as $char)
