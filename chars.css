@@ -33,7 +33,11 @@
 
 #current_sig_parsed, #sig_preview_parsed {
 	border: none;
+	box-shadow: none;
 	padding-top: 0;
+}
+#preview_button {
+	margin: 5px 0 0 0;
 }
 #detailedinfo #current_sig, #detailedinfo #sig_preview, #detailedinfo #sig_header {
 	margin-bottom: 0;
@@ -75,6 +79,7 @@
 	cursor: ns-resize;
 }
 
+div#char_theme_wrapper,
 #char_theme_wrapper {
 	text-align: center;
 }
@@ -92,10 +97,6 @@
 	padding: 8px;
 	height: auto;
 	line-height: 1;
-}
-
-div#char_theme_wrapper {
-	text-align: center;
 }
 
 .char_theme_container img {
