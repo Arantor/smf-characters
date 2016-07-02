@@ -872,19 +872,19 @@
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[			array(
-				'id_group' => 'int', 'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
+				'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
 				'icons' => 'string', 'online_color' => 'string', 'group_type' => 'int',
 			),
 			array(
-				$id_group, '', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
+				'', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
 				'1#icon.png', '', $_POST['group_type'],
 			),]]></search>
 			<add><![CDATA[			array(
-				'id_group' => 'int', 'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
+				'description' => 'string', 'group_name' => 'string-80', 'min_posts' => 'int',
 				'icons' => 'string', 'online_color' => 'string', 'group_type' => 'int', 'is_character' => 'int',
 			),
 			array(
-				$id_group, '', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
+				'', $smcFunc['htmlspecialchars']($_POST['group_name'], ENT_QUOTES), ($postCountBasedGroup ? (int) $_POST['min_posts'] : '-1'),
 				'1#icon.png', '', $_POST['group_type'], !empty($_POST['group_level']) ? 1 : 0,
 			),]]></add>
 		</operation>
