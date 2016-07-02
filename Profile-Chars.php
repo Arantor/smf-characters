@@ -1202,7 +1202,7 @@ function char_summary($memID)
 
 function char_sheet()
 {
-	global $context, $txt, $smcFunc, $scripturl;
+	global $context, $txt, $smcFunc, $scripturl, $sourcedir;
 
 	// First, get rid of people shouldn't have a sheet at all - the OOC characters
 	if ($context['character']['is_main'])
@@ -1231,6 +1231,29 @@ function char_sheet()
 		{
 			$context['character']['sheet_details'] = $smcFunc['db_fetch_assoc']($request);
 			$smcFunc['db_free_result']($request);
+		}
+
+		if (isset($_POST['message']))
+		{
+			// We might be saving a comment on this.
+			checkSession();
+			require_once($sourcedir . '/Subs-Post.php');
+			require_once($sourcedir . '/Subs-Editor.php');
+
+			$message = $smcFunc['htmlspecialchars']($_POST['message'], ENT_QUOTES);
+			preparsecode($message);
+
+			if (!empty($message))
+			{
+				// WE GAHT ONE!!!!!!!!!
+				$smcFunc['db_insert']('insert',
+					'{db_prefix}character_sheet_comments',
+					array('id_character' => 'int', 'id_author' => 'int', 'time_posted' => 'int', 'sheet_comment' => 'string'),
+					array($context['character']['id_character'], $context['user']['id'], time(), $message),
+					array('id_comment')
+				);
+				redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
+			}
 		}
 	}
 	else
@@ -1298,6 +1321,63 @@ function char_sheet()
 				'custom' => 'onclick="return confirm(' . JavaScriptEscape($txt['char_sheet_approve_are_you_sure']) . ')"',
 			);
 		}
+
+		// And since this is the owner or admin, we should look at comments.
+		$context['sheet_comments'] = array();
+		// First, find the time of the last approved case.
+		$last_approved = 0;
+		$request = $smcFunc['db_query']('', '
+			SELECT MAX(approved_time) AS last_approved
+			FROM {db_prefix}character_sheet_versions
+			WHERE id_approver != 0
+				AND id_character = {int:character}',
+				array(
+					'character' => $context['character']['id_character'],
+				)
+			);
+		if ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			$last_approved = (int) $row['last_approved'];
+		}
+		$smcFunc['db_free_result']($request);
+
+		// Now get any comments for this character since the last approval.
+		$request = $smcFunc['db_query']('', '
+			SELECT csc.id_comment, csc.id_author, mem.real_name, csc.time_posted, csc.sheet_comment
+			FROM {db_prefix}character_sheet_comments AS csc
+			LEFT JOIN {db_prefix}members AS mem ON (csc.id_author = mem.id_member)
+			WHERE id_character = {int:character}
+				AND time_posted > {int:approval}
+			ORDER BY id_comment DESC',
+			array(
+				'character' => $context['character']['id_character'],
+				'approval' => $last_approved,
+			)
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			$context['sheet_comments'][$row['id_comment']] = $row;
+		}
+		$smcFunc['db_free_result']($request);
+
+		// Make an editor box
+		require_once($sourcedir . '/Subs-Post.php');
+		require_once($sourcedir . '/Subs-Editor.php');
+
+		// Now create the editor.
+		$editorOptions = array(
+			'id' => 'message',
+			'value' => '',
+			'labels' => array(
+				'post_button' => $txt['save'],
+			),
+			// add height and width for the editor
+			'height' => '175px',
+			'width' => '100%',
+			'preview_type' => 0,
+			'required' => true,
+		);
+		create_control_richedit($editorOptions);
 	}
 }
 

@@ -976,6 +976,41 @@ function template_char_sheet()
 				', parse_bbc($context['character']['sheet_details']['sheet_text'], false), '
 			</div>';
 	}
+
+	// If it's not set, there's not even a comment box, let alone history.
+	if (isset($context['sheet_comments']))
+	{
+		echo '
+			<br />
+			<div class="cat_bar">
+				<h3 class="catbg">
+					', $txt['char_sheet_comments'], '
+				</h3>
+			</div>
+			<div id="quickReplyOptions">
+				<div class="roundframe">
+					<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=sheet" method="post" accept-charset="', $context['character_set'], '" name="postmodify" id="postmodify" class="flow_hidden" onsubmit="submitonce(this);smc_saveEntities(\'postmodify\', [\'message\'], \'options\');">
+						', template_control_richedit('message', 'smileyBox_message', 'bbcBox_message'), '
+						<br class="clear_right">
+						<span id="post_confirm_buttons">
+							<input type="submit" value="', $txt['char_sheet_add_comment'], '" name="post" class="button_submit">
+							<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+						</span>
+					</form>
+				</div>
+			</div>';
+
+		foreach ($context['sheet_comments'] as $comment)
+		{
+			echo '
+			<div class="windowbg2">
+				<div>
+					<strong>', !empty($comment['real_name']) ? $comment['real_name'] : $txt['char_unknown'], '</strong> - ', timeformat($comment['time_posted']), '
+				</div>
+				<div>', parse_bbc($comment['sheet_comment'], true, 'sheet-comment-' . $comment['id_comment']), '</div>
+			</div>';
+		}
+	}
 }
 
 function template_char_sheet_edit()

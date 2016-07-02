@@ -88,6 +88,26 @@ $tables[] = array(
 	),
 );
 $tables[] = array(
+	'table_name' => '{db_prefix}character_sheet_comments',
+	'columns' => array(
+		db_field('id_comment', 'int', 0, true, true),
+		db_field('id_character', 'int'),
+		db_field('id_author', 'mediumint'),
+		db_field('time_posted', 'int'),
+		db_field('sheet_comment', 'text'),
+	),
+	'indexes' => array(
+		array(
+			'columns' => array('id_comment'),
+			'type' => 'primary',
+		),
+		array(
+			'columns' => array('id_character', 'time_posted'),
+			'index',
+		),
+	),
+);
+$tables[] = array(
 	'table_name' => '{db_prefix}character_sheet_versions',
 	'columns' => array(
 		db_field('id_version', 'int', 0, true, true),
