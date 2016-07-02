@@ -19,6 +19,7 @@ Features (not all implemented yet!):
  * Merging accounts does not preserve the source (from) account's likes or poll votes. PMs are preserved; PM labels are not.
  * If a given account is alerted twice in the same post through two different quotes, only one notification will be generated - for the first quote for that account.
  * Email notifications are currently not supported for character-specific notifications and may not be in the future.
+ * Some queries may fail with PostgreSQL, but the use case for PostgreSQL is sufficiently limited this is not a problem.
 
 # Disclaimer
 

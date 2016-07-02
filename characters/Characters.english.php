@@ -29,6 +29,11 @@ $txt['char_sheet_current_version'] = 'Current Version';
 $txt['char_sheet_last_approved_version'] = 'Last Approved Version';
 $txt['char_sheet_comments'] = 'Comments';
 $txt['char_sheet_add_comment'] = 'Add Comment';
+$txt['char_sheet_was_approved'] = '<a href="%s">This version</a> of the character sheet was approved.';
+$txt['char_sheet_updated'] = 'Character sheet was updated - %1$s';
+$txt['char_sheet_approved_on'] = '(approved %1$s by %2$s)';
+$txt['char_sheet_click_to_expand'] = '<a href="#" class="click_expand">show more</a>';
+$txt['char_sheet_click_to_collapse'] = '<a href="#" class="click_collapse">show less</a>';
 
 $txt['switch_to_char'] = 'Switch to this character';
 $txt['switch_to_char_menu'] = 'Reattribute to...';

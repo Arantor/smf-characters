@@ -244,6 +244,7 @@ function character_profile($memID) {
 		'sheet_approval' => 'char_sheet_approval',
 		'sheet_approve' => 'char_sheet_approve',
 		'sheet_compare' => 'char_sheet_compare',
+		'sheet_history' => 'char_sheet_history',
 		'delete' => 'char_delete',
 		'posts' => 'char_posts',
 		'topics' => 'char_posts',
@@ -1379,6 +1380,69 @@ function char_sheet()
 		);
 		create_control_richedit($editorOptions);
 	}
+}
+
+function char_sheet_history()
+{
+	global $context, $txt, $smcFunc, $scripturl, $sourcedir;
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then we need to be either the owner or an admin to see this.
+	if (empty($context['user']['is_owner']) && !allowedTo('admin_forum'))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	$context['history_items'] = array();
+
+	// First, get all the sheet versions.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_version, sheet_text, created_time, id_approver,
+			mem.real_name AS approver_name, approved_time
+		FROM {db_prefix}character_sheet_versions AS csv
+		LEFT JOIN {db_prefix}members AS mem ON (csv.id_version = mem.id_member)
+		WHERE csv.id_character = {int:char}
+		ORDER BY NULL',
+		array(
+			'char' => $context['character']['id_character'],
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		if (!empty($row['id_approver']))
+		{
+			$context['history_items'][$row['approved_time'] . 'a' . $row['id_version']] = $row['id_version'];
+		}
+		$context['history_items'][$row['created_time'] . 'S' . $row['id_version']] = $row;
+	}
+	$smcFunc['db_free_result']($request);
+
+	// Then get all the comments.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_comment, id_author, mem.real_name, time_posted, sheet_comment
+		FROM {db_prefix}character_sheet_comments AS csc
+		LEFT JOIN {db_prefix}members AS mem ON (csc.id_author = mem.id_member)
+		WHERE csc.id_character = {int:char}
+		ORDER BY NULL',
+		array(
+			'char' => $context['character']['id_character'],
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$context['history_items'][$row['time_posted'] . 'c' . $row['id_comment']] = $row;
+	}
+	$smcFunc['db_free_result']($request);
+
+	// Then stand back and do some magic.
+	// We spliced this array together unordered using timestamp + c/S + id
+	// comments will implicitly be sorted as chronologically after
+	// sheet versions as a result and id to avoid clashes.
+	krsort($context['history_items']);
+
+	$context['page_title'] = $txt['char_sheet_history'];
+	$context['sub_template'] = 'char_sheet_history';
 }
 
 function char_sheet_edit()
