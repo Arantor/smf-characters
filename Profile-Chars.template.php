@@ -79,7 +79,7 @@ function template_character_profile() {
 			', $context['character']['character_name'], '
 		</h3>
 	</div>
-					
+
 	<div class="errorbox" style="display:none" id="profile_error"></div>
 	<div id="profileview" class="roundframe flow_auto">
 		<div id="basicinfo">';
@@ -95,6 +95,11 @@ function template_character_profile() {
 	{
 		echo '
 			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_switch_redir;char=', $context['character']['id_character'], ';', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['switch_to_char'], '</a><br /><br />';
+	}
+	if (!$context['character']['is_main'] && !empty($context['character']['char_sheet']))
+	{
+		echo '
+			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=sheet" class="button">', $txt['char_sheet'], '</a><br /><br />';
 	}
 	if ($context['character']['editable'])
 	{
