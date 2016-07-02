@@ -1508,6 +1508,15 @@ function char_sheet_edit()
 					),
 					array('id_version')
 				);
+				// Mark previous versions of the character sheet as not awaited approval.
+				$smcFunc['db_query']('', '
+					UPDATE {db_prefix}character_sheet_versions
+					SET approval_state = 0
+					WHERE id_character = {int:char}',
+					array(
+						'char' => $context['character']['id_character'],
+					)
+				);
 			}
 		}
 

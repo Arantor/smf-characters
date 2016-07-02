@@ -21,6 +21,13 @@ function integrate_chars_admin_actions(&$admin_areas)
 					'permission' => array('admin_forum'),
 					'subsections' => array(),
 				),
+				'sheets' => array(
+					'label' => $txt['char_sheet_admin'],
+					'function' => 'CharacterSheets',
+					'icon' => 'package_ops',
+					'permission' => array('admin_forum'),
+					'subsections' => array(),
+				),
 			),
 		);
 	}
@@ -325,6 +332,124 @@ function char_template_save()
 	}
 
 	redirectexit('action=admin;area=templates');
+}
+
+function CharacterSheets()
+{
+	global $context, $smcFunc, $txt, $sourcedir, $scripturl;
+	loadTemplate('Admin-Chars');
+	require_once($sourcedir . '/Subs-List.php');
+
+	$listOptions = array(
+		'id' => 'approval_queue',
+		'title' => $txt['char_sheet_admin'],
+		'base_href' => $scripturl . '?action=admin;area=sheets',
+		'default_sort_col' => 'updated',
+		'no_items_label' => $txt['no_pending_sheets'],
+		'get_items' => array(
+			'function' => function($start, $items_per_page, $sort)
+			{
+				global $smcFunc;
+				$rows = array();
+				$request = $smcFunc['db_query']('', '
+					SELECT mem.id_member, mem.real_name, chars.id_character,
+						chars.character_name, MAX(csv.created_time) AS latest_version,
+						MAX(csv.approved_time) AS last_approval, MAX(csv.approval_state) AS approval_state
+					FROM {db_prefix}character_sheet_versions AS csv
+					INNER JOIN {db_prefix}characters AS chars ON (csv.id_character = chars.id_character)
+					INNER JOIN {db_prefix}members AS mem ON (chars.id_member = mem.id_member)
+					GROUP BY csv.id_character
+					HAVING approval_state = 1
+					ORDER BY {raw:sort}',
+					array(
+						'sort' => $sort,
+					)
+				);
+				while ($row = $smcFunc['db_fetch_assoc']($request))
+				{
+					$rows[] = $row;
+				}
+				$smcFunc['db_free_result']($request);
+				return $rows;
+			},
+			'params' => array('regular'),
+		),
+		'columns' => array(
+			'name' => array(
+				'header' => array(
+					'value' => $txt['name'],
+				),
+				'data' => array(
+					'function' => function ($rowData) use ($scripturl)
+					{
+						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . '" target="_blank">' . $rowData['real_name'] . '</a>';
+					}
+				),
+				'sort' => array(
+					'default' => 'mem.real_name',
+					'reverse' => 'mem.real_name DESC',
+				),
+			),
+			'char_name' => array(
+				'header' => array(
+					'value' => str_replace(':', '', $txt['char_name']),
+				),
+				'data' => array(
+					'function' => function ($rowData) use ($scripturl)
+					{
+						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . ';area=characters;char=' . $rowData['id_character'] . '" target="_blank">' . $rowData['character_name'] . '</a>';
+					}
+				),
+				'sort' => array(
+					'default' => 'chars.character_name',
+					'reverse' => 'chars.character_name DESC',
+				),
+			),
+			'char_sheet' => array(
+				'header' => array(
+					'value' => '',
+				),
+				'data' => array(
+					'function' => function ($rowData) use ($txt, $scripturl)
+					{
+						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . ';area=characters;char=' . $rowData['id_character'] . ';sa=sheet" target="_blank">' . $txt['char_sheet'] . '</a>';
+					},
+					'class' => 'centercol',
+				),
+			),
+			'updated' => array(
+				'header' => array(
+					'value' => $txt['last_updated'],
+				),
+				'data' => array(
+					'db' => 'latest_version',
+					'timeformat' => true,
+				),
+				'sort' => array(
+					'default' => 'latest_version',
+					'reverse' => 'latest_version DESC',
+				),
+			),
+			'approved' => array(
+				'header' => array(
+					'value' => $txt['previously_approved'],
+				),
+				'data' => array(
+					'function' => function ($rowData) use ($txt)
+					{
+						return $rowData['last_approval'] ? '<span class="generic_icons approve_button" title="' . $txt['yes'] . '"></span>' : '<span class="generic_icons unapprove_button" title="' . $txt['no'] . '"></span>';
+					},
+					'class' => 'centercol',
+				),
+			),
+		),
+	);
+
+	createList($listOptions);
+
+	$context['page_title'] = $txt['char_sheet_admin'];
+	$context['sub_template'] = 'show_list';
+	$context['default_list'] = 'approval_queue';
 }
 
 ?>
