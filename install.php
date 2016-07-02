@@ -110,6 +110,40 @@ $tables[] = array(
 		),
 	),
 );
+$tables[] = array(
+	'table_name' => '{db_prefix}character_sheet_templates',
+	'columns' => array(
+		db_field('id_template', 'smallint', 0, true, true),
+		db_field('template_name', 'varchar', 100),
+		db_field('template', 'text'),
+		db_field('position', 'smallint'),
+	),
+	'indexes' => array(
+		array(
+			'columns' => array('id_template'),
+			'type' => 'primary',
+		)
+	),
+);
+$tables[] = array(
+	'table_name' => '{db_prefix}character_log_topics',
+	'columns' => array(
+		db_field('id_character', 'int'),
+		db_field('id_topic', 'mediumint'),
+		db_field('id_msg', 'int'),
+		db_field('unwatched', 'tinyint'),
+	),
+	'indexes' => array(
+		array(
+			'columns' => array('id_character', 'id_topic'),
+			'type' => 'unique',
+		),
+		array(
+			'columns' => array('id_topic'),
+			'type' => 'index',
+		),
+	),
+);
 
 // Oh joy, we've now made it to extra rows...
 $rows = array();

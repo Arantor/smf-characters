@@ -116,4 +116,9 @@ $txt['alert_msg_mentionchr'] = '{char_link} mentioned {your_chr} in the post {ms
 $txt['alert_msg_likechr'] = '{member_link} liked {your_chr}\'s post {msg_msg}';
 
 $txt['char_theme'] = 'Theme';
+
+$txt['char_templates'] = 'Templates';
+$txt['char_templates_add'] = 'Add Template';
+$txt['char_templates_none'] = 'There are no templates.';
+$txt['char_templates_sel'] = 'Choose template:';
 ?>

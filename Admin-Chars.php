@@ -7,7 +7,23 @@ function integrate_chars_admin_actions(&$admin_areas)
 {
 	global $txt;
 	if (allowedTo('admin_forum'))
+	{
 		$admin_areas['members']['areas']['membergroups']['subsections']['badges'] = array($txt['badges'], 'admin_forum');
+
+		$admin_areas['characters'] = array(
+			'title' => $txt['chars_menu_title'],
+			'permission' => array('admin_forum'),
+			'areas' => array(
+				'templates' => array(
+					'label' => $txt['char_templates'],
+					'function' => 'CharacterTemplates',
+					'icon' => 'quick_edit_button',
+					'permission' => array('admin_forum'),
+					'subsections' => array(),
+				),
+			),
+		);
+	}
 }
 
 function integrate_chars_permissions(&$permissionGroups, &$permissionList, &$leftPermissionGroups, &$hiddenPermissions, &$relabelPermissions)
@@ -90,6 +106,7 @@ function MembergroupBadges()
 
 	if (isset($_POST['group']) && is_array($_POST['group']))
 	{
+		checkSession();
 		$order = 1;
 		foreach ($_POST['group'] as $group) {
 			$group = (int) $group;
@@ -135,6 +152,65 @@ function MembergroupBadges()
 	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
 	addInlineJavascript('
 	$(\'.sortable\').sortable({handle: ".handle"});', true);
+}
+
+function CharacterTemplates()
+{
+	$subactions = array(
+		'index' => 'char_template_list',
+		'add' => 'char_template_add',
+		'edit' => 'char_template_edit',
+		'reorder' => 'char_template_reorder',
+	);
+
+	$sa = isset($_GET['sa'], $subactions[$_GET['sa']]) ? $subactions[$_GET['sa']] : $subactions['index'];
+	$sa();
+}
+
+function char_template_list() {
+	global $smcFunc, $context, $txt;
+
+	$context['char_templates'] = array();
+	$request = $smcFunc['db_query']('', '
+		SELECT id_template, template_name, position
+		FROM {db_prefix}character_sheet_templates
+		ORDER BY position ASC');
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$context['char_templates'][$row['id_template']] = $row;
+	}
+	$smcFunc['db_free_result']($request);
+
+	loadTemplate('Admin-Chars');
+	$context['page_title'] = $txt['char_templates'];
+	$context['sub_template'] = 'char_templates';
+	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
+	addInlineJavascript('
+	$(\'.sortable\').sortable({handle: ".handle"});', true);
+}
+
+function char_template_reorder()
+{
+	global $smcFunc;
+	if (isset($_POST['template']) && is_array($_POST['template']))
+	{
+		checkSession();
+		$order = 1;
+		foreach ($_POST['template'] as $template) {
+			$template = (int) $template;
+			$smcFunc['db_query']('', '
+				UPDATE {db_prefix}character_sheet_templates
+				SET position = {int:order}
+				WHERE id_template = {int:template}',
+				array(
+					'order' => $order,
+					'template' => $template,
+				)
+			);
+			$order++;
+		}
+	}
+	redirectexit('action=admin;area=templates');
 }
 
 ?>
