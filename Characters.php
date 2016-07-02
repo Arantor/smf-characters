@@ -516,6 +516,10 @@ function integrate_display_chars_messages(&$output, &$message, $counter) {
 		// Now replace the values we need into the new version.
 		if (!empty($output['member']['characters'][$message['id_character']])) {
 			$character = $output['member']['characters'][$message['id_character']];
+			if (!empty($character['char_sheet']))
+			{
+				$output['member']['char_sheet_url'] = $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $output['id_character'] . ';sa=sheet';
+			}
 			if (!empty($character['avatar']))
 			{
 				$output['member']['avatar'] = array(

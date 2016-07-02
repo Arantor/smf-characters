@@ -677,6 +677,15 @@
 
 		// What about splitting it off the rest of the topic?]]></add>
 		</operation>
+		<operation>
+			<search position="replace"><![CDATA[<ol class="profile_icons">';]]></search>
+			<add><![CDATA[<ol class="profile_icons">';
+			if (!empty($message['member']['char_sheet_url']))
+			{
+				echo '
+										<li><a href="', $message['member']['char_sheet_url'], '" target="_blank" class="new_win">', ($settings['use_image_buttons'] ? '<span class="generic_icons package_ops centericon" title="' . $txt['char_sheet'] . '"></span>' : $txt['char_sheet']), '</a></li>';
+			}]]></add>
+		</operation>
 	</file>
 
 	<!-- Now to collect registration details -->
