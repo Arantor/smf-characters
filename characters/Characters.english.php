@@ -25,6 +25,7 @@ $txt['char_sheet_edit'] = 'Edit Sheet';
 $txt['char_sheet_history'] = 'Edit History';
 $txt['char_sheet_approve'] = 'Approve';
 $txt['char_sheet_approve_are_you_sure'] = 'Are you sure you want to approve this character sheet?';
+$txt['char_sheet_reject_are_you_sure'] = 'Are you sure you want to reject this character sheet?';
 $txt['char_sheet_compare'] = 'Compare to Last Approved';
 $txt['char_sheet_current_version'] = 'Current Version';
 $txt['char_sheet_last_approved_version'] = 'Last Approved Version';
@@ -136,4 +137,5 @@ $txt['char_sheet_admin'] = 'Pending Character Sheets';
 $txt['last_updated'] = 'Last updated';
 $txt['previously_approved'] = 'Previous approved';
 $txt['no_pending_sheets'] = 'There are no pending character sheets to review.';
+$txt['remove_from_queue'] = 'Remove from Queue';
 ?>

@@ -243,6 +243,7 @@ function character_profile($memID) {
 		'sheet_edit' => 'char_sheet_edit',
 		'sheet_approval' => 'char_sheet_approval',
 		'sheet_approve' => 'char_sheet_approve',
+		'sheet_reject' => 'char_sheet_reject',
 		'sheet_compare' => 'char_sheet_compare',
 		'sheet_history' => 'char_sheet_history',
 		'delete' => 'char_delete',
@@ -1322,6 +1323,15 @@ function char_sheet()
 				'custom' => 'onclick="return confirm(' . JavaScriptEscape($txt['char_sheet_approve_are_you_sure']) . ')"',
 			);
 		}
+		// And if it's pending approval and we might want to kick it back?
+		if (!empty($context['character']['sheet_details']['approval_state']) && empty($context['character']['sheet_details']['id_approver']) && allowedTo('admin_forum'))
+		{
+			$context['sheet_buttons']['reject'] = array(
+				'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_reject;version=' . $context['character']['sheet_details']['id_version'] . ';char=' . $context['character']['id_character'] . ';' . $context['session_var'] . '=' . $context['session_id'],
+				'text' => 'remove_from_queue',
+				'custom' => 'onclick="return confirm(' . JavaScriptEscape($txt['char_sheet_reject_are_you_sure']) . ')"',
+			);
+		}
 
 		// And since this is the owner or admin, we should look at comments.
 		if (!empty($context['character']['sheet_details']['sheet_text'])) {
@@ -1509,14 +1519,7 @@ function char_sheet_edit()
 					array('id_version')
 				);
 				// Mark previous versions of the character sheet as not awaited approval.
-				$smcFunc['db_query']('', '
-					UPDATE {db_prefix}character_sheet_versions
-					SET approval_state = 0
-					WHERE id_character = {int:char}',
-					array(
-						'char' => $context['character']['id_character'],
-					)
-				);
+				mark_char_sheets_unapproved($context['character']['id_character']);
 			}
 		}
 
@@ -1775,6 +1778,24 @@ function char_sheet_approve()
 	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
 }
 
+function char_sheet_reject()
+{
+	global $context, $smcFunc;
+
+	checkSession('get');
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then we're not an admin...
+	if (!allowedTo('admin_forum'))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	mark_char_sheet_unapproved($context['character']['id_character']);
+	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
+}
+
 function char_sheet_compare()
 {
 	global $context, $txt, $smcFunc, $scripturl, $sourcedir;
@@ -1823,6 +1844,19 @@ function char_sheet_compare()
 
 	$context['page_title'] = $txt['char_sheet_compare'];
 	$context['sub_template'] = 'char_sheet_compare';
+}
+
+function mark_char_sheet_unapproved($char)
+{
+	global $smcFunc;
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}character_sheet_versions
+		SET approval_state = 0
+		WHERE id_character = {int:char}',
+		array(
+			'char' => (int) $char,
+		)
+	);
 }
 
 function char_merge_account($memID)
