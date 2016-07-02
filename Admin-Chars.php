@@ -129,7 +129,7 @@ function MembergroupBadges()
 	}
 	$smcFunc['db_free_result']($request);
 
-	loadTemplate('Profile-Chars');
+	loadTemplate('Admin-Chars');
 	$context['page_title'] = $txt['badges'];
 	$context['sub_template'] = 'membergroup_badges';
 	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
