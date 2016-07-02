@@ -1750,6 +1750,17 @@ function char_sheet_approve()
 		)
 	);
 
+	// And send the character sheet owner an alert.
+	$smcFunc['db_insert']('',
+		'{db_prefix}user_alerts',
+		array('alert_time' => 'int', 'id_member' => 'int', 'id_member_started' => 'int', 'member_name' => 'string',
+			'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
+		array(time(), $context['id_member'], $context['user']['id'], '',
+			'member', 0, 'char_sheet_approved', 0, json_encode(array('chars_dest' => $context['character']['id_character']))),
+		array()
+	);
+	updateMemberData($context['id_member'], array('alerts' => '+'));
+
 	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
 }
 
