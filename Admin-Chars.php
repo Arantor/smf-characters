@@ -161,6 +161,7 @@ function CharacterTemplates()
 		'add' => 'char_template_add',
 		'edit' => 'char_template_edit',
 		'reorder' => 'char_template_reorder',
+		'save' => 'char_template_save',
 	);
 
 	$sa = isset($_GET['sa'], $subactions[$_GET['sa']]) ? $subactions[$_GET['sa']] : $subactions['index'];
@@ -210,6 +211,119 @@ function char_template_reorder()
 			$order++;
 		}
 	}
+	redirectexit('action=admin;area=templates');
+}
+
+function char_template_add()
+{
+	global $context, $txt, $sourcedir;
+	require_once($sourcedir . '/Subs-Post.php');
+	require_once($sourcedir . '/Subs-Editor.php');
+
+	// Now create the editor.
+	$editorOptions = array(
+		'id' => 'message',
+		'value' => '',
+		'labels' => array(
+			'post_button' => $txt['save'],
+		),
+		// add height and width for the editor
+		'height' => '500px',
+		'width' => '100%',
+		'preview_type' => 0,
+		'required' => true,
+	);
+	create_control_richedit($editorOptions);
+	$context['template_name'] = '';
+	$context['template_id'] = 0;
+
+	$context['page_title'] = $txt['char_templates_add'];
+	$context['sub_template'] = 'char_template_edit';
+	loadTemplate('Admin-Chars');
+}
+
+function char_template_edit()
+{
+	global $context, $txt, $sourcedir, $smcFunc;
+	require_once($sourcedir . '/Subs-Post.php');
+	require_once($sourcedir . '/Subs-Editor.php');
+
+	$template_id = isset($_GET['template_id']) ? (int) $_GET['template_id'] : 0;
+	$request = $smcFunc['db_query']('', '
+		SELECT id_template, template_name, template
+		FROM {db_prefix}character_sheet_templates
+		WHERE id_template = {int:template}',
+		array(
+			'template' => $template_id,
+		)
+	);
+	$row = $smcFunc['db_fetch_assoc']($request);
+	if (empty($row))
+	{
+		redirectexit('action=admin;area=templates');
+	}
+	$context['template_id'] = $template_id;
+	$context['template_name'] = $row['template_name'];
+
+	// Now create the editor.
+	$editorOptions = array(
+		'id' => 'message',
+		'value' => un_preparsecode($row['template']),
+		'labels' => array(
+			'post_button' => $txt['save'],
+		),
+		// add height and width for the editor
+		'height' => '500px',
+		'width' => '100%',
+		'preview_type' => 0,
+		'required' => true,
+	);
+	create_control_richedit($editorOptions);
+
+	$context['page_title'] = $txt['char_templates_edit'];
+	$context['sub_template'] = 'char_template_edit';
+	loadTemplate('Admin-Chars');
+}
+
+function char_template_save()
+{
+	global $context, $smcFunc, $sourcedir;
+
+	require_once($sourcedir . '/Subs-Post.php');
+
+	checkSession();
+	if (empty($_POST['template_name']) || empty($_POST['message']))
+		redirectexit('action=admin;area=templates');
+
+	$template_name = $smcFunc['htmlspecialchars'](trim($_POST['template_name']), ENT_QUOTES);
+	$template = $smcFunc['htmlspecialchars']($_POST['message'], ENT_QUOTES);
+	preparsecode($template);
+
+	$template_id = isset($_POST['template_id']) ? (int) $_POST['template_id'] : 0;
+
+	if (empty($template_id)) {
+		// New insertion
+		$smcFunc['db_insert']('',
+			'{db_prefix}character_sheet_templates',
+			array('template_name' => 'string', 'template' => 'string', 'position' => 'int'),
+			array($template_name, $template, 0),
+			array('id_template')
+		);
+	} else {
+		// Updating an existing one
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}character_sheet_templates
+			SET template_name = {string:template_name},
+				template = {string:template}
+			WHERE id_template = {int:template_id}',
+			array(
+				'template_id' => $template_id,
+				'template_name' => $template_name,
+				'template' => $template,
+			)
+		);
+	}
+
 	redirectexit('action=admin;area=templates');
 }
 

@@ -119,6 +119,8 @@ $txt['char_theme'] = 'Theme';
 
 $txt['char_templates'] = 'Templates';
 $txt['char_templates_add'] = 'Add Template';
+$txt['char_templates_edit'] = 'Edit Template';
+$txt['char_template_name'] = 'Template Name:';
 $txt['char_templates_none'] = 'There are no templates.';
 $txt['char_templates_sel'] = 'Choose template:';
 ?>

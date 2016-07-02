@@ -68,7 +68,8 @@ function display_group($group)
 	$order++;
 }
 
-function template_char_templates() {
+function template_char_templates()
+{
 	global $context, $txt, $scripturl, $settings;
 	echo '
 		<form method="post" action="', $scripturl, '?action=admin;area=templates;sa=reorder;', $context['session_var'], '=', $context['session_id'], '">
@@ -85,7 +86,7 @@ function template_char_templates() {
 		{
 			echo '
 					<li class="character_group">
-						<div class="group_name">', $template['template_name'], '</div>
+						<div class="group_name"><a href="', $scripturl, '?action=admin;area=templates;sa=edit;template_id=', $id_template, '">', $template['template_name'], '</a></div>
 						<img src="', $settings['default_images_url'], '/toggle.png" class="handle">
 						<input type="hidden" name="template[', $id_template, ']" value="', $id_template, '">
 					</li>';
@@ -99,11 +100,35 @@ function template_char_templates() {
 	echo '
 			</div>
 			<div class="floatright">
-				<a href="', $scripturl, '?action=admin;area=templates" class="button">', $txt['char_templates_add'], '</a>
+				<a href="', $scripturl, '?action=admin;area=templates;sa=add" class="button">', $txt['char_templates_add'], '</a>
 				<input type="submit" name="save" value="', $txt['save'], '" class="button_submit">
 			</div>
 			<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 			<div class="clear"></div>
 		</form>';
 }
+
+function template_char_template_edit()
+{
+	global $context, $txt, $scripturl;
+	echo '
+		<form method="post" action="', $scripturl, '?action=admin;area=templates;sa=save;', $context['session_var'], '=', $context['session_id'], '">
+			<div class="cat_bar">
+				<h3 class="catbg">', $txt['char_templates'], '</h3>
+			</div>
+			<div class="windowbg2">
+				 ', $txt['char_template_name'], ' <input type="text" name="template_name" value="', $context['template_name'], '"><br><br>';
+
+	template_control_richedit('message', null, 'bbcBox');
+	echo '
+				<br>
+				<div>
+					<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+					<input type="hidden" name="template_id" value="', $context['template_id'], '">
+					<input type="submit" value="', $txt['save'], '" class="button_submit">
+				</div>
+			</div>
+		</form>';
+}
+
 ?>
