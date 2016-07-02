@@ -1383,22 +1383,19 @@ function char_sheet_edit()
 	create_control_richedit($editorOptions);
 
 	$context['sheet_templates'] = array();
-	if (empty($context['character']['sheet_details']['sheet_text']))
+	// Go fetch the possible templates.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_template, template_name, template
+		FROM {db_prefix}character_sheet_templates
+		ORDER BY position ASC');
+	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
-		// If we don't have one, allow us the ability to select from templates.
-		$request = $smcFunc['db_query']('', '
-			SELECT id_template, template_name, template
-			FROM {db_prefix}character_sheet_templates
-			ORDER BY position ASC');
-		while ($row = $smcFunc['db_fetch_assoc']($request))
-		{
-			$context['sheet_templates'][$row['id_template']] = array(
-				'name' => $row['template_name'],
-				'body' => un_preparsecode($row['template']),
-			);
-		}
-		$smcFunc['db_free_result']($request);
+		$context['sheet_templates'][$row['id_template']] = array(
+			'name' => $row['template_name'],
+			'body' => un_preparsecode($row['template']),
+		);
 	}
+	$smcFunc['db_free_result']($request);
 
 	// Now fetch the comments
 	$context['sheet_comments'] = array();
