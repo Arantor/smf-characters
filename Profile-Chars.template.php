@@ -73,16 +73,14 @@ function template_character_profile() {
 	global $context, $txt, $user_profile, $scripturl, $user_info, $modSettings;
 
 	echo '
-		<div id="admin_content">
-					<div class="cat_bar">
-						<h3 class="catbg">
-						', !empty($context['character']['avatar']) ? '<img class="icon" style="max-width: 25px; max-height: 25px;" src="' . $context['character']['avatar'] . '" alt="">' : '', '
-						', $context['character']['character_name'], '
-						</h3>
-					</div>
+	<div class="cat_bar">
+		<h3 class="catbg">
+			', !empty($context['character']['avatar']) ? '<img class="icon" style="max-width: 25px; max-height: 25px;" src="' . $context['character']['avatar'] . '" alt="">' : '', '
+			', $context['character']['character_name'], '
+		</h3>
+	</div>
 					
-		<div class="errorbox" style="display:none" id="profile_error">
-		</div>
+	<div class="errorbox" style="display:none" id="profile_error"></div>
 	<div id="profileview" class="roundframe flow_auto">
 		<div id="basicinfo">';
 
@@ -143,9 +141,7 @@ function template_character_profile() {
 	echo '
 			</dl>
 		</div>
-	</div>
-<div class="clear"></div>
-				</div>';
+	</div>';
 }
 
 function template_edit_char() {
@@ -160,12 +156,9 @@ function template_edit_char() {
 	}
 
 	echo '
-		<div id="admin_content">
-					<div class="cat_bar">
-						<h3 class="catbg">
-						', $txt['edit_char'], '
-						</h3>
-					</div>';
+	<div class="cat_bar">
+		<h3 class="catbg">', $txt['edit_char'], '</h3>
+	</div>';
 
 	echo '
 	<div id="profileview" class="roundframe flow_auto">
@@ -261,6 +254,7 @@ function template_edit_char() {
 				<div class="char_signature"></div>
 				<dl class="noborder" id="current_sig">
 					<dt>', $txt['current_signature'], ':</dt>
+					<dd></dd>
 				</dl>
 				<div class="signature" id="current_sig_parsed">
 					', !empty($context['character']['signature']) ? parse_bbc($context['character']['signature'], true, 'sig_char_' . $context['character']['id_character']) : '<em>' . $txt['no_signature_set'] . '</em>', '
@@ -268,10 +262,12 @@ function template_edit_char() {
 				<dl></dl>
 				<dl class="noborder" id="sig_preview">
 					<dt>', $txt['signature_preview'], ':</dt>
+					<dd></dd>
 				</dl>
 				<div class="signature" id="sig_preview_parsed"></div>
 				<dl class="noborder" id="sig_header">
 					<dt>', $txt['signature'], ':</dt>
+					<dd></dd>
 				</dl>
 				', template_control_richedit('char_signature', 'smileyBox_message', 'bbcBox_message');
 
@@ -360,9 +356,7 @@ function template_edit_char() {
 				<input type="hidden" name="', $context['edit-char' . $context['character']['id_character'] . '_token_var'], '" value="', $context['edit-char' . $context['character']['id_character'] . '_token'], '">
 			</form>
 		</div>
-	</div>
-<div class="clear"></div>
-				</div>';
+	</div>';
 }
 
 function template_char_theme()
@@ -370,12 +364,9 @@ function template_char_theme()
 	global $context, $txt, $scripturl;
 
 	echo '
-		<div id="admin_content">
-					<div class="cat_bar">
-						<h3 class="catbg">
-						Theme
-						</h3>
-					</div>
+	<div class="cat_bar">
+		<h3 class="catbg">', $txt['char_theme'],'</h3>
+	</div>
 
 	<div id="profileview" class="roundframe flow_auto">
 		<form id="char_theme_wrapper" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=theme" method="post">';
@@ -391,9 +382,7 @@ function template_char_theme()
 	echo '
 			<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 		</form>
-	</div>
-<div class="clear"></div>
-				</div>';
+	</div>';
 }
 
 function template_char_posts()
