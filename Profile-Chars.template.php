@@ -992,6 +992,22 @@ function template_char_sheet_edit()
 				<div id="post_area">
 					<div class="roundframe">';
 
+	if (!empty($context['sheet_templates']))
+	{
+		echo '
+						', $txt['char_templates_sel'], ' &nbsp;
+						<select id="char_sheet_template">
+							<option>-- ', $txt['char_templates'], ' --</option>';
+		foreach ($context['sheet_templates'] as $id_template => $template)
+		{
+			echo '
+							<option value="', $id_template, '">', $template['name'], '</option>';
+		}
+		echo '
+						</select>
+						<a href="#" class="button" id="insert_char_template">', $txt['char_templates_add'], '</a><br><br>';
+	}
+
 	template_control_richedit('message', null, 'bbcBox');
 
 	echo '
@@ -1002,6 +1018,15 @@ function template_char_sheet_edit()
 				<br class="clear">
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 			</form>';
+
+	addInlineJavascript('
+	var sheet_templates = ' . json_encode($context['sheet_templates']) . ';
+	$("#insert_char_template").on("click", function (e) {
+		e.preventDefault();
+		var tmpl = $("#char_sheet_template").val();
+		if (sheet_templates.hasOwnProperty(tmpl))
+			$("#message").data("sceditor").InsertText(sheet_templates[tmpl].body);
+	});', true);
 
 	if (!empty($context['sheet_comments']))
 	{
