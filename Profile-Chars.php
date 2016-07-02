@@ -241,6 +241,7 @@ function character_profile($memID) {
 		'theme' => 'char_theme',
 		'sheet' => 'char_sheet',
 		'sheet_edit' => 'char_sheet_edit',
+		'sheet_approval' => 'char_sheet_approval',
 		'sheet_approve' => 'char_sheet_approve',
 		'sheet_compare' => 'char_sheet_compare',
 		'delete' => 'char_delete',
@@ -1274,7 +1275,7 @@ function char_sheet()
 			if (empty($context['character']['sheet_details']['id_approver']) && empty($context['character']['sheet_details']['approval_state']))
 			{
 				$context['sheet_buttons']['send_for_approval'] = array(
-					'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_approval;char=' . $context['character']['id_character'],
+					'url' => $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;sa=sheet_approval;char=' . $context['character']['id_character'] . ';' . $context['session_var'] . '=' . $context['session_id'],
 					'text' => 'char_sheet_send_for_approval',
 				);
 			}
@@ -1425,6 +1426,103 @@ function char_sheet_edit()
 
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet_edit';
+}
+
+function char_sheet_approval()
+{
+	global $smcFunc, $context, $sourcedir;
+
+	checkSession('get');
+
+	// First, get rid of people shouldn't have a sheet at all - the OOC characters
+	if ($context['character']['is_main'])
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// Then if we're looking at a character who doesn't have an approved one
+	// and the user couldn't see it... you are the weakest link, goodbye.
+	if (empty($context['user']['is_owner']))
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+
+	// So which one are we offering up for approval?
+	// First, find the last approved case.
+	$last_approved = 0;
+	$request = $smcFunc['db_query']('', '
+		SELECT MAX(id_version) AS last_approved
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_approver != 0
+			AND id_character = {int:character}',
+			array(
+				'character' => $context['character']['id_character'],
+			)
+		);
+	if ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$last_approved = (int) $row['last_approved'];
+	}
+	$smcFunc['db_free_result']($request);
+
+	// Now find the highest version after the last approved (or highest ever)
+	// for this character.
+	$request = $smcFunc['db_query']('', '
+		SELECT MAX(id_version) AS highest_id
+		FROM {db_prefix}character_sheet_versions
+		WHERE id_version > {int:last_approved}
+			AND id_character = {int:character}',
+			array(
+				'last_approved' => $last_approved,
+				'character' => $context['character']['id_character'],
+			)
+		);
+	$row = $smcFunc['db_fetch_assoc']($request);
+	if (empty($row))
+	{
+		// There isn't a version to mark as pending approval.
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	// OK, time to mark it as ready for approval.
+	$request = $smcFunc['db_query']('', '
+		UPDATE {db_prefix}character_sheet_versions
+		SET approval_state = 1
+		WHERE id_version = {int:version}',
+		array(
+			'version' => $row['highest_id'],
+		)
+	);
+
+	// Now notify peoples that this is a thing.
+	require_once($sourcedir . '/Subs-Members.php');
+	$admins = membersAllowedTo('admin_forum');
+
+	$alert_rows = array();
+	foreach ($admins as $id_member)
+	{
+		$alert_rows[] = array(
+			'alert_time' => time(),
+			'id_member' => $id_member,
+			'id_member_started' => $context['id_member'],
+			'member_name' => $context['member']['name'],
+			'content_type' => 'member',
+			'content_id' => 0,
+			'content_action' => 'char_sheet_approval',
+			'is_read' => 0,
+			'extra' => json_encode(array('chars_src' => $context['character']['id_character'])),
+		);
+	}
+
+	if (!empty($alert_rows))
+	{
+		$smcFunc['db_insert']('',
+			'{db_prefix}user_alerts',
+			array('alert_time' => 'int', 'id_member' => 'int', 'id_member_started' => 'int', 'member_name' => 'string',
+				'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
+			$alert_rows,
+			array()
+		);
+		updateMemberData($admins, array('alerts' => '+'));
+	}
+
+	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . ';sa=sheet');
 }
 
 function char_sheet_approve()

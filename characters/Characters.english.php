@@ -114,6 +114,7 @@ $txt['char_unknown'] = '[Unknown]';
 $txt['alert_msg_quotechr'] = '{char_link} quoted {your_chr} in the post {msg_msg}';
 $txt['alert_msg_mentionchr'] = '{char_link} mentioned {your_chr} in the post {msg_msg}';
 $txt['alert_msg_likechr'] = '{member_link} liked {your_chr}\'s post {msg_msg}';
+$txt['alert_member_char_sheet_approvalchr'] = '{char_link}\'s character sheet is awaiting approval.';
 
 $txt['char_theme'] = 'Theme';
 
