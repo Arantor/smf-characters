@@ -138,7 +138,7 @@ function template_character_profile()
 				<dt>', $txt['date_created'], '</dt>
 				<dd>', timeformat($context['character']['date_created']), '</dd>
 				<dt>', $txt['lastLoggedIn'], ': </dt>
-				<dd>', timeformat($context['character']['last_active']), '</dd>';
+				<dd>', !empty($context['character']['last_active']) ? timeformat($context['character']['last_active']) : '<em>' . $txt['never'] . '</em>', '</dd>';
 
 	if ($context['character']['editable'])
 		echo '
