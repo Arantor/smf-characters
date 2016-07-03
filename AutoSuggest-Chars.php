@@ -3,7 +3,8 @@
 if (!defined('SMF'))
 	die('No direct access...');
 
-function integrate_character_autosuggest(&$searchTypes) {
+function integrate_character_autosuggest(&$searchTypes)
+{
 	$searchTypes['memberchar'] = 'MemberChar';
 	$searchTypes['character'] = 'Character';
 	$searchTypes['rawcharacter'] = 'RawCharacter';

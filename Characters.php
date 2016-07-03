@@ -496,11 +496,13 @@ function integrate_chars_buffer($buffer)
 			</li>' . substr($buffer, $first_li + 5);
 }
 
-function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_parameters) {
+function integrate_get_chars_messages(&$msg_selects, &$msg_tables, &$msg_parameters)
+{
 	$msg_selects[] = 'id_character';
 }
 
-function integrate_display_chars_messages(&$output, &$message, $counter) {
+function integrate_display_chars_messages(&$output, &$message, $counter)
+{
 	global $memberContext, $smcFunc, $txt, $scripturl, $board_info, $user_profile, $modSettings;
 
 	$output['id_character'] = $message['id_character'];
@@ -638,7 +640,8 @@ function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
 	$mcUser['current_character'] = !empty($user_profile[$user]['online_character']) ? $user_profile[$user]['online_character'] : 0;
 }
 
-function integrate_character_post_count($msgOptions, $topicOptions, $posterOptions, $message_columns, $message_parameters) {
+function integrate_character_post_count($msgOptions, $topicOptions, $posterOptions, $message_columns, $message_parameters)
+{
 	if ($msgOptions['approved'] && !empty($posterOptions['char_id']) && !empty($posterOptions['update_post_count'])) {
 		updateCharacterData($posterOptions['char_id'], array('posts' => '+'));
 	}
@@ -700,7 +703,8 @@ function integrate_search_message_chars(&$output, &$message, $counter)
 	}
 }
 
-function ReattributePost() {
+function ReattributePost()
+{
 	global $topic, $smcFunc, $modSettings, $user_info, $board_info;
 
 	// 1. Session check, quick and easy to get out the way before we forget.
@@ -897,7 +901,8 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 	);
 }
 
-function get_char_membergroup_data() {
+function get_char_membergroup_data()
+{
 	global $smcFunc, $settings, $context;
 	static $groups = null;
 

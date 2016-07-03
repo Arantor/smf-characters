@@ -175,7 +175,8 @@ function CharacterTemplates()
 	$sa();
 }
 
-function char_template_list() {
+function char_template_list()
+{
 	global $smcFunc, $context, $txt;
 
 	$context['char_templates'] = array();

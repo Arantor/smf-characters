@@ -14,7 +14,8 @@ function chars_profile_field(&$profile_fields)
 	);
 }
 
-function chars_profile_menu(&$profile_areas) {
+function chars_profile_menu(&$profile_areas)
+{
 	global $context, $cur_profile, $scripturl, $txt, $modSettings;
 
 	// Replacing with our wrapper
@@ -110,7 +111,8 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 	$profile_areas = $new_profile;
 }
 
-function characters_popup($memID) {
+function characters_popup($memID)
+{
 	global $context, $user_info, $sourcedir, $db_show_debug, $cur_profile, $smcFunc;
 
 	// We do not want to output debug information here.
@@ -121,7 +123,8 @@ function characters_popup($memID) {
 	$context['template_layers'] = array();
 }
 
-function char_switch($memID, $char = null, $return = false) {
+function char_switch($memID, $char = null, $return = false)
+{
 	global $smcFunc, $modSettings;
 
 	if (!$return) {
@@ -202,7 +205,8 @@ function char_switch($memID, $char = null, $return = false) {
 		die;
 }
 
-function char_switch_redir($memID) {
+function char_switch_redir($memID)
+{
 	checkSession('get');
 
 	$char = isset($_GET['char']) ? (int) $_GET['char'] : 0;
@@ -214,7 +218,8 @@ function char_switch_redir($memID) {
 	redirectexit('action=profile;u=' . $memID);
 }
 
-function character_profile($memID) {
+function character_profile($memID)
+{
 	global $user_profile, $context, $scripturl, $modSettings, $smcFunc, $txt;
 
 	loadTemplate('Profile-Chars');
@@ -271,7 +276,8 @@ function character_profile($memID) {
 	$smcFunc['db_free_result']($request);
 }
 
-function char_edit() {
+function char_edit()
+{
 	global $context, $smcFunc, $txt, $sourcedir, $user_info, $modSettings;
 
 	// If they don't have permission to be here, goodbye.
@@ -510,7 +516,8 @@ function char_edit() {
 	unset ($_SESSION['char_updated']);
 }
 
-function char_delete() {
+function char_delete()
+{
 	global $context, $smcFunc, $txt, $sourcedir, $user_info, $modSettings;
 
 	// If they don't have permission to be here, goodbye.
@@ -574,7 +581,8 @@ function char_delete() {
 	redirectexit('action=profile;u=' . $context['id_member']);
 }
 
-function char_theme() {
+function char_theme()
+{
 	global $context, $smcFunc, $modSettings;
 
 	// If they don't have permission to be here, goodbye.
@@ -2097,7 +2105,8 @@ function get_avatar_url_size($url)
 		return false;
 }
 
-function get_image_size_from_string($data) {
+function get_image_size_from_string($data)
+{
 	if (empty($data)) {
 		return false;
 	}

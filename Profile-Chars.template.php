@@ -32,7 +32,8 @@ function character_popup_row($id_character, $char) {
 				</li>';
 }
 
-function template_characters_popup() {
+function template_characters_popup()
+{
 	global $context, $scripturl, $txt, $user_info, $cur_profile, $modSettings;
 	echo '
 		<div id="posting_as">', sprintf($txt['you_are_posting_as'], $user_info['character_name']), '
@@ -69,7 +70,8 @@ function template_characters_popup() {
 		</script>';
 }
 
-function template_character_profile() {
+function template_character_profile()
+{
 	global $context, $txt, $user_profile, $scripturl, $user_info, $modSettings;
 
 	echo '
@@ -149,7 +151,8 @@ function template_character_profile() {
 	</div>';
 }
 
-function template_edit_char() {
+function template_edit_char()
+{
 	global $context, $txt, $scripturl, $modSettings;
 
 	if ($context['char_updated'])
