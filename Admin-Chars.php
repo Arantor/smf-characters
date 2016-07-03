@@ -8,28 +8,28 @@ function integrate_chars_admin_actions(&$admin_areas)
 	global $txt;
 	if (allowedTo('admin_forum'))
 	{
-		$admin_areas['members']['areas']['membergroups']['subsections']['badges'] = array($txt['badges'], 'admin_forum');
+		$admin_areas['members']['areas']['membergroups']['subsections']['badges'] = [$txt['badges'], 'admin_forum'];
 
-		$admin_areas['characters'] = array(
+		$admin_areas['characters'] = [
 			'title' => $txt['chars_menu_title'],
-			'permission' => array('admin_forum'),
-			'areas' => array(
-				'templates' => array(
+			'permission' => ['admin_forum'],
+			'areas' => [
+				'templates' => [
 					'label' => $txt['char_templates'],
 					'function' => 'CharacterTemplates',
 					'icon' => 'quick_edit_button',
-					'permission' => array('admin_forum'),
+					'permission' => ['admin_forum'],
 					'subsections' => [],
-				),
-				'sheets' => array(
+				],
+				'sheets' => [
 					'label' => $txt['char_sheet_admin'],
 					'function' => 'CharacterSheets',
 					'icon' => 'package_ops',
-					'permission' => array('admin_forum'),
+					'permission' => ['admin_forum'],
 					'subsections' => [],
-				),
-			),
-		);
+				],
+			],
+		];
 	}
 }
 
@@ -67,9 +67,9 @@ function integrate_delete_members_chars($users)
 		SELECT id_character, character_name
 		FROM {db_prefix}characters
 		WHERE id_member IN ({array_int:users})',
-		array(
+		[
 			'users' => $users,
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($result))
 	{
@@ -85,10 +85,10 @@ function integrate_delete_members_chars($users)
 			SET id_character = 0,
 				poster_name = {string:character_name}
 			WHERE id_character = {int:id_character}',
-			array(
+			[
 				'id_character' => $id_character,
 				'character_name' => $character_name,
-			)
+			]
 		);
 	}
 
@@ -96,9 +96,9 @@ function integrate_delete_members_chars($users)
 	$smcFunc['db_query']('', '
 		DELETE FROM {db_prefix}characters
 		WHERE id_member IN ({array_int:users})',
-		array(
+		[
 			'users' => $users,
-		)
+		]
 	);
 }
 
@@ -106,10 +106,10 @@ function MembergroupBadges()
 {
 	global $smcFunc, $context, $txt, $settings;
 
-	$context['groups'] = array(
+	$context['groups'] = [
 		'accounts' => [],
 		'characters' => [],
-	);
+	];
 
 	if (isset($_POST['group']) && is_array($_POST['group']))
 	{
@@ -121,10 +121,10 @@ function MembergroupBadges()
 				UPDATE {db_prefix}membergroups
 				SET badge_order = {int:order}
 				WHERE id_group = {int:group}',
-				array(
+				[
 					'order' => $order,
 					'group' => $group,
-				)
+				]
 			);
 			$order++;
 		}
@@ -136,9 +136,9 @@ function MembergroupBadges()
 		WHERE min_posts = -1
 			AND id_group != {int:moderator_group}
 		ORDER BY badge_order',
-		array(
+		[
 			'moderator_group' => 3
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
@@ -156,20 +156,20 @@ function MembergroupBadges()
 	loadTemplate('Admin-Chars');
 	$context['page_title'] = $txt['badges'];
 	$context['sub_template'] = 'membergroup_badges';
-	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
+	loadJavascriptFile('chars-jquery-ui-1.11.4.js', ['default_theme' => true], 'chars_jquery');
 	addInlineJavascript('
 	$(\'.sortable\').sortable({handle: ".handle"});', true);
 }
 
 function CharacterTemplates()
 {
-	$subactions = array(
+	$subactions = [
 		'index' => 'char_template_list',
 		'add' => 'char_template_add',
 		'edit' => 'char_template_edit',
 		'reorder' => 'char_template_reorder',
 		'save' => 'char_template_save',
-	);
+	];
 
 	$sa = isset($_GET['sa'], $subactions[$_GET['sa']]) ? $subactions[$_GET['sa']] : $subactions['index'];
 	$sa();
@@ -193,7 +193,7 @@ function char_template_list()
 	loadTemplate('Admin-Chars');
 	$context['page_title'] = $txt['char_templates'];
 	$context['sub_template'] = 'char_templates';
-	loadJavascriptFile('chars-jquery-ui-1.11.4.js', array('default_theme' => true), 'chars_jquery');
+	loadJavascriptFile('chars-jquery-ui-1.11.4.js', ['default_theme' => true], 'chars_jquery');
 	addInlineJavascript('
 	$(\'.sortable\').sortable({handle: ".handle"});', true);
 }
@@ -211,10 +211,10 @@ function char_template_reorder()
 				UPDATE {db_prefix}character_sheet_templates
 				SET position = {int:order}
 				WHERE id_template = {int:template}',
-				array(
+				[
 					'order' => $order,
 					'template' => $template,
-				)
+				]
 			);
 			$order++;
 		}
@@ -229,18 +229,18 @@ function char_template_add()
 	require_once($sourcedir . '/Subs-Editor.php');
 
 	// Now create the editor.
-	$editorOptions = array(
+	$editorOptions = [
 		'id' => 'message',
 		'value' => '',
-		'labels' => array(
+		'labels' => [
 			'post_button' => $txt['save'],
-		),
+		],
 		// add height and width for the editor
 		'height' => '500px',
 		'width' => '100%',
 		'preview_type' => 0,
 		'required' => true,
-	);
+	];
 	create_control_richedit($editorOptions);
 	$context['template_name'] = '';
 	$context['template_id'] = 0;
@@ -261,9 +261,9 @@ function char_template_edit()
 		SELECT id_template, template_name, template
 		FROM {db_prefix}character_sheet_templates
 		WHERE id_template = {int:template}',
-		array(
+		[
 			'template' => $template_id,
-		)
+		]
 	);
 	$row = $smcFunc['db_fetch_assoc']($request);
 	if (empty($row))
@@ -274,18 +274,18 @@ function char_template_edit()
 	$context['template_name'] = $row['template_name'];
 
 	// Now create the editor.
-	$editorOptions = array(
+	$editorOptions = [
 		'id' => 'message',
 		'value' => un_preparsecode($row['template']),
-		'labels' => array(
+		'labels' => [
 			'post_button' => $txt['save'],
-		),
+		],
 		// add height and width for the editor
 		'height' => '500px',
 		'width' => '100%',
 		'preview_type' => 0,
 		'required' => true,
-	);
+	];
 	create_control_richedit($editorOptions);
 
 	$context['page_title'] = $txt['char_templates_edit'];
@@ -313,9 +313,9 @@ function char_template_save()
 		// New insertion
 		$smcFunc['db_insert']('',
 			'{db_prefix}character_sheet_templates',
-			array('template_name' => 'string', 'template' => 'string', 'position' => 'int'),
-			array($template_name, $template, 0),
-			array('id_template')
+			['template_name' => 'string', 'template' => 'string', 'position' => 'int'],
+			[$template_name, $template, 0],
+			['id_template']
 		);
 	} else {
 		// Updating an existing one
@@ -324,11 +324,11 @@ function char_template_save()
 			SET template_name = {string:template_name},
 				template = {string:template}
 			WHERE id_template = {int:template_id}',
-			array(
+			[
 				'template_id' => $template_id,
 				'template_name' => $template_name,
 				'template' => $template,
-			)
+			]
 		);
 	}
 
@@ -341,13 +341,13 @@ function CharacterSheets()
 	loadTemplate('Admin-Chars');
 	require_once($sourcedir . '/Subs-List.php');
 
-	$listOptions = array(
+	$listOptions = [
 		'id' => 'approval_queue',
 		'title' => $txt['char_sheet_admin'],
 		'base_href' => $scripturl . '?action=admin;area=sheets',
 		'default_sort_col' => 'updated',
 		'no_items_label' => $txt['no_pending_sheets'],
-		'get_items' => array(
+		'get_items' => [
 			'function' => function($start, $items_per_page, $sort)
 			{
 				global $smcFunc;
@@ -362,9 +362,9 @@ function CharacterSheets()
 					GROUP BY csv.id_character
 					HAVING approval_state = 1
 					ORDER BY {raw:sort}',
-					array(
+					[
 						'sort' => $sort,
-					)
+					]
 				);
 				while ($row = $smcFunc['db_fetch_assoc']($request))
 				{
@@ -373,78 +373,78 @@ function CharacterSheets()
 				$smcFunc['db_free_result']($request);
 				return $rows;
 			},
-			'params' => array('regular'),
-		),
-		'columns' => array(
-			'name' => array(
-				'header' => array(
+			'params' => ['regular'],
+		],
+		'columns' => [
+			'name' => [
+				'header' => [
 					'value' => $txt['name'],
-				),
-				'data' => array(
+				],
+				'data' => [
 					'function' => function ($rowData) use ($scripturl)
 					{
 						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . '" target="_blank">' . $rowData['real_name'] . '</a>';
 					}
-				),
-				'sort' => array(
+				],
+				'sort' => [
 					'default' => 'mem.real_name',
 					'reverse' => 'mem.real_name DESC',
-				),
-			),
-			'char_name' => array(
-				'header' => array(
+				],
+			],
+			'char_name' => [
+				'header' => [
 					'value' => str_replace(':', '', $txt['char_name']),
-				),
-				'data' => array(
+				],
+				'data' => [
 					'function' => function ($rowData) use ($scripturl)
 					{
 						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . ';area=characters;char=' . $rowData['id_character'] . '" target="_blank">' . $rowData['character_name'] . '</a>';
 					}
-				),
-				'sort' => array(
+				],
+				'sort' => [
 					'default' => 'chars.character_name',
 					'reverse' => 'chars.character_name DESC',
-				),
-			),
-			'char_sheet' => array(
-				'header' => array(
+				],
+			],
+			'char_sheet' => [
+				'header' => [
 					'value' => '',
-				),
-				'data' => array(
+				],
+				'data' => [
 					'function' => function ($rowData) use ($txt, $scripturl)
 					{
 						return '<a href="' . $scripturl . '?action=profile;u=' . $rowData['id_member'] . ';area=characters;char=' . $rowData['id_character'] . ';sa=sheet" target="_blank">' . $txt['char_sheet'] . '</a>';
 					},
 					'class' => 'centercol',
-				),
-			),
-			'updated' => array(
-				'header' => array(
+				],
+			],
+			'updated' => [
+				'header' => [
 					'value' => $txt['last_updated'],
-				),
-				'data' => array(
+				],
+				'data' => [
 					'db' => 'latest_version',
 					'timeformat' => true,
-				),
-				'sort' => array(
+				],
+				'sort' => [
 					'default' => 'latest_version',
 					'reverse' => 'latest_version DESC',
-				),
-			),
-			'approved' => array(
-				'header' => array(
+				],
+			],
+			'approved' => [
+				'header' => [
 					'value' => $txt['previously_approved'],
-				),
-				'data' => array(
+				],
+				'data' => [
 					'function' => function ($rowData) use ($txt)
 					{
 						return $rowData['last_approval'] ? '<span class="generic_icons approve_button" title="' . $txt['yes'] . '"></span>' : '<span class="generic_icons unapprove_button" title="' . $txt['no'] . '"></span>';
 					},
 					'class' => 'centercol',
-				),
-			),
-		),
-	);
+				],
+			],
+		],
+	];
 
 	createList($listOptions);
 

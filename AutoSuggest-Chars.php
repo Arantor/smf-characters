@@ -15,14 +15,14 @@ function AutoSuggest_Search_Character()
 	global $user_info, $smcFunc, $context;
 
 	$_REQUEST['search'] = trim($smcFunc['strtolower']($_REQUEST['search'])) . '*';
-	$_REQUEST['search'] = strtr($_REQUEST['search'], array('%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;'));
+	$_REQUEST['search'] = strtr($_REQUEST['search'], ['%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;']);
 
-	$xml_data = array(
-		'items' => array(
+	$xml_data = [
+		'items' => [
 			'identifier' => 'item',
-			'children' => array(),
-		),
-	);
+			'children' => [],
+		],
+	];
 
 	// Find the characters
 	$request = $smcFunc['db_query']('', '
@@ -32,21 +32,21 @@ function AutoSuggest_Search_Character()
 		WHERE {raw:real_name} LIKE {string:search}
 			AND mem.is_activated IN (1, 11)
 		LIMIT ' . ($smcFunc['strlen']($_REQUEST['search']) <= 2 ? '100' : '800'),
-		array(
+		[
 			'real_name' => $smcFunc['db_case_sensitive'] ? 'LOWER(character_name)' : 'character_name',
 			'search' => $_REQUEST['search'],
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
-		$row['display_name'] = strtr($row['character_name'] . ' (' . $row['real_name'] . ')', array('&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;'));
+		$row['display_name'] = strtr($row['character_name'] . ' (' . $row['real_name'] . ')', ['&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;']);
 
-		$xml_data['items']['children'][$row['id_member']] = array(
-			'attributes' => array(
+		$xml_data['items']['children'][$row['id_member']] = [
+			'attributes' => [
 				'id' => $row['id_member'] . ';area=characters;char=' . $row['id_character'],
-			),
+			],
 			'value' => $row['display_name'],
-		);
+		];
 	}
 	$smcFunc['db_free_result']($request);
 
@@ -58,14 +58,14 @@ function AutoSuggest_Search_RawCharacter()
 	global $user_info, $smcFunc, $context;
 
 	$_REQUEST['search'] = trim($smcFunc['strtolower']($_REQUEST['search'])) . '*';
-	$_REQUEST['search'] = strtr($_REQUEST['search'], array('%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;'));
+	$_REQUEST['search'] = strtr($_REQUEST['search'], ['%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;']);
 
-	$xml_data = array(
-		'items' => array(
+	$xml_data = [
+		'items' => [
 			'identifier' => 'item',
-			'children' => array(),
-		),
-	);
+			'children' => [],
+		],
+	];
 
 	// Find the characters
 	$request = $smcFunc['db_query']('', '
@@ -75,21 +75,21 @@ function AutoSuggest_Search_RawCharacter()
 		WHERE {raw:real_name} LIKE {string:search}
 			AND mem.is_activated IN (1, 11)
 		LIMIT ' . ($smcFunc['strlen']($_REQUEST['search']) <= 2 ? '100' : '800'),
-		array(
+		[
 			'real_name' => $smcFunc['db_case_sensitive'] ? 'LOWER(character_name)' : 'character_name',
 			'search' => $_REQUEST['search'],
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
-		$row['display_name'] = strtr($row['character_name'], array('&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;'));
+		$row['display_name'] = strtr($row['character_name'], ['&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;']);
 
-		$xml_data['items']['children'][$row['id_member']] = array(
-			'attributes' => array(
+		$xml_data['items']['children'][$row['id_member']] = [
+			'attributes' => [
 				'id' => $row['id_member'] . ';area=characters;char=' . $row['id_character'],
-			),
+			],
 			'value' => $row['display_name'],
-		);
+		];
 	}
 	$smcFunc['db_free_result']($request);
 
@@ -101,7 +101,7 @@ function AutoSuggest_Search_MemberChar()
 	global $user_info, $smcFunc, $context;
 
 	$_REQUEST['search'] = trim($smcFunc['strtolower']($_REQUEST['search'])) . '*';
-	$_REQUEST['search'] = strtr($_REQUEST['search'], array('%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;'));
+	$_REQUEST['search'] = strtr($_REQUEST['search'], ['%' => '\%', '_' => '\_', '*' => '%', '?' => '_', '&#038;' => '&amp;']);
 
 	// Find the member.
 	$request = $smcFunc['db_query']('', '
@@ -111,28 +111,28 @@ function AutoSuggest_Search_MemberChar()
 			AND id_member IN ({array_int:buddy_list})' : '') . '
 			AND is_activated IN (1, 11)
 		LIMIT ' . ($smcFunc['strlen']($_REQUEST['search']) <= 2 ? '100' : '800'),
-		array(
+		[
 			'real_name' => $smcFunc['db_case_sensitive'] ? 'LOWER(real_name)' : 'real_name',
 			'buddy_list' => $user_info['buddies'],
 			'search' => $_REQUEST['search'],
-		)
+		]
 	);
-	$xml_data = array(
-		'items' => array(
+	$xml_data = [
+		'items' => [
 			'identifier' => 'item',
-			'children' => array(),
-		),
-	);
+			'children' => [],
+		],
+	];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
-		$row['real_name'] = strtr($row['real_name'], array('&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;'));
+		$row['real_name'] = strtr($row['real_name'], ['&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;']);
 
-		$xml_data['items']['children'][$row['id_member']] = array(
-			'attributes' => array(
+		$xml_data['items']['children'][$row['id_member']] = [
+			'attributes' => [
 				'id' => $row['id_member'],
-			),
+			],
 			'value' => $row['real_name'],
-		);
+		];
 	}
 	$smcFunc['db_free_result']($request);
 
@@ -144,10 +144,10 @@ function AutoSuggest_Search_MemberChar()
 		WHERE {raw:real_name} LIKE {string:search}
 			AND mem.is_activated IN (1, 11)
 		LIMIT ' . ($smcFunc['strlen']($_REQUEST['search']) <= 2 ? '100' : '800'),
-		array(
+		[
 			'real_name' => $smcFunc['db_case_sensitive'] ? 'LOWER(character_name)' : 'character_name',
 			'search' => $_REQUEST['search'],
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
@@ -155,14 +155,14 @@ function AutoSuggest_Search_MemberChar()
 		if (isset($xml_data['items']['children'][$row['id_member']])) {
 			continue;
 		}
-		$row['display_name'] = strtr($row['character_name'] . ' (' . $row['real_name'] . ')', array('&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;'));
+		$row['display_name'] = strtr($row['character_name'] . ' (' . $row['real_name'] . ')', ['&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;']);
 
-		$xml_data['items']['children'][$row['id_member']] = array(
-			'attributes' => array(
+		$xml_data['items']['children'][$row['id_member']] = [
+			'attributes' => [
 				'id' => $row['id_member'],
-			),
+			],
 			'value' => $row['display_name'],
-		);
+		];
 	}
 	$smcFunc['db_free_result']($request);
 
