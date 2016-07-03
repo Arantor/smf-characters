@@ -445,15 +445,18 @@ function integrate_chars_actions(&$actionArray)
 
 function integrate_chars_main_menu(&$buttons)
 {
-	global $context, $scripturl, $txt;
+	global $context, $scripturl, $txt, $settings;
 
 	// While we're here in setupMenuContext, we might as well do other things we would
 	// otherwise have done in that function.
 	if (!$context['user']['is_guest'])
 	{
-		loadCSSFile('chars.css', ['default_theme' => true], 'chars');
-		addInlineJavascript('
+		if (file_exists($settings['default_theme_dir'] . '/css/chars.css'))
+		{
+			loadCSSFile('chars.css', ['default_theme' => true], 'chars');
+			addInlineJavascript('
 	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");', true);
+		}
 	}
 
 	// Now add a characters menu, to effectively replace the members menu.
