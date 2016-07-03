@@ -245,6 +245,7 @@ function character_profile($memID)
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
 		'sheet' => 'char_sheet',
+		'move_acct' => 'char_move_account',
 		'sheet_edit' => 'char_sheet_edit',
 		'sheet_approval' => 'char_sheet_approval',
 		'sheet_approve' => 'char_sheet_approve',
@@ -2079,6 +2080,207 @@ function merge_char_accounts($source, $dest)
 	// Delete the source user
 	require_once($sourcedir . '/Subs-Members.php');
 	deleteMembers($source);
+
+	return true;
+}
+
+function char_move_account()
+{
+	global $context, $txt, $user_profile, $smcFunc;
+
+	// Some basic sanity checks.
+	if ($context['character']['is_main'])
+		fatal_lang_error('cannot_move_main', false);
+
+	loadTemplate('Profile-Chars');
+	loadJavascriptFile('suggest.js', ['default_theme' => true, 'defer' => false], 'smf_suggest');
+	$context['page_title'] = $txt['move_char_account'];
+	$context['sub_template'] = 'char_move_account';
+
+	if (isset($_POST['move_acct_id']))
+	{
+		checkSession();
+		$result = move_char_accounts($context['character']['id_character'], $_POST['move_acct_id']);
+		if ($result !== true)
+			fatal_lang_error('cannot_move_' . $result, false);
+
+		$_SESSION['merge_success'] = sprintf($txt['move_success'], $context['character']['character_name']);
+
+		redirectexit('action=profile;u=' . $_POST['move_acct_id']);
+	}
+	elseif (isset($_POST['move_acct']))
+	{
+		checkSession();
+
+		// We picked an account to move to, let's see if we can find and if we can,
+		// get its details so that we can check for sure it's what the user wants.
+		$name = $smcFunc['htmlspecialchars']($_POST['move_acct'], ENT_QUOTES);
+		$request = $smcFunc['db_query']('', '
+			SELECT id_member
+			FROM {db_prefix}members
+			WHERE real_name = {string:name}',
+			[
+				'name' => $name,
+			]
+		);
+		if ($smcFunc['db_num_rows']($request) == 0)
+			fatal_lang_error('cannot_move_not_found', false);
+
+		list ($dest) = $smcFunc['db_fetch_row']($request);
+		$smcFunc['db_free_result']($request);
+
+		loadMemberData($dest);
+
+		$context['move_destination_id'] = $dest;
+		$context['move_destination'] = $user_profile[$dest];
+		$context['sub_template'] = 'char_move_account_confirm';
+	}
+}
+
+function move_char_accounts($source_chr, $dest_acct)
+{
+	global $user_profile, $sourcedir, $smcFunc, $modSettings;
+
+	// First, establish that both exist.
+	$loaded = loadMemberData(array($dest_acct));
+	if (!in_array($dest_acct, $loaded))
+		return 'not_found';
+
+	$request = $smcFunc['db_query']('', '
+		SELECT chars.id_member, chars.id_character, chars.is_main, chars.posts, mem.current_character
+		FROM {db_prefix}characters AS chars
+			INNER JOIN {db_prefix}members AS mem ON (chars.id_member = mem.id_member)
+		WHERE id_character = {int:char}',
+		[
+			'char' => $source_chr,
+		]
+	);
+	$row = $smcFunc['db_fetch_assoc']($request);
+	if (empty($row))
+	{
+		return 'cannot_move_char_not_found';
+	}
+	$smcFunc['db_free_result']($request);
+	if ($row['is_main'])
+	{
+		return 'main'; // Can't move your main/OOC character out of your account
+	}
+
+	// Before we can say we're good to go, make sure this character isn't
+	// currently in use or online.
+	if ($row['current_character'] == $source_chr)
+	{
+		return 'online';
+	}
+	$request = $smcFunc['db_query']('', '
+		SELECT COUNT(*)
+		FROM {db_prefix}log_online
+		WHERE log_time >= {int:log_time}
+			AND id_character = {int:source_chr}',
+		[
+			'log_time' => time() - $modSettings['lastActive'] * 60,
+			'source_chr' => $source_chr,
+		]
+	);
+	list ($is_online) = $smcFunc['db_fetch_row']($request);
+	if ($is_online)
+	{
+		return 'online';
+	}
+
+	// So at this point, we know the account + character of the source
+	// and we know the destination account, and we know they exist.
+
+	// Move the character
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}characters
+		SET id_member = {int:dest_acct}
+		WHERE id_character = {int:source_chr}',
+		[
+			'source_chr' => $source_chr,
+			'dest_acct' => $dest_acct,
+		]
+	);
+
+	// Move the character's posts
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}messages
+		SET id_member = {int:dest_acct}
+		WHERE id_character = {int:source_chr}',
+		[
+			'source_chr' => $source_chr,
+			'dest_acct' => $dest_acct,
+		]
+	);
+
+	// Update the post counts of both accounts
+	if ($row['posts'] > 0)
+	{
+		// We don't need to fudge individual characters, only the account itself
+		// so, add the posts to the dest account.
+		updateMemberData($dest_acct, ['posts' => 'posts + ' . $row['posts']]);
+		// And subtract from the source acct which we helpfully found earlier
+		updateMemberData($row['id_member'], ['posts' => 'posts - ' . $row['posts']]);
+	}
+
+	// Reassign topics - find topics started by this particular character
+	$topics = [];
+	$request = $smcFunc['db_query']('', '
+		SELECT t.id_topic
+		FROM {db_prefix}topics AS t
+			INNER JOIN {db_prefix}messages AS m ON (t.id_first_msg = m.id_msg)
+		WHERE m.id_character = {int:source_chr}
+		ORDER BY NULL',
+		[
+			'source_chr' => $source_chr,
+		]
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$topics[] = (int) $row['id_topic'];
+	}
+	$smcFunc['db_free_result']($request);
+	if (!empty($topics))
+	{
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}topics
+			SET id_member_started = {int:dest_acct}
+			WHERE id_topic IN ({array_int:topics})',
+			[
+				'dest_acct' => $dest_acct,
+				'topics' => $topics,
+			]
+		);
+	}
+	// Reassign topics - last post in a topic
+	$topics = [];
+	$request = $smcFunc['db_query']('', '
+		SELECT t.id_topic
+		FROM {db_prefix}topics AS t
+			INNER JOIN {db_prefix}messages AS m ON (t.id_last_msg = m.id_msg)
+		WHERE m.id_character = {int:source_chr}
+		ORDER BY NULL',
+		[
+			'source_chr' => $source_chr,
+		]
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$topics[] = (int) $row['id_topic'];
+	}
+	$smcFunc['db_free_result']($request);
+	if (!empty($topics))
+	{
+		$smcFunc['db_query']('', '
+			UPDATE {db_prefix}topics
+			SET id_member_updated = {int:dest_acct}
+			WHERE id_topic IN ({array_int:topics})',
+			[
+				'dest_acct' => $dest_acct,
+				'topics' => $topics,
+			]
+		);
+	}
 
 	return true;
 }

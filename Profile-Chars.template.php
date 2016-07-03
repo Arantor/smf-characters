@@ -113,6 +113,11 @@ function template_character_profile()
 		echo '
 			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=delete;', $context['session_var'], '=', $context['session_id'], '" class="button" onclick="return confirm(', JavaScriptEscape($txt['are_you_sure_delete_char']), ');">', $txt['delete_char'], '</a><br /><br />';
 	}
+	if (!$context['character']['is_main'] && allowedTo('admin_forum'))
+	{
+		echo '
+			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=move_acct;', $context['session_var'], '=', $context['session_id'], '" class="button">', $txt['move_char_action'], '</a><br /><br />';
+	}
 	$days_registered = (int) ((time() - $user_profile[$context['id_member']]['date_registered']) / (3600 * 24));
 	$posts_per_day = $days_registered > 1 ? comma_format($context['character']['posts'] / $days_registered, 2) : '';
 	echo '
@@ -1239,6 +1244,69 @@ function template_char_merge_account_confirm()
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 				<input type="hidden" name="merge_acct_id" value="', $context['merge_destination_id'], '">
 				<input type="submit" value="', $txt['merge_char_account'], '" class="button_submit">
+			</div>
+		</form>';
+}
+
+function template_char_move_account()
+{
+	global $scripturl, $txt, $context;
+
+	echo '
+		<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=move_acct;save" method="post" accept-charset="', $context['character_set'], '" name="creator" id="creator">
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['move_char_account'], '
+				</h3>
+			</div>
+			<p class="information">', $txt['move_char_account_desc'], '</p>
+			<div class="windowbg2">
+				<div class="alert">', $txt['deleteAccount_warning'], '</div>
+				<br>
+				<dl>
+					<dt>', $txt['move_char_to'], '</dt>
+					<dd>
+						<input type="text" class="input_text" name="move_acct" id="move_acct">
+					</dd>
+				</dl>
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+				<input type="submit" value="', $txt['move_char_action'], '" class="button_submit">
+			</div>
+		</form>
+		<script>
+			var oMoveMemberSuggest = new smc_AutoSuggest({
+				sSelf: \'oMoveMemberSuggest\',
+				sSessionId: smf_session_id,
+				sSessionVar: smf_session_var,
+				sControlId: \'move_acct\',
+				sSearchType: \'member\',
+				bItemList: false
+			});
+		</script>';
+}
+
+function template_char_move_account_confirm()
+{
+	global $scripturl, $txt, $context;
+
+	echo '
+		<form action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=move_acct;save" method="post" accept-charset="', $context['character_set'], '" name="creator" id="creator">
+			<div class="cat_bar">
+				<h3 class="catbg profile_hd">
+					', $txt['move_char_account'], '
+				</h3>
+			</div>
+			<p class="information">', $txt['move_char_account_desc'], '</p>
+			<div class="windowbg2">
+				<div class="alert">', $txt['deleteAccount_warning'], '</div>
+				<br>
+				<div>', sprintf($txt['move_are_you_sure'],
+					'<a class="new_win" target="_blank" href="' . $scripturl . '?action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character'] . '">' . $context['character']['character_name'] . '</a>',
+					'<a class="new_win" target="_blank" href="' . $scripturl . '?action=profile;u=' . $context['move_destination_id'] . '">' . $context['move_destination']['real_name'] . '</a>'
+				), '
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
+				<input type="hidden" name="move_acct_id" value="', $context['move_destination_id'], '">
+				<input type="submit" value="', $txt['move_char_action'], '" class="button_submit">
 			</div>
 		</form>';
 }

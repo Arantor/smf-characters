@@ -138,4 +138,19 @@ $txt['last_updated'] = 'Last updated';
 $txt['previously_approved'] = 'Previous approved';
 $txt['no_pending_sheets'] = 'There are no pending character sheets to review.';
 $txt['remove_from_queue'] = 'Remove from Queue';
+
+$txt['move_char_account'] = 'Move to another account';
+$txt['move_char_action'] = 'Move character';
+$txt['move_char_account_desc'] = 'From here you can migrate this character into another account, moving all the posts across.';
+$txt['move_char_to'] = 'Which account do you want to merge this one into?';
+$txt['move_are_you_sure'] = 'Are you sure you want to move %1$s (plus all the posts) into %2$s\'s account?';
+
+$txt['cannot_move_main'] = 'You cannot move your OOC profile to another account.';
+$txt['cannot_move_self'] = 'You cannot move one of your characters back to yourself.';
+$txt['cannot_move_not_found'] = 'Sorry, the account to move to could not be found.';
+$txt['cannot_move_char_not_found'] = 'Sorry, the character you\'re trying to move could not be found.';
+$txt['cannot_move_online'] = 'Sorry, the character you\'re trying to move is currently online and cannot be moved.';
+$txt['move_success'] = 'The character, %1$s, was successfully moved into this account.';
+
+
 ?>
