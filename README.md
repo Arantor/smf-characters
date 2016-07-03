@@ -15,6 +15,7 @@ Features (not all implemented yet!):
  * Replace the members list with a characters list.
 
 # Caveats
+ * PHP 5.4 is required.
  * Requestable groups/joinable groups are only ever handled at account level, never character level.
  * Merging accounts does not preserve the source (from) account's likes or poll votes. PMs are preserved; PM labels are not.
  * If a given account is alerted twice in the same post through two different quotes, only one notification will be generated - for the first quote for that account.

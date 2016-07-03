@@ -24,14 +24,14 @@ function chars_profile_menu(&$profile_areas)
 	// Classical array of own/any
 	$own_only = array(
 		'own' => 'is_not_guest',
-		'any' => array(),
+		'any' => [],
 	);
 	$own_any = array(
 		'own' => 'is_not_guest',
 		'any' => 'profile_view',
 	);
 	$not_own_admin_only = array(
-		'own' => array(),
+		'own' => [],
 		'any' => array('admin_forum'),
 	);
 
@@ -101,7 +101,7 @@ span.character_' . $id_character . ' { background-image: url(' . $character['ava
 		}
 	}
 
-	$new_profile = array();
+	$new_profile = [];
 	foreach ($profile_areas as $k => $v) {
 		$new_profile[$k] = $v;
 		if ($k == 'info') {
@@ -120,7 +120,7 @@ function characters_popup($memID)
 
 	// We only want to output our little layer here.
 	loadTemplate('Profile-Chars');
-	$context['template_layers'] = array();
+	$context['template_layers'] = [];
 }
 
 function char_switch($memID, $char = null, $return = false)
@@ -299,14 +299,14 @@ function char_edit()
 	require_once($sourcedir . '/Profile-Modify.php');
 	profileLoadSignatureData();
 
-	$context['form_errors'] = array();
+	$context['form_errors'] = [];
 
 	if (isset($_POST['edit_char']))
 	{
 		validateSession();
 		validateToken('edit-char' . $context['character']['id_character'], 'post');
 
-		$changes = array();
+		$changes = [];
 		$new_name = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
 		if ($new_name == '')
 			$context['form_errors'][] = $txt['char_error_character_must_have_name'];
@@ -336,7 +336,7 @@ function char_edit()
 		{
 			// Editing groups is a little bit complicated.
 			$new_id_group = isset($_POST['id_group'], $context['member_groups'][$_POST['id_group']]) && $context['member_groups'][$_POST['id_group']]['can_be_primary'] ? (int) $_POST['id_group'] : $context['character']['main_char_group'];
-			$new_char_groups = array();
+			$new_char_groups = [];
 			if (isset($_POST['additional_groups']) && is_array($_POST['additional_groups']))
 			{
 				foreach ($_POST['additional_groups'] as $id_group)
@@ -409,7 +409,7 @@ function char_edit()
 					updateMemberData($context['id_member'], array('real_name' => $changes['character_name']));
 			}
 			if (!empty($modSettings['userlog_enabled'])) {
-				$rows = array();
+				$rows = [];
 				foreach ($changes as $key => $new_value)
 				{
 					$change_array = array(
@@ -427,8 +427,8 @@ function char_edit()
 					}
 					if ($key == 'char_groups')
 					{
-						$previous = array();
-						$new = array();
+						$previous = [];
+						$new = [];
 						foreach (explode(',', $context['character']['char_groups']) as $id_group)
 							if (isset($context['member_groups'][$id_group]))
 								$previous[] = $context['member_groups'][$id_group]['name'];
@@ -459,7 +459,7 @@ function char_edit()
 							'ip' => 'string', 'action' => 'string', 'id_board' => 'int',
 							'id_topic' => 'int', 'id_msg' => 'int', 'extra' => 'string'),
 						$rows,
-						array()
+						[]
 					);
 				}
 			}
@@ -491,7 +491,7 @@ function char_edit()
 		'id' => 'char_signature',
 		'value' => $form_value,
 		'disable_smiley_box' => false,
-		'labels' => array(),
+		'labels' => [],
 		'height' => '200px',
 		'width' => '80%',
 		'preview_type' => 0,
@@ -591,7 +591,7 @@ function char_theme()
 	}
 
 	$known_themes = explode(',', $modSettings['knownThemes']);
-	$context['themes'] = array();
+	$context['themes'] = [];
 	foreach ($known_themes as $id_theme) {
 		$context['themes'][$id_theme] = array(
 			'name' => '',
@@ -850,8 +850,8 @@ function char_posts()
 
 	// Start counting at the number of the first message displayed.
 	$counter = $reverse ? $context['start'] + $maxIndex + 1 : $context['start'];
-	$context['posts'] = array();
-	$board_ids = array('own' => array(), 'any' => array());
+	$context['posts'] = [];
+	$board_ids = array('own' => [], 'any' => []);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
 		// Censor....
@@ -1062,7 +1062,7 @@ function char_stats()
 			'count_enabled' => 0,
 		)
 	);
-	$context['popular_boards'] = array();
+	$context['popular_boards'] = [];
 	while ($row = $smcFunc['db_fetch_assoc']($result))
 	{
 		$context['popular_boards'][$row['id_board']] = array(
@@ -1093,7 +1093,7 @@ function char_stats()
 			'id_character' => $context['character']['id_character'],
 		)
 	);
-	$context['board_activity'] = array();
+	$context['board_activity'] = [];
 	while ($row = $smcFunc['db_fetch_assoc']($result))
 	{
 		$context['board_activity'][$row['id_board']] = array(
@@ -1124,7 +1124,7 @@ function char_stats()
 		)
 	);
 	$maxPosts = $realPosts = 0;
-	$context['posts_by_time'] = array();
+	$context['posts_by_time'] = [];
 	while ($row = $smcFunc['db_fetch_assoc']($result))
 	{
 		// Cast as an integer to remove the leading 0.
@@ -1181,7 +1181,7 @@ function char_summary($memID)
 	loadTemplate('Profile-Chars');
 	summary($memID);
 	$context['member']['signature'] = $main_char['sig_parsed'];
-	$user_groups = array();
+	$user_groups = [];
 	if (!empty($main_char['main_char_group']))
 		$user_groups[] = $main_char['main_char_group'];
 	if (!empty($cur_profile['id_group']))
@@ -1200,7 +1200,7 @@ function char_summary($memID)
 		if ($char['is_main'])
 			continue;
 
-		$user_groups = array();
+		$user_groups = [];
 		if (!empty($char['main_char_group']))
 			$user_groups[] = $char['main_char_group'];
 		if (!empty($char['char_groups']))
@@ -1288,7 +1288,7 @@ function char_sheet()
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet';
 
-	$context['sheet_buttons'] = array();
+	$context['sheet_buttons'] = [];
 	if ($context['user']['is_owner'] || allowedTo('admin_forum'))
 	{
 		// Always have an edit button
@@ -1343,7 +1343,7 @@ function char_sheet()
 
 		// And since this is the owner or admin, we should look at comments.
 		if (!empty($context['character']['sheet_details']['sheet_text'])) {
-			$context['sheet_comments'] = array();
+			$context['sheet_comments'] = [];
 			// First, find the time of the last approved case.
 			$last_approved = 0;
 			$request = $smcFunc['db_query']('', '
@@ -1414,7 +1414,7 @@ function char_sheet_history()
 	if (empty($context['user']['is_owner']) && !allowedTo('admin_forum'))
 		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
 
-	$context['history_items'] = array();
+	$context['history_items'] = [];
 
 	// First, get all the sheet versions.
 	$request = $smcFunc['db_query']('', '
@@ -1549,7 +1549,7 @@ function char_sheet_edit()
 	);
 	create_control_richedit($editorOptions);
 
-	$context['sheet_templates'] = array();
+	$context['sheet_templates'] = [];
 	// Go fetch the possible templates.
 	$request = $smcFunc['db_query']('', '
 		SELECT id_template, template_name, template
@@ -1565,7 +1565,7 @@ function char_sheet_edit()
 	$smcFunc['db_free_result']($request);
 
 	// Now fetch the comments
-	$context['sheet_comments'] = array();
+	$context['sheet_comments'] = [];
 	if (!empty($context['character']['sheet_details']['created_time']) && empty($context['character']['sheet_details']['id_approver']))
 	{
 		$request = $smcFunc['db_query']('', '
@@ -1660,7 +1660,7 @@ function char_sheet_approval()
 	require_once($sourcedir . '/Subs-Members.php');
 	$admins = membersAllowedTo('admin_forum');
 
-	$alert_rows = array();
+	$alert_rows = [];
 	foreach ($admins as $id_member)
 	{
 		$alert_rows[] = array(
@@ -1683,7 +1683,7 @@ function char_sheet_approval()
 			array('alert_time' => 'int', 'id_member' => 'int', 'id_member_started' => 'int', 'member_name' => 'string',
 				'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
 			$alert_rows,
-			array()
+			[]
 		);
 		updateMemberData($admins, array('alerts' => '+'));
 	}
@@ -1779,7 +1779,7 @@ function char_sheet_approve()
 			'content_type' => 'string', 'content_id' => 'int', 'content_action' => 'string', 'is_read' => 'int', 'extra' => 'string'),
 		array(time(), $context['id_member'], $context['user']['id'], '',
 			'member', 0, 'char_sheet_approved', 0, json_encode(array('chars_dest' => $context['character']['id_character']))),
-		array()
+		[]
 	);
 	updateMemberData($context['id_member'], array('alerts' => '+'));
 
@@ -2041,7 +2041,7 @@ function merge_char_accounts($source, $dest)
 
 	// Move PMs - received items
 	// First we have to get all the existing recipient rows
-	$rows = array();
+	$rows = [];
 	$request = $smcFunc['db_query']('', '
 		SELECT id_pm, bcc, is_read, is_new, deleted
 		FROM {db_prefix}pm_recipients
@@ -2173,15 +2173,15 @@ function CharacterList()
 		'url' => $scripturl . '?action=characters',
 	);
 
-	$context['filterable_groups'] = array();
+	$context['filterable_groups'] = [];
 	foreach (get_char_membergroup_data() as $id_group => $group)
 	{
 		if ($group['is_character'])
 			$context['filterable_groups'][$id_group] = $group;
 	}
 
-	$context['filter_groups'] = array();
-	$filter = array();
+	$context['filter_groups'] = [];
+	$filter = [];
 	if (isset($_POST['filter']) && is_array($_POST['filter']))
 	{
 		$filter = $_POST['filter'];
@@ -2218,7 +2218,7 @@ function CharacterList()
 		if (is_array($context['filter_groups']))
 		{
 			$vars['filter_groups'] = $context['filter_groups'];
-			$this_clause = array();
+			$this_clause = [];
 			foreach ($context['filter_groups'] as $group)
 			{
 				$this_clause[] = 'FIND_IN_SET(' . $group . ', chars.char_groups)';
@@ -2247,7 +2247,7 @@ function CharacterList()
 	$vars['start'] = $_REQUEST['start'];
 	$vars['limit'] = $context['items_per_page'];
 
-	$context['char_list'] = array();
+	$context['char_list'] = [];
 	if (!empty($context['char_count']))
 	{
 		if (!empty($modSettings['avatar_max_width_external']))
@@ -2274,7 +2274,7 @@ function CharacterList()
 			elseif (empty($row['avatar']))
 				$row['avatar'] = $modSettings['avatar_url'] . '/default.png';
 
-			$groups = !empty($row['main_char_group']) ? array($row['main_char_group']) : array();
+			$groups = !empty($row['main_char_group']) ? array($row['main_char_group']) : [];
 			$groups = array_merge($groups, explode(',', $row['char_groups']));
 			$details = get_labels_and_badges($groups);
 			$row['group_title'] = $details['title'];

@@ -19,14 +19,14 @@ function integrate_chars_admin_actions(&$admin_areas)
 					'function' => 'CharacterTemplates',
 					'icon' => 'quick_edit_button',
 					'permission' => array('admin_forum'),
-					'subsections' => array(),
+					'subsections' => [],
 				),
 				'sheets' => array(
 					'label' => $txt['char_sheet_admin'],
 					'function' => 'CharacterSheets',
 					'icon' => 'package_ops',
 					'permission' => array('admin_forum'),
-					'subsections' => array(),
+					'subsections' => [],
 				),
 			),
 		);
@@ -62,7 +62,7 @@ function integrate_delete_members_chars($users)
 	// tie into the characters they had.
 
 	// 1. Get all the characters affected.
-	$characters = array();
+	$characters = [];
 	$result = $smcFunc['db_query']('', '
 		SELECT id_character, character_name
 		FROM {db_prefix}characters
@@ -107,8 +107,8 @@ function MembergroupBadges()
 	global $smcFunc, $context, $txt, $settings;
 
 	$context['groups'] = array(
-		'accounts' => array(),
-		'characters' => array(),
+		'accounts' => [],
+		'characters' => [],
 	);
 
 	if (isset($_POST['group']) && is_array($_POST['group']))
@@ -179,7 +179,7 @@ function char_template_list()
 {
 	global $smcFunc, $context, $txt;
 
-	$context['char_templates'] = array();
+	$context['char_templates'] = [];
 	$request = $smcFunc['db_query']('', '
 		SELECT id_template, template_name, position
 		FROM {db_prefix}character_sheet_templates
@@ -351,7 +351,7 @@ function CharacterSheets()
 			'function' => function($start, $items_per_page, $sort)
 			{
 				global $smcFunc;
-				$rows = array();
+				$rows = [];
 				$request = $smcFunc['db_query']('', '
 					SELECT mem.id_member, mem.real_name, chars.id_character,
 						chars.character_name, MAX(csv.created_time) AS latest_version,

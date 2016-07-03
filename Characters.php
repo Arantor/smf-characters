@@ -75,7 +75,7 @@ function removeCharactersFromGroups($characters, $groups)
 				'current_group' => $groups,
 			)
 		);
-		$protected = array();
+		$protected = [];
 		while ($row = $smcFunc['db_fetch_row']($request))
 			$protected[] = $row[0];
 		$smcFunc['db_free_result']($request);
@@ -94,7 +94,7 @@ function removeCharactersFromGroups($characters, $groups)
 			'current_group' => $groups,
 		)
 	);
-	$group_names = array();
+	$group_names = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
 		$group_names[$row['id_group']] = $row['group_name'];
@@ -102,7 +102,7 @@ function removeCharactersFromGroups($characters, $groups)
 	$smcFunc['db_free_result']($request);
 
 	// First, reset those who have this as their primary group - this is the easy one.
-	$log_inserts = array();
+	$log_inserts = [];
 	$request = $smcFunc['db_query']('', '
 		SELECT id_member, id_character, character_name, main_char_group
 		FROM {db_prefix}characters AS characters
@@ -141,7 +141,7 @@ function removeCharactersFromGroups($characters, $groups)
 			'additional_groups_implode' => implode(', char_groups) != 0 OR FIND_IN_SET(', $groups),
 		)
 	);
-	$updates = array();
+	$updates = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
 		// What log entries must we make for this one, eh?
@@ -228,7 +228,7 @@ function addCharactersToGroup($characters, $group)
 	);
 
 	// Get the members for these characters.
-	$members = array();
+	$members = [];
 	$request = $smcFunc['db_query']('', '
 		SELECT id_member, id_character, character_name
 		FROM {db_prefix}characters
@@ -249,7 +249,7 @@ function addCharactersToGroup($characters, $group)
 			'current_group' => $group,
 		)
 	);
-	$group_names = array();
+	$group_names = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 	{
 		$group_names[$row['id_group']] = $row['group_name'];
@@ -457,7 +457,7 @@ function integrate_chars_main_menu(&$buttons)
 	}
 
 	// Now add a characters menu, to effectively replace the members menu.
-	$temp_buttons = array();
+	$temp_buttons = [];
 	foreach ($buttons as $k => $v)
 	{
 		if ($k == 'mlist')
@@ -467,7 +467,7 @@ function integrate_chars_main_menu(&$buttons)
 				'icon' => 'mlist',
 				'href' => $scripturl . '?action=characters',
 				'show' => $context['allow_memberlist'],
-				'sub_buttons' => array(),
+				'sub_buttons' => [],
 			);
 			continue;
 		}
@@ -548,7 +548,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 				// We use the main account groups for this.
 				$group_list = array_merge(
 					array($user_profile[$message['id_member']]['id_group']),
-					!empty($user_profile[$message['id_member']]['additional_groups']) ? explode(',', $user_profile[$message['id_member']]['additional_groups']) : array()
+					!empty($user_profile[$message['id_member']]['additional_groups']) ? explode(',', $user_profile[$message['id_member']]['additional_groups']) : []
 				);
 			}
 			else
@@ -556,7 +556,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 				// We use the character's group(s)
 				$group_list = array_merge(
 					array($character['main_char_group']),
-					!empty($character['char_groups']) ? explode(',', $character['char_groups']) : array()
+					!empty($character['char_groups']) ? explode(',', $character['char_groups']) : []
 				);
 			}
 			$group_info = get_labels_and_badges($group_list);
@@ -589,7 +589,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 	if ($board_info['in_character'])
 	{
 		if (!empty($output['member']['characters'])) {
-			$output['possible_characters'] = array();
+			$output['possible_characters'] = [];
 			foreach ($output['member']['characters'] as $char_id => $char) {
 				// We can't switch to the character that already posted it.
 				if ($char_id == $message['id_character']) {
@@ -636,7 +636,7 @@ function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
 {
 	global $user_profile;
 
-	$mcUser['characters'] = !empty($user_profile[$user]['characters']) ? $user_profile[$user]['characters'] : array();
+	$mcUser['characters'] = !empty($user_profile[$user]['characters']) ? $user_profile[$user]['characters'] : [];
 	$mcUser['current_character'] = !empty($user_profile[$user]['online_character']) ? $user_profile[$user]['online_character'] : 0;
 }
 
@@ -914,7 +914,7 @@ function get_char_membergroup_data()
 	// by admins for display purposes and we will need to cache it.
 	if (($groups = cache_get_data('char_membergroups', 300)) === null)
 	{
-		$groups = array();
+		$groups = [];
 		$request = $smcFunc['db_query']('', '
 			SELECT id_group, group_name, online_color, icons, is_character
 			FROM {db_prefix}membergroups
@@ -999,7 +999,7 @@ function integrate_chars_change_member_data($member_names, $var, &$data, &$known
 		return;
 
 	// We need to translate the member_names into member_ids
-	$map = array();
+	$map = [];
 	$request = $smcFunc['db_query']('', '
 		SELECT id_member, real_name
 		FROM {db_prefix}members
