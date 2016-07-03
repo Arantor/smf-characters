@@ -9,11 +9,11 @@ function updateCharacterData($char_id, $data)
 
 	$setString = '';
 	$condition = 'id_character = {int:id_character}';
-	$parameters = array('id_character' => $char_id);
+	$parameters = ['id_character' => $char_id];
 	foreach ($data as $var => $val)
 	{
 		$type = 'string';
-		if (in_array($var, array('id_theme', 'posts', 'last_active')))
+		if (in_array($var, ['id_theme', 'posts', 'last_active']))
 			$type = 'int';
 
 		// Doing an increment?
@@ -24,7 +24,7 @@ function updateCharacterData($char_id, $data)
 		}
 
 		// Ensure posts don't overflow or underflow.
-		if (in_array($var, array('posts')))
+		if (in_array($var, ['posts']))
 		{
 			if (preg_match('~^' . $var . ' (\+ |- |\+ -)([\d]+)~', $val, $match))
 			{
@@ -50,19 +50,19 @@ function removeCharactersFromGroups($characters, $groups)
 {
 	global $smcFunc, $sourcedir, $modSettings;
 
-	updateSettings(array('settings_updated' => time()));
+	updateSettings(['settings_updated' => time()]);
 
 	if (!is_array($characters))
-		$characters = array((int) $characters);
+		$characters = [(int) $characters];
 	else
 		$characters = array_unique(array_map('intval', $characters));
 
 	if (!is_array($groups))
-		$groups = array((int) $groups);
+		$groups = [(int) $groups];
 	else
 		$groups = array_unique(array_map('intval', $groups));
 
-	$groups = array_diff($groups, array(-1, 0, 3));
+	$groups = array_diff($groups, [-1, 0, 3]);
 
 	// Check against protected groups
 	if (!allowedTo('admin_forum'))
@@ -71,9 +71,9 @@ function removeCharactersFromGroups($characters, $groups)
 			SELECT group_type
 			FROM {db_prefix}membergroups
 			WHERE id_group IN ({array_int:current_group})',
-			array(
+			[
 				'current_group' => $groups,
-			)
+			]
 		);
 		$protected = [];
 		while ($row = $smcFunc['db_fetch_row']($request))
@@ -90,9 +90,9 @@ function removeCharactersFromGroups($characters, $groups)
 		SELECT id_group, group_name, min_posts
 		FROM {db_prefix}membergroups
 		WHERE id_group IN ({array_int:current_group})',
-		array(
+		[
 			'current_group' => $groups,
-		)
+		]
 	);
 	$group_names = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
@@ -108,13 +108,13 @@ function removeCharactersFromGroups($characters, $groups)
 		FROM {db_prefix}characters AS characters
 		WHERE main_char_group IN ({array_int:group_list})
 			AND id_character IN ({array_int:char_list})',
-		array(
+		[
 			'group_list' => $groups,
 			'char_list' => $characters,
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
-		$log_inserts[] = array('group' => $group_names[$row['id_group']], 'member' => $row['id_member'], 'character' => $row['character_name']);
+		$log_inserts[] = ['group' => $group_names[$row['id_group']], 'member' => $row['id_member'], 'character' => $row['character_name']];
 	$smcFunc['db_free_result']($request);
 
 	$smcFunc['db_query']('', '
@@ -122,11 +122,11 @@ function removeCharactersFromGroups($characters, $groups)
 		SET main_char_group = {int:regular_member}
 		WHERE main_char_group IN ({array_int:group_list})
 			AND id_character IN ({array_int:char_list})',
-		array(
+		[
 			'group_list' => $groups,
 			'char_list' => $characters,
 			'regular_member' => 0,
-		)
+		]
 	);
 
 	// Those who have it as part of their additional group must be updated the long way... sadly.
@@ -136,10 +136,10 @@ function removeCharactersFromGroups($characters, $groups)
 		WHERE (FIND_IN_SET({raw:additional_groups_implode}, char_groups) != 0)
 			AND id_character IN ({array_int:char_list})
 		LIMIT ' . count($characters),
-		array(
+		[
 			'char_list' => $characters,
 			'additional_groups_implode' => implode(', char_groups) != 0 OR FIND_IN_SET(', $groups),
-		)
+		]
 	);
 	$updates = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
@@ -147,7 +147,7 @@ function removeCharactersFromGroups($characters, $groups)
 		// What log entries must we make for this one, eh?
 		foreach (explode(',', $row['char_groups']) as $id_group)
 			if (in_array($id_group, $groups))
-				$log_inserts[] = array('group' => $group_names[$id_group], 'member' => $row['id_member'], 'character' => $row['character_name']);
+				$log_inserts[] = ['group' => $group_names[$id_group], 'member' => $row['id_member'], 'character' => $row['character_name']];
 
 		$updates[$row['char_groups']][] = $row['id_member'];
 	}
@@ -158,10 +158,10 @@ function removeCharactersFromGroups($characters, $groups)
 			UPDATE {db_prefix}characters
 			SET char_groups = {string:char_groups}
 			WHERE id_member IN ({array_int:member_list})',
-			array(
+			[
 				'member_list' => $memberArray,
 				'char_groups' => implode(',', array_diff(explode(',', $char_groups), $groups)),
-			)
+			]
 		);
 
 	// Do the log.
@@ -179,15 +179,15 @@ function addCharactersToGroup($characters, $group)
 {
 	global $smcFunc, $sourcedir;
 
-	updateSettings(array('settings_updated' => time()));
+	updateSettings(['settings_updated' => time()]);
 
 	if (!is_array($characters))
-		$characters = array((int) $characters);
+		$characters = [(int) $characters];
 	else
 		$characters = array_unique(array_map('intval', $characters));
 
 	$group = (int) $group;
-	if (in_array($group, array(-1, 0, 3)))
+	if (in_array($group, [-1, 0, 3]))
 		return false;
 
 	// Check against protected groups
@@ -198,10 +198,10 @@ function addCharactersToGroup($characters, $group)
 			FROM {db_prefix}membergroups
 			WHERE id_group = {int:current_group}
 			LIMIT {int:limit}',
-			array(
+			[
 				'current_group' => $group,
 				'limit' => 1,
-			)
+			]
 		);
 		list ($is_protected) = $smcFunc['db_fetch_row']($request);
 		$smcFunc['db_free_result']($request);
@@ -218,13 +218,13 @@ function addCharactersToGroup($characters, $group)
 		WHERE id_character IN ({array_int:char_list})
 			AND main_char_group != {int:id_group}
 			AND FIND_IN_SET({int:id_group}, char_groups) = 0',
-		array(
+		[
 			'char_list' => $characters,
 			'id_group' => $group,
 			'id_group_string' => (string) $group,
 			'id_group_string_extend' => ',' . $group,
 			'blank_string' => '',
-		)
+		]
 	);
 
 	// Get the members for these characters.
@@ -233,9 +233,9 @@ function addCharactersToGroup($characters, $group)
 		SELECT id_member, id_character, character_name
 		FROM {db_prefix}characters
 		WHERE id_character IN ({array_int:char_list})',
-		array(
+		[
 			'char_list' => $characters,
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 		$members[$row['id_character']] = $row;
@@ -245,9 +245,9 @@ function addCharactersToGroup($characters, $group)
 		SELECT id_group, group_name, min_posts
 		FROM {db_prefix}membergroups
 		WHERE id_group = {int:current_group}',
-		array(
+		[
 			'current_group' => $group,
-		)
+		]
 	);
 	$group_names = [];
 	while ($row = $smcFunc['db_fetch_assoc']($request))
@@ -260,7 +260,7 @@ function addCharactersToGroup($characters, $group)
 	require_once($sourcedir . '/Logging.php');
 	foreach ($characters as $character)
 	{
-		logAction('char_added_to_group', array('group' => $group_names[$group], 'member' => $members[$character]['id_member'], 'character' => $members[$character]['character_name']), 'admin');
+		logAction('char_added_to_group', ['group' => $group_names[$group], 'member' => $members[$character]['id_member'], 'character' => $members[$character]['character_name']], 'admin');
 	}
 
 	return true;
@@ -270,14 +270,14 @@ function integrate_chars()
 {
 	global $user_info, $user_settings, $txt, $modSettings;
 
-	$user_info += array(
+	$user_info += [
 		'id_character' => isset($user_settings['id_character']) ? (int) $user_settings['id_character'] : 0,
 		'character_name' => isset($user_settings['character_name']) ? $user_settings['character_name'] : (isset($user_settings['real_name']) ? $user_settings['real_name'] : ''),
 		'char_avatar' => isset($user_settings['char_avatar']) ? $user_settings['char_avatar'] : '',
 		'char_signature' => isset($user_settings['char_signature']) ? $user_settings['char_signature'] : '',
 		'char_is_main' => !empty($user_settings['is_main']),
 		'immersive_mode' => !empty($user_settings['immersive_mode']),
-	);
+	];
 
 	// Because we're messing with member groups, we need to tweak a few things.
 	// We need to glue their groups together for the purposes of permissions.
@@ -289,7 +289,7 @@ function integrate_chars()
 	if (!empty($user_settings['main_char_group']))
 		$with_char_groups[] = $user_settings['main_char_group'];
 	if (!empty($user_settings['char_groups']))
-		$with_char_groups = array_merge($with_char_groups, array_diff(array_map('intval', explode(',', $user_settings['char_groups'])), array(0)));
+		$with_char_groups = array_merge($with_char_groups, array_diff(array_map('intval', explode(',', $user_settings['char_groups'])), [0]));
 
 	// At this point, we already built access based on account level groups
 	// but if we're in immersive mode we need to include character groups
@@ -439,8 +439,8 @@ function integrate_chars()
 
 function integrate_chars_actions(&$actionArray)
 {
-	$actionArray['reattributepost'] = array('Characters.php', 'ReattributePost');
-	$actionArray['characters'] = array('Profile-Chars.php', 'CharacterList');
+	$actionArray['reattributepost'] = ['Characters.php', 'ReattributePost'];
+	$actionArray['characters'] = ['Profile-Chars.php', 'CharacterList'];
 }
 
 function integrate_chars_main_menu(&$buttons)
@@ -451,7 +451,7 @@ function integrate_chars_main_menu(&$buttons)
 	// otherwise have done in that function.
 	if (!$context['user']['is_guest'])
 	{
-		loadCSSFile('chars.css', array('default_theme' => true), 'chars');
+		loadCSSFile('chars.css', ['default_theme' => true], 'chars');
 		addInlineJavascript('
 	user_menus.add("characters", "' . $scripturl . '?action=profile;area=characters_popup");', true);
 	}
@@ -462,13 +462,13 @@ function integrate_chars_main_menu(&$buttons)
 	{
 		if ($k == 'mlist')
 		{
-			$temp_buttons['characters'] = array(
+			$temp_buttons['characters'] = [
 				'title' => $txt['chars_menu_title'],
 				'icon' => 'mlist',
 				'href' => $scripturl . '?action=characters',
 				'show' => $context['allow_memberlist'],
 				'sub_buttons' => [],
-			);
+			];
 			continue;
 		}
 		$temp_buttons[$k] = $v;
@@ -524,21 +524,21 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 			}
 			if (!empty($character['avatar']))
 			{
-				$output['member']['avatar'] = array(
+				$output['member']['avatar'] = [
 					'name' => $character['avatar'],
 					'image' => '<img class="avatar" src="' . $character['avatar'] . '" alt="">',
 					'href' => $character['avatar'],
 					'url' => $character['avatar'],
-				);
+				];
 			}
 			else
 			{
-				$output['member']['avatar'] = array(
+				$output['member']['avatar'] = [
 					'name' => '',
 					'image' => '<img class="avatar" src="' . $modSettings['avatar_url'] . '/default.png" alt="">',
 					'href' => $modSettings['avatar_url'] . '/default.png',
 					'url' => $modSettings['avatar_url'] . '/default.png',
-				);
+				];
 			}
 			// We need to fix display of badges and everything - for reasons
 			// of online behaviour we can't trust what we might have now.
@@ -547,7 +547,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 			{
 				// We use the main account groups for this.
 				$group_list = array_merge(
-					array($user_profile[$message['id_member']]['id_group']),
+					[$user_profile[$message['id_member']]['id_group']],
 					!empty($user_profile[$message['id_member']]['additional_groups']) ? explode(',', $user_profile[$message['id_member']]['additional_groups']) : []
 				);
 			}
@@ -555,7 +555,7 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 			{
 				// We use the character's group(s)
 				$group_list = array_merge(
-					array($character['main_char_group']),
+					[$character['main_char_group']],
 					!empty($character['char_groups']) ? explode(',', $character['char_groups']) : []
 				);
 			}
@@ -572,14 +572,14 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 			$output['member']['signature'] = $character['sig_parsed'];
 			$output['member']['posts'] = comma_format($character['posts']);
 			$is_online = $message['id_character'] == $output['member']['current_character'];
-			$output['member']['online'] = array(
+			$output['member']['online'] = [
 				'is_online' => $is_online,
 				'text' => $smcFunc['htmlspecialchars']($txt[$is_online ? 'online' : 'offline']),
 				'member_online_text' => sprintf($txt[$is_online ? 'member_is_online' : 'member_is_offline'], $smcFunc['htmlspecialchars']($character['character_name'])),
 				'href' => $scripturl . '?action=pm;sa=send;u=' . $message['id_member'],
 				'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
 				'label' => $txt[$is_online ? 'online' : 'offline']
-			);
+			];
 		}
 	}
 
@@ -643,7 +643,7 @@ function integrate_membercontext_chars(&$mcUser, $user, $display_custom_fields)
 function integrate_character_post_count($msgOptions, $topicOptions, $posterOptions, $message_columns, $message_parameters)
 {
 	if ($msgOptions['approved'] && !empty($posterOptions['char_id']) && !empty($posterOptions['update_post_count'])) {
-		updateCharacterData($posterOptions['char_id'], array('posts' => '+'));
+		updateCharacterData($posterOptions['char_id'], ['posts' => '+']);
 	}
 }
 
@@ -679,25 +679,25 @@ function integrate_search_message_chars(&$output, &$message, $counter)
 				$character = $output['matches'][$match_id]['member']['characters'][$message['id_character']];
 				if (!empty($character['avatar']))
 				{
-					$output['matches'][$match_id]['member']['avatar'] = array(
+					$output['matches'][$match_id]['member']['avatar'] = [
 						'name' => $character['avatar'],
 						'image' => '<img class="avatar" src="' . $character['avatar'] . '" alt="">',
 						'href' => $character['avatar'],
 						'url' => $character['avatar'],
-					);
+					];
 				}
 				$output['matches'][$match_id]['member']['link'] = '<a href="' . $scripturl . '?action=profile;u=' . $message['id_member'] . ';area=characters;char=' . $message['id_character'] . '">' . $character['character_name'] . '</a>';
 				$output['matches'][$match_id]['member']['signature'] = $character['sig_parsed'];
 				$output['matches'][$match_id]['member']['posts'] = comma_format($character['posts']);
 				$is_online = $message['id_character'] == $output['matches'][$match_id]['member']['current_character'];
-				$output['matches'][$match_id]['member']['online'] = array(
+				$output['matches'][$match_id]['member']['online'] = [
 					'is_online' => $is_online,
 					'text' => $smcFunc['htmlspecialchars']($txt[$is_online ? 'online' : 'offline']),
 					'member_online_text' => sprintf($txt[$is_online ? 'member_is_online' : 'member_is_offline'], $smcFunc['htmlspecialchars']($character['character_name'])),
 					'href' => $scripturl . '?action=pm;sa=send;u=' . $message['id_member'],
 					'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
 					'label' => $txt[$is_online ? 'online' : 'offline']
-				);
+				];
 			}
 		}
 	}
@@ -723,9 +723,9 @@ function ReattributePost()
 			INNER JOIN {db_prefix}topics AS t ON (m.id_topic = t.id_topic)
 			INNER JOIN {db_prefix}characters AS c ON (m.id_character = c.id_character)
 		WHERE m.id_msg = {int:msg}',
-		array(
+		[
 			'msg' => $msg,
-		)
+		]
 	);
 
 	// 3a. Doesn't exist?
@@ -755,10 +755,10 @@ function ReattributePost()
 		WHERE id_character = {int:char}
 			AND id_member = {int:member}
 			AND is_main = 0',
-		array(
+		[
 			'char' => $character,
 			'member' => $row['id_member_posted'],
-		)
+		]
 	);
 	$owned_char = false;
 	if ($smcFunc['db_num_rows']($result)) {
@@ -776,10 +776,10 @@ function ReattributePost()
 		UPDATE {db_prefix}messages
 		SET id_character = {int:char}
 		WHERE id_msg = {int:msg}',
-		array(
+		[
 			'char' => $character,
 			'msg' => $msg,
-		)
+		]
 	);
 
 	// 6. Having reattributed the post, now let's also fix the post count.
@@ -791,9 +791,9 @@ function ReattributePost()
 			UPDATE {db_prefix}characters
 			SET posts = (CASE WHEN posts <= 1 THEN 0 ELSE posts - 1 END)
 			WHERE id_character = {int:char}',
-			array(
+			[
 				'char' => $row['id_character'],
-			)
+			]
 		);
 
 		// Add one to the new owner.
@@ -801,19 +801,19 @@ function ReattributePost()
 			UPDATE {db_prefix}characters
 			SET posts = posts + 1
 			WHERE id_character = {int:char}',
-			array(
+			[
 				'char' => $character,
-			)
+			]
 		);
 	}
 
 	// 7. Add it to the moderation log.
-	logAction('char_reattribute', array(
+	logAction('char_reattribute', [
 		'member' => $row['id_member_posted'],
 		'old_character' => $row['old_character'],
 		'new_character' => $owned_char,
 		'message' => $msg,
-	), 'moderate');
+	], 'moderate');
 
 	// 8. All done. Exit back to the post.
 	redirectexit('topic=' . $topic . '.msg' . $msg . '#msg' . $msg);
@@ -826,7 +826,7 @@ function integrate_register_check_chars(&$regOptions, &$reg_errors)
 	// First, gotta have a character name.
 	if (empty($regOptions['extra_register_vars']['first_char']))
 	{
-		$reg_errors[] = array('lang', 'no_character_added', false);
+		$reg_errors[] = ['lang', 'no_character_added', false];
 		return;
 	}
 
@@ -835,15 +835,15 @@ function integrate_register_check_chars(&$regOptions, &$reg_errors)
 		SELECT COUNT(*)
 		FROM {db_prefix}characters
 		WHERE character_name LIKE {string:new_name}',
-		array(
+		[
 			'new_name' => $regOptions['extra_register_vars']['first_char'],
-		)
+		]
 	);
 	list ($matching_names) = $smcFunc['db_fetch_row']($result);
 	$smcFunc['db_free_result']($result);
 
 	if ($matching_names) {
-		$reg_errors[] = array('lang', 'char_error_duplicate_character_name', false);
+		$reg_errors[] = ['lang', 'char_error_duplicate_character_name', false];
 		return;
 	}
 }
@@ -861,32 +861,32 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 	// a character. More accurately, two - one for the 'main' and one for the 'character'.
 	$smcFunc['db_insert']('',
 		'{db_prefix}characters',
-		array('id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
+		['id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
 			'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int', 'age' => 'string',
 			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int',
 			'main_char_group' => 'int', 'char_groups' => 'string',
-		),
-		array(
+		],
+		[
 			$memberID, $regOptions['register_vars']['real_name'], '',
 			'', 0, 0, '',
 			time(), 0, 1,
 			0, '',
-		),
-		array('id_character')
+		],
+		['id_character']
 	);
 	$real_account = $smcFunc['db_insert_id']('{db_prefix}characters', 'id_character');
 
 	$smcFunc['db_insert']('',
 		'{db_prefix}characters',
-		array('id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
+		['id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
 			'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int', 'age' => 'string',
-			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int'),
-		array(
+			'date_created' => 'int', 'last_active' => 'int', 'is_main' => 'int'],
+		[
 			$memberID, $regOptions['extra_register_vars']['first_char'], '',
 			'', 0, 0, '',
 			time(), 0, 0
-		),
-		array('id_character')
+		],
+		['id_character']
 	);
 
 	// Now we mark the current character into the user table.
@@ -894,10 +894,10 @@ function integrate_post_register_chars(&$regOptions, &$theme_vars, &$memberID)
 		UPDATE {db_prefix}members
 		SET current_character = {int:char}
 		WHERE id_member = {int:member}',
-		array(
+		[
 			'char' => $real_account,
 			'member' => $memberID,
-		)
+		]
 	);
 }
 
@@ -983,11 +983,11 @@ function get_labels_and_badges($group_list)
 		}
 	}
 
-	return array(
+	return [
 		'title' => $group_title,
 		'color' => $group_color,
 		'badges' => $badges,
-	);
+	];
 }
 
 function integrate_chars_change_member_data($member_names, $var, &$data, &$knownInts, &$knownFloat)
@@ -1004,9 +1004,9 @@ function integrate_chars_change_member_data($member_names, $var, &$data, &$known
 		SELECT id_member, real_name
 		FROM {db_prefix}members
 		WHERE real_name IN ({array_string:members})',
-		array(
+		[
 			'members' => $member_names,
-		)
+		]
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
 		$map[$row['real_name']] = (int) $row['id_member'];
@@ -1020,10 +1020,10 @@ function integrate_chars_change_member_data($member_names, $var, &$data, &$known
 			SET character_name = {string:name}
 			WHERE id_member = {int:member}
 				AND is_main = 1',
-			array(
+			[
 				'name' => $data,
 				'member' => $id_member,
-			)
+			]
 		);
 	}
 }
