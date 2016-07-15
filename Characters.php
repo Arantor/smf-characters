@@ -583,6 +583,8 @@ function integrate_display_chars_messages(&$output, &$message, $counter)
 				'link' => '<a href="' . $scripturl . '?action=pm;sa=send;u=' . $message['id_member'] . '">' . $txt[$is_online ? 'online' : 'offline'] . '</a>',
 				'label' => $txt[$is_online ? 'online' : 'offline']
 			];
+
+			$output['member']['title'] = !empty($character['char_title']) ? parse_bbc($character['char_title'], false) : '';
 		}
 	}
 
