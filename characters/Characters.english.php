@@ -52,6 +52,10 @@ $txt['showTopics_char'] = 'Character Topics';
 $txt['char_profile'] = 'Character Profile';
 $txt['char_stats'] = 'Character Stats';
 
+$txt['char_retired'] = 'Retired';
+$txt['char_retire_char'] = 'Retire Character';
+$txt['char_unretire_char'] = 'Unretire Character';
+
 $txt['immersive_mode'] = 'Enable immersive mode:';
 $txt['immersive_mode_desc'] = 'In immersive mode, you can only see the areas of the forum your character could see.';
 $txt['no_primary_character_group'] = '(no primary character group)';
