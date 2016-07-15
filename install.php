@@ -76,6 +76,7 @@ $tables[] = [
 		db_field('char_groups', 'varchar', 255),
 		db_field('char_sheet', 'int'),
 		db_field('char_title', 'varchar', 255),
+		db_field('retired', 'tinyint', 3),
 	],
 	'indexes' => [
 		[

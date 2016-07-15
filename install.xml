@@ -57,7 +57,7 @@
 		}
 		$request = $smcFunc['db_query']('', '
 			SELECT id_member, id_character, character_name, avatar, signature, id_theme, posts, age, date_created,
-				last_active, is_main, main_char_group, char_groups, char_sheet, char_title
+				last_active, is_main, main_char_group, char_groups, char_sheet, char_title, retired
 			FROM {db_prefix}characters
 			WHERE id_member IN ({array_int:loaded_ids})
 			ORDER BY NULL',
@@ -88,6 +88,7 @@
 				'char_groups' => $row['char_groups'],
 				'char_sheet' => $row['char_sheet'],
 				'char_title' => $row['char_title'],
+				'retired' => $row['retired'],
 			);
 			if ($row['is_main'])
 			{
