@@ -948,6 +948,7 @@ function template_char_summary()
 						</div>
 						<div class="char_name">
 							<a href="', $scripturl, $char['character_url'], '">', $char['character_name'], '</a>
+							', !empty($char['retired']) ? '(' . $txt['char_retired'] . ')' : '', '
 							<div class="char_created">
 								', sprintf($txt['char_created'], timeformat($char['date_created'])), '
 							</div>
