@@ -286,7 +286,7 @@ function char_edit()
 		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
 	}
 
-	$context['character']['title_editable'] = allowedTo('admin_forum');
+	$context['character']['title_editable'] = !empty($modSettings['titlesEnable']) && allowedTo('admin_forum');
 
 	$context['sub_template'] = 'edit_char';
 	loadJavascriptFile('chars.js', array('default_theme' => true), 'chars');
