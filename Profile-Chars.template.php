@@ -52,6 +52,8 @@ function template_characters_popup()
 			<ul>';
 	foreach ($cur_profile['characters'] as $id_character => $char)
 	{
+		if ($char['retired'])
+			continue;
 		if (empty($char['is_main']))
 			character_popup_row($id_character, $char);
 	}
