@@ -286,6 +286,8 @@ function char_edit()
 		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
 	}
 
+	$context['character']['title_editable'] = allowedTo('admin_forum');
+
 	$context['sub_template'] = 'edit_char';
 	loadJavascriptFile('chars.js', array('default_theme' => true), 'chars');
 
@@ -331,6 +333,16 @@ function char_edit()
 				$context['form_errors'][] = $txt['char_error_duplicate_character_name'];
 			else
 				$changes['character_name'] = $new_name;
+		}
+
+		if ($context['character']['title_editable'])
+		{
+			$new_title = isset($_POST['char_title']) ? $_POST['char_title'] : '';
+			preparsecode($new_title);
+			if ($new_title != $context['character']['char_title'])
+			{
+				$changes['char_title'] = $new_title;
+			}
 		}
 
 		if ($context['character']['groups_editable'])
@@ -486,6 +498,7 @@ function char_edit()
 	$form_value = un_preparsecode($form_value);
 	censorText($form_value);
 	$form_value = str_replace(array('"', '<', '>', '&nbsp;'), array('&quot;', '&lt;', '&gt;', ' '), $form_value);
+	$context['character']['char_title_raw'] = un_preparsecode($context['character']['char_title']);
 
 	require_once($sourcedir . '/Subs-Editor.php');
 	$editorOptions = array(

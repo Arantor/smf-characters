@@ -246,7 +246,16 @@ function template_edit_char()
 					<dt>', $txt['char_name'], '</dt>
 					<dd>
 						<input type="text" name="char_name" id="char_name" size="50" value="', $context['character']['character_name'], '" maxlength="50" class="input_text">
-					</dd>
+					</dd>';
+	if ($context['character']['title_editable'])
+	{
+		echo '
+					<dt>', $txt['custom_title'], '</dt>
+					<dd>
+						<input type="text" name="char_title" id="char_title" size="50" value="', $context['character']['char_title_raw'], '" maxlength="255" class="input_text">
+					</dd>';
+	}
+	echo '
 					<dt>
 						', $txt['avatar_link'];
 	if (!empty($modSettings['avatar_max_width_external']))
