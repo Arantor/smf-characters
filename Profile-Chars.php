@@ -145,7 +145,8 @@ function char_switch($memID, $char = null, $return = false)
 		SELECT id_character, id_member
 		FROM {db_prefix}characters
 		WHERE id_character = {int:id_character}
-			AND id_member = {int:id_member}',
+			AND id_member = {int:id_member}
+			AND retired = 0',
 		array(
 			'id_character' => $char,
 			'id_member' => $memID,
