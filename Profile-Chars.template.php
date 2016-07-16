@@ -110,6 +110,11 @@ function template_character_profile()
 		echo '
 			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=edit" class="button">', $txt['edit_char'], '</a><br /><br />';
 	}
+	if ($context['character']['editable'] && $context['character']['retire_eligible'])
+	{
+		echo '
+			<a href="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=characters;char=', $context['character']['id_character'], ';sa=retire;', $context['session_var'], '=', $context['session_id'], '" class="button">', $context['character']['retired'] ? $txt['char_unretire_char'] : $txt['char_retire_char'], '</a><br /><br />';
+	}
 	if ($context['character']['editable'] && $context['character']['posts'] == 0 && !$context['character']['is_main'])
 	{
 		echo '

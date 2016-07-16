@@ -221,7 +221,7 @@ function char_switch_redir($memID)
 
 function character_profile($memID)
 {
-	global $user_profile, $context, $scripturl, $modSettings, $smcFunc, $txt;
+	global $user_profile, $context, $scripturl, $modSettings, $smcFunc, $txt, $user_info;
 
 	loadTemplate('Profile-Chars');
 
@@ -233,6 +233,12 @@ function character_profile($memID)
 
 	$context['character'] = $user_profile[$memID]['characters'][$char_id];
 	$context['character']['editable'] = $context['user']['is_owner'] || allowedTo('admin_forum');
+
+	$context['character']['retire_eligible'] = !$context['character']['is_main'];
+	if ($context['user']['is_owner'] && $user_info['id_character'] == $context['character']['id_character'])
+	{
+		$context['character']['retire_eligible'] = false; // Can't retire if you're logged in as them
+	}
 
 	$context['linktree'][] = array(
 		'name' => $txt['chars_menu_title'],
