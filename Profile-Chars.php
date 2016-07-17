@@ -312,10 +312,74 @@ function char_create()
 	require_once($sourcedir . '/Subs-Post.php');
 	require_once($sourcedir . '/Subs-Editor.php');
 
+	// See if they're saving.
+	if (isset($_POST['create_char']))
+	{
+		checkSession();
+		$context['character']['character_name'] = !empty($_POST['char_name']) ? $smcFunc['htmlspecialchars'](trim($_POST['char_name']), ENT_QUOTES) : '';
+		$context['character']['age'] = !empty($_POST['age']) ? $smcFunc['htmlspecialchars']($_POST['age'], ENT_QUOTES) : '';
+		$message = $smcFunc['htmlspecialchars']($_POST['message'], ENT_QUOTES);
+		preparsecode($message);
+		$context['character']['sheet'] = $message;
+
+		if ($context['character']['character_name'] == '')
+			$context['form_errors'][] = $txt['char_error_character_must_have_name'];
+		else
+		{
+			// Check if the name already exists.
+			$result = $smcFunc['db_query']('', '
+				SELECT COUNT(*)
+				FROM {db_prefix}characters
+				WHERE character_name LIKE {string:new_name}',
+				array(
+					'new_name' => $context['character']['character_name'],
+				)
+			);
+			list ($matching_names) = $smcFunc['db_fetch_row']($result);
+			$smcFunc['db_free_result']($result);
+
+			if ($matching_names)
+				$context['form_errors'][] = $txt['char_error_duplicate_character_name'];
+		}
+
+		if (empty($context['form_errors']))
+		{
+			// So no errors, we can save this new character, yay!
+			$smcFunc['db_insert']('insert',
+				'{db_prefix}characters',
+				['id_member' => 'int', 'character_name' => 'string', 'avatar' => 'string',
+					'signature' => 'string', 'id_theme' => 'int', 'posts' => 'int',
+					'age' => 'string', 'date_created' => 'int', 'last_active' => 'int',
+					'is_main' => 'int', 'main_char_group' => 'int', 'char_groups' => 'string',
+					'char_sheet' => 'int', 'char_title' => 'string', 'retired' => 'int'],
+				[$context['id_member'], $context['character']['character_name'], '',
+					'', 0, 0,
+					$context['character']['age'], time(), time(),
+					0, 0, '',
+					0, '', 0],
+				['id_character']
+			);
+			$context['character']['id_character'] = $smcFunc['db_insert_id']('{db_prefix}characters', 'id_character');
+			if (!empty($context['character']['sheet']))
+			{
+				// Also gotta insert this.
+				$smcFunc['db_insert']('insert',
+					'{db_prefix}character_sheet_versions',
+					['sheet_text' => 'string', 'id_character' => 'int', 'id_member' => 'int',
+						'created_time' => 'int', 'id_approver' => 'int', 'approved_time' => 'int', 'approval_state' => 'int'],
+					[$context['character']['sheet'], $context['character']['id_character'], $context['id_member'],
+						time(), 0, 0, 0],
+					['id_version']
+				);
+			}
+			redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+		}
+	}
+
 	// Now create the editor.
 	$editorOptions = array(
 		'id' => 'message',
-		'value' => $context['character']['sheet'],
+		'value' => un_preparsecode($context['character']['sheet']),
 		'labels' => array(
 			'post_button' => $txt['save'],
 		),
