@@ -59,6 +59,11 @@ function chars_profile_menu(&$profile_areas)
 		'permission' => $not_own_admin_only,
 		'icon' => 'merge',
 	);
+	$profile_areas['profile_action']['areas']['char_create'] = [
+		'function' => 'char_create',
+		'permission' => $own_only,
+		'select' => 'summary',
+	];
 
 	$insert_array['chars'] = array(
 		'title' => 'Characters',

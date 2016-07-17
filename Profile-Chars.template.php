@@ -60,6 +60,10 @@ function template_characters_popup()
 	echo '
 			</ul>
 		</div>
+		<br />
+		<div class="clear centertext">
+			<a class="button" href="', $scripturl, '?action=profile;u=', $user_info['id'], ';area=char_create">', $txt['char_create'], '</a>
+		</div>
 		<script>
 		$(".chars_container .switch span.button").on("click", function() {
 			$.ajax({
@@ -81,6 +85,7 @@ function template_character_profile()
 		<h3 class="catbg">
 			', !empty($context['character']['avatar']) ? '<img class="icon" style="max-width: 25px; max-height: 25px;" src="' . $context['character']['avatar'] . '" alt="">' : '', '
 			', $context['character']['character_name'], '
+			', $context['character']['retired'] ? ' - ' . $txt['char_retired'] : '', '
 		</h3>
 	</div>
 

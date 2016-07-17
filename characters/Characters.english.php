@@ -7,6 +7,7 @@ $txt['chars_menu_title'] = 'Characters';
 $txt['filter_characters'] = 'Filter Characters by Group';
 $txt['characters_in_no_groups'] = '(characters in no groups)';
 $txt['apply_filter'] = 'Apply Filter';
+$txt['char_create'] = 'Create Character';
 $txt['char_name'] = 'Character Name:';
 $txt['date_created'] = 'Date Created:';
 $txt['switch_chars'] = 'switch';
