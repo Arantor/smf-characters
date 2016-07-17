@@ -252,6 +252,7 @@ function character_profile($memID)
 		'edit' => 'char_edit',
 		'theme' => 'char_theme',
 		'sheet' => 'char_sheet',
+		'retire' => 'char_retire',
 		'move_acct' => 'char_move_account',
 		'sheet_edit' => 'char_sheet_edit',
 		'sheet_approval' => 'char_sheet_approval',
@@ -1025,6 +1026,42 @@ function profileLoadCharGroups()
 	$context['member']['group_id'] = $user_settings['id_group'];
 
 	return true;
+}
+
+function char_retire()
+{
+	global $context, $smcFunc, $txt, $user_info;
+
+	// If the character isn't eligible for retirement, goodbye.
+	if (!$context['character']['retire_eligible']) {
+		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
+	}
+
+	// This is really quite straightforward.
+	$new_state = $context['character']['retired'] ? 0 : 1; // If currently retired, make them not, etc.
+	updateCharacterData($context['character']['id_character'], ['retired' => $new_state]);
+
+	$change_array = [
+		'previous' => $context['character']['retired'] ? $txt['yes'] : $txt['no'],
+		'new' => $new_state ? $txt['yes'] : $txt['no'],
+		'applicator' => $context['user']['id'],
+		'member_affected' => $context['id_member'],
+		'id_character' => $context['character']['id_character'],
+		'character_name' => $context['character']['character_name'],
+	];
+	$smcFunc['db_insert']('insert',
+		'{db_prefix}log_actions',
+		['id_log' => 'int', 'log_time' => 'int', 'id_member' => 'int',
+			'ip' => 'string', 'action' => 'string', 'id_board' => 'int',
+			'id_topic' => 'int', 'id_msg' => 'int', 'extra' => 'string'],
+		[2, time(), $context['id_member'],
+			$user_info['ip'], 'char_retired', 0,
+			0, 0, json_encode($change_array)],
+		[]
+	);
+
+	// And back to the character.
+	redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
 }
 
 function char_stats()

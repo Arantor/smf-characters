@@ -13,7 +13,7 @@ function updateCharacterData($char_id, $data)
 	foreach ($data as $var => $val)
 	{
 		$type = 'string';
-		if (in_array($var, ['id_theme', 'posts', 'last_active']))
+		if (in_array($var, ['id_theme', 'posts', 'last_active', 'retired']))
 			$type = 'int';
 
 		// Doing an increment?
