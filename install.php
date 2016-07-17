@@ -147,25 +147,6 @@ $tables[] = [
 		]
 	],
 ];
-$tables[] = [
-	'table_name' => '{db_prefix}character_log_topics',
-	'columns' => [
-		db_field('id_character', 'int'),
-		db_field('id_topic', 'mediumint'),
-		db_field('id_msg', 'int'),
-		db_field('unwatched', 'tinyint'),
-	],
-	'indexes' => [
-		[
-			'columns' => ['id_character', 'id_topic'],
-			'type' => 'unique',
-		],
-		[
-			'columns' => ['id_topic'],
-			'type' => 'index',
-		],
-	],
-];
 
 // Oh joy, we've now made it to extra rows...
 $rows = [];
