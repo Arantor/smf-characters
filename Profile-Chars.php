@@ -477,7 +477,7 @@ function char_edit()
 					$smcFunc['db_insert']('insert',
 						'{db_prefix}log_actions',
 						array('id_log' => 'int', 'log_time' => 'int', 'id_member' => 'int',
-							'ip' => 'string', 'action' => 'string', 'id_board' => 'int',
+							'ip' => 'inet', 'action' => 'string', 'id_board' => 'int',
 							'id_topic' => 'int', 'id_msg' => 'int', 'extra' => 'string'),
 						$rows,
 						[]
@@ -1052,7 +1052,7 @@ function char_retire()
 	$smcFunc['db_insert']('insert',
 		'{db_prefix}log_actions',
 		['id_log' => 'int', 'log_time' => 'int', 'id_member' => 'int',
-			'ip' => 'string', 'action' => 'string', 'id_board' => 'int',
+			'ip' => 'inet', 'action' => 'string', 'id_board' => 'int',
 			'id_topic' => 'int', 'id_msg' => 'int', 'extra' => 'string'],
 		[2, time(), $context['id_member'],
 			$user_info['ip'], 'char_retired', 0,
