@@ -38,6 +38,8 @@ $txt['char_sheet_approved_on'] = '(approved %1$s by %2$s)';
 $txt['char_sheet_click_to_expand'] = '<a href="#" class="click_expand">show more</a>';
 $txt['char_sheet_click_to_collapse'] = '<a href="#" class="click_collapse">show less</a>';
 
+$txt['you_can_add_later'] = 'You can change your character sheet later, and you can add an avatar and signature later from your character\'s profile.';
+
 $txt['switch_to_char'] = 'Switch to this character';
 $txt['switch_to_char_menu'] = 'Reattribute to...';
 $txt['edit_char'] = 'Edit this character';

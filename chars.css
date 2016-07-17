@@ -145,6 +145,13 @@ div#char_theme_wrapper,
 	padding-left: 20px;
 	vertical-align: middle;
 }
+#detailedinfo dl.char_sheet_text {
+	border-bottom: none !important;
+	margin-bottom: 0;
+}
+#detailedinfo .create_char_editor {
+	width: 75%;
+}
 
 #detailedinfo .char_created {
 	font-size: 80%;

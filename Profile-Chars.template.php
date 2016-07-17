@@ -400,6 +400,84 @@ function template_edit_char()
 	</div>';
 }
 
+function template_char_create()
+{
+	global $context, $txt, $scripturl;
+
+	echo '
+	<div class="cat_bar">
+		<h3 class="catbg">', $txt['char_create'], '</h3>
+	</div>';
+
+	echo '
+	<div id="profileview" class="roundframe flow_auto">
+		<div class="errorbox" id="profile_error"', empty($context['form_errors']) ? ' style="display:none"' : '', '>
+			<span>', $txt['char_editing_error'], '</span>
+			<ul id="list_errors">';
+	foreach ($context['form_errors'] as $err)
+		echo '
+				<li>', $err, '</li>';
+	echo '
+			</ul>
+		</div>
+		<div id="basicinfo">';
+
+	echo '
+		</div>
+		<div id="detailedinfo">
+			<form id="creator" action="', $scripturl, '?action=profile;u=', $context['id_member'], ';area=char_create" method="post" accept-charset="', $context['character_set'], '">';
+
+	echo '
+				<dl>
+					<dt>', $txt['char_name'], '</dt>
+					<dd>
+						<input type="text" name="char_name" id="char_name" size="50" value="', $context['character']['character_name'], '" maxlength="50" class="input_text">
+					</dd>
+					<dt>', $txt['age'], ':</dt>
+					<dd>
+						<input type="text" name="age" id="age" size="50" value="', !empty($context['character']['age']) ? $context['character']['age'] : '', '" maxlength="50" class="input_text">
+					</dd>
+				</dl>
+				<dl class="char_sheet_text">
+					<dt>', $txt['char_sheet'], ':</dt>';
+
+	if (!empty($context['sheet_templates']))
+	{
+		echo '
+					<dd>
+						', $txt['char_templates_sel'], '
+						<select id="char_sheet_template">
+							<option>-- ', $txt['char_templates'], ' --</option>';
+		foreach ($context['sheet_templates'] as $id_template => $template)
+		{
+			echo '
+							<option value="', $id_template, '">', $template['name'], '</option>';
+		}
+		echo '
+						</select>
+						<a href="#" class="button" id="insert_char_template">', $txt['char_templates_add'], '</a>
+					</dd>';
+	}
+	echo '
+				</dl>
+				<div class="create_char_editor">';
+
+	template_control_richedit('message', null, 'bbcBox');
+
+	echo '
+				</div>
+				<br />
+				<div class="smalltext">', $txt['you_can_add_later'], '</div>
+				<input type="hidden" name="u" value="', $context['id_member'], '" />
+				<input type="submit" name="create_char" class="button_submit" value="', $txt['char_create'], '" />
+				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '" />
+			</form>
+		</div>
+	</div>';
+
+	insert_char_sheet_js();
+}
+
 function template_char_theme()
 {
 	global $context, $txt, $scripturl;
@@ -1150,14 +1228,7 @@ function template_char_sheet_edit()
 				<input type="hidden" name="', $context['session_var'], '" value="', $context['session_id'], '">
 			</form>';
 
-	addInlineJavascript('
-	var sheet_templates = ' . json_encode($context['sheet_templates']) . ';
-	$("#insert_char_template").on("click", function (e) {
-		e.preventDefault();
-		var tmpl = $("#char_sheet_template").val();
-		if (sheet_templates.hasOwnProperty(tmpl))
-			$("#message").data("sceditor").InsertText(sheet_templates[tmpl].body);
-	});', true);
+	insert_char_sheet_js();
 
 	if (!empty($context['sheet_comments']))
 	{
@@ -1179,6 +1250,20 @@ function template_char_sheet_edit()
 			</div>';
 		}
 	}
+}
+
+function insert_char_sheet_js()
+{
+	global $context;
+
+	addInlineJavascript('
+	var sheet_templates = ' . json_encode($context['sheet_templates']) . ';
+	$("#insert_char_template").on("click", function (e) {
+		e.preventDefault();
+		var tmpl = $("#char_sheet_template").val();
+		if (sheet_templates.hasOwnProperty(tmpl))
+			$("#message").data("sceditor").InsertText(sheet_templates[tmpl].body);
+	});', true);
 }
 
 function template_char_sheet_compare()

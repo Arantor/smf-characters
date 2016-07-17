@@ -75,15 +75,17 @@ function chars_profile_menu(&$profile_areas)
 				'function' => 'char_create',
 				'enabled' => true,
 				'permission' => $own_only,
+				'icon' => 'char_avatar char_unknown',
 			),
 		),
 	);
+	addInlineCss('
+span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }
+span.char_unknown { background-image: url(' . $modSettings['avatar_url'] . '/default.png); }');
+
 	$char_sheet_override = allowedTo('admin_forum') || $context['user']['is_owner'];
 	// Now we need to add the user's characters to the profile menu, "creatively".
 	if (!empty($cur_profile['characters'])) {
-		addInlineCss('
-span.char_avatar { width: 25px; height: 25px; background-size: contain !important; background-position: 50% 50%; }
-span.char_unknown { background-image: url(' . $modSettings['avatar_url'] . '/default.png); }');
 		foreach ($cur_profile['characters'] as $id_character => $character) {
 			if (!empty($character['avatar'])) {
 				addInlineCss('
@@ -290,6 +292,42 @@ function character_profile($memID)
 	);
 	list ($context['character']['theme_name']) = $smcFunc['db_fetch_row']($request);
 	$smcFunc['db_free_result']($request);
+}
+
+function char_create()
+{
+	global $context, $smcFunc, $txt, $sourcedir, $user_info, $modSettings;
+
+	loadTemplate('Profile-Chars');
+	
+	$context['character'] = [
+		'character_name' => '',
+		'age' => '',
+		'sheet' => '',
+	];
+
+	$context['form_errors'] = [];
+
+	// Make an editor box
+	require_once($sourcedir . '/Subs-Post.php');
+	require_once($sourcedir . '/Subs-Editor.php');
+
+	// Now create the editor.
+	$editorOptions = array(
+		'id' => 'message',
+		'value' => $context['character']['sheet'],
+		'labels' => array(
+			'post_button' => $txt['save'],
+		),
+		// add height and width for the editor
+		'height' => '500px',
+		'width' => '80%',
+		'preview_type' => 0,
+		'required' => true,
+	);
+	create_control_richedit($editorOptions);
+
+	load_char_sheet_templates();
 }
 
 function char_edit()
@@ -1616,20 +1654,7 @@ function char_sheet_edit()
 	);
 	create_control_richedit($editorOptions);
 
-	$context['sheet_templates'] = [];
-	// Go fetch the possible templates.
-	$request = $smcFunc['db_query']('', '
-		SELECT id_template, template_name, template
-		FROM {db_prefix}character_sheet_templates
-		ORDER BY position ASC');
-	while ($row = $smcFunc['db_fetch_assoc']($request))
-	{
-		$context['sheet_templates'][$row['id_template']] = array(
-			'name' => $row['template_name'],
-			'body' => un_preparsecode($row['template']),
-		);
-	}
-	$smcFunc['db_free_result']($request);
+	load_char_sheet_templates();
 
 	// Now fetch the comments
 	$context['sheet_comments'] = [];
@@ -1659,6 +1684,27 @@ function char_sheet_edit()
 
 	$context['page_title'] = $txt['char_sheet'] . ' - ' . $context['character']['character_name'];
 	$context['sub_template'] = 'char_sheet_edit';
+}
+
+function load_char_sheet_templates()
+{
+	global $context, $smcFunc, $sourcedir;
+	require_once($sourcedir . '/Subs-Post.php');
+
+	$context['sheet_templates'] = [];
+	// Go fetch the possible templates.
+	$request = $smcFunc['db_query']('', '
+		SELECT id_template, template_name, template
+		FROM {db_prefix}character_sheet_templates
+		ORDER BY position ASC');
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$context['sheet_templates'][$row['id_template']] = array(
+			'name' => $row['template_name'],
+			'body' => un_preparsecode($row['template']),
+		);
+	}
+	$smcFunc['db_free_result']($request);
 }
 
 function char_sheet_approval()
