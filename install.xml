@@ -1566,7 +1566,7 @@
 				mem.email_address, mem.lngfile, mem.real_name
 			FROM {db_prefix}messages AS m
 				INNER JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
-				INNER JOIN {db_prefix}characters AS chars ON (chars.id_character = m.id_character)
+				INNER JOIN {db_prefix}characters AS chars ON (chars.id_character = m.id_character AND chars.retired = 0)
 			WHERE id_msg IN ({array_int:msgs})',
 			array(
 				'msgs' => $id_msgs,
