@@ -1398,7 +1398,7 @@
 				FROM {db_prefix}messages AS m
 					INNER JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
 					INNER JOIN {db_prefix}boards AS b ON (m.id_board = b.id_board)
-					INNER JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character)
+					INNER JOIN {db_prefix}characters AS chars ON (m.id_character = chars.id_character AND chars.retired = 0)
 				WHERE id_msg = {int:msg}',
 				array(
 					'msg' => $this->_details['content_id'],
