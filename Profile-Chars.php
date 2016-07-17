@@ -2482,7 +2482,8 @@ function CharacterList()
 		$request = $smcFunc['db_query']('', '
 			SELECT chars.id_character, chars.id_member, chars.character_name,
 				chars.avatar, chars.posts, chars.date_created,
-				chars.main_char_group, chars.char_groups, chars.char_sheet
+				chars.main_char_group, chars.char_groups, chars.char_sheet,
+				chars.retired
 			FROM {db_prefix}characters AS chars
 			WHERE ' . implode(' AND ', $clauses) . '
 			ORDER BY chars.character_name
