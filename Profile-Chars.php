@@ -1039,6 +1039,8 @@ function char_retire()
 {
 	global $context, $smcFunc, $txt, $user_info;
 
+	checkSession('get');
+
 	// If the character isn't eligible for retirement, goodbye.
 	if (!$context['character']['retire_eligible']) {
 		redirectexit('action=profile;u=' . $context['id_member'] . ';area=characters;char=' . $context['character']['id_character']);
