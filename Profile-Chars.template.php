@@ -1542,7 +1542,7 @@ function template_character_sheet_list()
 						<div>
 							<div class="message_index_title">
 								<span id="char', $character['id_character'], '">
-									<a href="', $scripturl, '?action=profile;u=', $character['id_member'], ';area=characters;char=', $character['id_character'], '">', $character['character_name'], '</a>
+									<a href="', $scripturl, '?action=profile;u=', $character['id_member'], ';area=characters;char=', $character['id_character'], '">', $character['character_name'], '</a>', $character['retired'] ? ' (' . $txt['char_retired'] . ')' : '', '
 									<a class="button" href="', $scripturl, '?action=profile;u=', $character['id_member'], ';area=characters;char=', $character['id_character'], '">', $txt['profile'], '</a>
 									<a class="button" href="', $scripturl, '?action=profile;u=', $character['id_member'], ';area=characters;char=', $character['id_character'], ';sa=sheet">', $txt['char_sheet_link'], '</a>
 								</span>
