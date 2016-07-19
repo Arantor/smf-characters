@@ -84,7 +84,7 @@ function AutoSuggest_Search_RawCharacter()
 	{
 		$row['display_name'] = strtr($row['character_name'], ['&amp;' => '&#038;', '&lt;' => '&#060;', '&gt;' => '&#062;', '&quot;' => '&#034;']);
 
-		$xml_data['items']['children'][$row['id_member']] = [
+		$xml_data['items']['children'][$row['id_character']] = [
 			'attributes' => [
 				'id' => $row['id_member'] . ';area=characters;char=' . $row['id_character'],
 			],
