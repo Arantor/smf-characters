@@ -472,6 +472,15 @@ function integrate_chars_main_menu(&$buttons)
 				'show' => $context['allow_memberlist'],
 				'sub_buttons' => [],
 			];
+			$groups = get_main_menu_groups();
+			foreach ($groups as $id => $group_name)
+			{
+				$temp_buttons['characters']['sub_buttons']['group' . $id] = [
+					'title' => $group_name,
+					'href' => $scripturl . '?action=characters;sa=sheets;group=' . $id,
+					'show' => true,
+				];
+			}
 			continue;
 		}
 		$temp_buttons[$k] = $v;
@@ -967,6 +976,7 @@ function get_labels_and_badges($group_list)
 	$group_limit = 2;
 
 	$badges = '';
+	$combined_badges = [];
 	$badges_done = 0;
 	foreach ($group_list as $id_group) {
 		if (empty($groups[$id_group]))
@@ -981,6 +991,7 @@ function get_labels_and_badges($group_list)
 			continue;
 
 		$badges .= '<div>' . $groups[$id_group]['parsed_icons'] . '</div>';
+		$combined_badges[] = '<div class="char_group_title"' . (!empty($groups[$id_group]['online_color']) ? ' style="color:' . $groups[$id_group]['online_color'] . '"' : '') . '>' . $groups[$id_group]['group_name'] . '</div><div class="char_group_badges">' . $groups[$id_group]['parsed_icons'] . '</div>';
 
 		$badges_done++;
 		if ($badges_done >= $group_limit) {
@@ -992,6 +1003,7 @@ function get_labels_and_badges($group_list)
 		'title' => $group_title,
 		'color' => $group_color,
 		'badges' => $badges,
+		'combined_badges' => $combined_badges,
 	];
 }
 
@@ -1032,4 +1044,29 @@ function integrate_chars_change_member_data($member_names, $var, &$data, &$known
 		);
 	}
 }
+
+function get_main_menu_groups()
+{
+	global $smcFunc;
+	if (($groups = cache_get_data('char_main_menu_groups', 300)) === null)
+	{
+		$groups = [];
+		$request = $smcFunc['db_query']('', '
+			SELECT mg.id_group, mg.group_name
+			FROM {db_prefix}membergroups AS mg
+			INNER JOIN {db_prefix}characters AS chars ON (chars.main_char_group = mg.id_group)
+			WHERE chars.char_sheet != 0
+			GROUP BY mg.id_group
+			ORDER BY mg.badge_order, mg.group_name');
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+		{
+			$groups[$row['id_group']] = $row['group_name'];
+		}
+		$smcFunc['db_free_result']($request);
+
+		cache_put_data('char_main_menu_groups', $groups, 300);
+	}
+	return $groups;
+}
+
 ?>

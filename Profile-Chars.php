@@ -2551,6 +2551,9 @@ function CharacterList()
 		'url' => $scripturl . '?action=characters',
 	);
 
+	if (isset($_GET['sa']) && $_GET['sa'] == 'sheets')
+		return CharacterSheetList();
+
 	$context['filterable_groups'] = [];
 	foreach (get_char_membergroup_data() as $id_group => $group)
 	{
@@ -2663,6 +2666,57 @@ function CharacterList()
 		}
 		$smcFunc['db_free_result']($request);
 	}
+}
+
+function CharacterSheetList()
+{
+	global $context, $txt, $smcFunc;
+
+	loadLanguage('Profile');
+
+	$context['group_id'] = isset($_GET['group']) ? (int) $_GET['group'] : 0;
+	if (empty($context['group_id']))
+	{
+		redirectexit('action=characters');
+	}
+
+	$context['sub_template'] = 'character_sheet_list';
+
+	$sort = [
+		'last_active' => [
+			'asc' => 'chars.last_active ASC',
+			'desc' => 'chars.last_active DESC',
+		],
+		'name' => [
+			'asc' => 'chars.character_name ASC',
+			'desc' => 'chars.character_name DESC',
+		]
+	];
+	$context['sort_by'] = isset($_GET['sort'], $sort[$_GET['sort']]) ? $_GET['sort'] : 'last_active';
+	$context['sort_order'] = isset($_GET['dir']) && !empty($_GET['sort']) && ($_GET['dir'] == 'asc' || $_GET['dir'] == 'desc') ? $_GET['dir'] : 'desc';
+
+	$context['characters'] = [];
+	$request = $smcFunc['db_query']('', '
+		SELECT chars.id_character, chars.id_member, chars.character_name,
+			chars.date_created, chars.last_active, chars.avatar, chars.posts,
+			chars.main_char_group, chars.char_groups, chars.char_title, chars.retired
+		FROM {db_prefix}characters AS chars
+		WHERE chars.char_sheet != 0
+			AND main_char_group = {int:group}
+		ORDER BY {raw:sort}',
+		[
+			'group' => $context['group_id'],
+			'sort' => $sort[$context['sort_by']][$context['sort_order']],
+		]
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+	{
+		$row['group_list'] = array_merge((array) $row['main_char_group'], explode(',', $row['char_groups']));
+		$row['groups'] = get_labels_and_badges($row['group_list']);
+		$context['characters'][] = $row;
+	}
+	$smcFunc['db_free_result']($request);
+
 }
 
 ?>
