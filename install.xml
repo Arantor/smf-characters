@@ -1638,7 +1638,7 @@
 		</operation>
 	</file>
 
-	<file name="$thtmedir/scripts/mentions.js">
+	<file name="$themedir/scripts/mentions.js">
 		<operation><!-- Bind @ mention search to characters. -->
 			<search position="replace"><![CDATA[suggest_type: 'member']]></search>
 			<add><![CDATA[suggest_type: 'rawcharacter']]></add>
