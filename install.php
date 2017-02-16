@@ -175,6 +175,20 @@ $columns[] = [
 	'error' => 'fatal',
 ];
 $columns[] = [
+	'table_name' => '{db_prefix}mentions',
+	'column_info' => db_field('id_character', 'int'),
+	'parameters' => [],
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+];
+$columns[] = [
+	'table_name' => '{db_prefix}mentions',
+	'column_info' => db_field('mentioned_chr', 'int'),
+	'parameters' => [],
+	'if_exists' => 'ignore',
+	'error' => 'fatal',
+];
+$columns[] = [
 	'table_name' => '{db_prefix}log_online',
 	'column_info' => db_field('id_character', 'int'),
 	'parameters' => [],
