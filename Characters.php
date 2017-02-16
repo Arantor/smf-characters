@@ -435,6 +435,11 @@ function integrate_chars()
 		'integrate_chars_change_member_data',
 		false
 	);
+	add_integration_function(
+		'integrate_bbc_codes',
+		'integrate_chars_bbc_codes',
+		false
+	);
 }
 
 function integrate_chars_actions(&$actionArray)
@@ -1067,6 +1072,17 @@ function get_main_menu_groups()
 		cache_put_data('char_main_menu_groups', $groups, 300);
 	}
 	return $groups;
+}
+
+function integrate_chars_bbc_codes(&$codes, &$no_autolink_tags)
+{
+	global $scripturl;
+	$codes[] = array(
+		'tag' => 'character',
+		'type' => 'unparsed_equals',
+		'before' => '<a href="' . $scripturl . '?action=characters;char=$1" class="mention" data-mention="$1">@',
+		'after' => '</a>',
+	);
 }
 
 ?>

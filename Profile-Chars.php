@@ -2541,6 +2541,28 @@ function CharacterList()
 	global $context, $smcFunc, $txt, $scripturl, $modSettings;
 	global $image_proxy_enabled, $image_proxy_secret;
 
+	$_GET['char'] = isset($_GET['char']) ? (int) $_GET['char'] : 0;
+	if ($_GET['char'])
+	{
+		$result = $smcFunc['db_query']('', '
+			SELECT chars.id_character, mem.id_member
+			FROM {db_prefix}characters AS chars
+			INNER JOIN {db_prefix}members AS mem ON (chars.id_member = mem.id_member)
+			WHERE id_character = {int:id_character}',
+			array(
+				'id_character' => $_GET['char'],
+			)
+		);
+		$redirect = '';
+		if ($smcFunc['db_num_rows']($result))
+		{
+			$row = $smcFunc['db_fetch_assoc']($result);
+			$redirect = 'action=profile;u=' . $row['id_member'] . ';area=characters;char=' . $row['id_character'];
+		}
+		$smcFunc['db_free_result']($result);
+		redirectexit($redirect);
+	}
+
 	isAllowedTo('view_mlist');
 	loadTemplate('Profile-Chars');
 
