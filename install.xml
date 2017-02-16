@@ -1780,7 +1780,7 @@
 			array(
 				'type' => $content_type,
 				'id' => $content_id,
-				'members' => array_keys($members),
+				'members' => $members,
 			)
 		);
 		$members = array();
@@ -1788,7 +1788,7 @@
 			$members[$row['dest_chr']] = array(
 				'id_member' => $row['id_member'],
 				'dest_chr' => $row['dest_chr'],
-				'dest_character_name' => $row['dest_char_name'],
+				'dest_character_name' => $row['dest_chr_name'],
 				'dest_is_main' => $row['dest_is_main'],
 				'retired_chr' => $row['retired'],
 				'real_name' => $row['real_name'],
@@ -1860,11 +1860,11 @@
 					'content_subject' => $msgOptions['subject'],
 					'content_link' => $scripturl . '?msg=' . $msgOptions['id'],
 				];
-				if (!$member['dest_is_main'])
+				if (!empty($member['dest_chr']))
 				{
 					$extra['chars_dest'] = $member['dest_chr'];
 				}
-				if (!$member['mentioned_by']['source_is_main'])
+				if (!empty($member['mentioned_by']['source_chr']))
 				{
 					$extra['chars_src'] = $member['mentioned_by']['source_chr'];
 				}
@@ -1880,7 +1880,7 @@
 					'extra' => json_encode($extra),
 				);
 
-				updateMemberData($member['id'], array('alerts' => '+'));
+				updateMemberData($member['id_member'], array('alerts' => '+'));
 			}]]></add>
 		</operation>
 	</file>
