@@ -17,6 +17,7 @@
 		<require-file name="Admin-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.php" destination="$sourcedir" />
 		<require-file name="Profile-Chars.template.php" destination="$themes_dir/default" />
+		<require-file name="Admin-Chars.template.php" destination="$themes_dir/default" />
 		<require-dir name="characters" destination="$themes_dir/default/languages" />
 	</install>
 
@@ -31,6 +32,7 @@
 		<remove-file name="$sourcedir/Admin-Chars.php" />
 		<remove-file name="$sourcedir/Profile-Chars.php" />
 		<remove-file name="$themes_dir/default/Profile-Chars.template.php" />
+		<remove-file name="$themes_dir/default/Admin-Chars.template.php" />
 		<remove-dir name="$themes_dir/default/languages/characters" />
 	</uninstall>
 </package-info>
