@@ -4,7 +4,7 @@ A mod for supporting multiple 'characters' underneath a standard SMF account, ty
 
 This handles most of the requirements of typical 'sub-account' systems rather than having real sub-accounts.
 
-Features (not all implemented yet!):
+Features:
  * Switch characters with a menu in the top area.
  * Characters can have their own avatars, signatures and theme choices.
  * Show an individual character as online rather than the parent account.
@@ -13,6 +13,7 @@ Features (not all implemented yet!):
  * Designate boards as 'out of character' so that only the 'main character' (aka account itself) can post there.
  * Merge accounts in case users register a second account, expecting typical sub-account behaviour.
  * Replace the members list with a characters list.
+ * If a post is made by the wrong character on an account, allow for convenient re-attribution between characters on said account.
 
 # Caveats
  * PHP 5.4 is required.
