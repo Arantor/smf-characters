@@ -538,6 +538,17 @@ function char_edit()
 				if (isset($changes['character_name']))
 					updateMemberData($context['id_member'], array('real_name' => $changes['character_name']));
 			}
+
+			// Notify any hooks that there are groups changes.
+			if (isset($changes['main_char_group']) || isset($changes['char_groups']))
+			{
+				$primary_group = isset($changes['main_char_group']) ? $changes['main_char_group'] : $context['character']['main_char_group'];
+				$additional_groups = isset($changes['char_groups']) ? $changes['char_groups'] : $context['character']['char_groups'];
+				// Note that like the 2.1 core hook, this is read only...
+				// But unlike the 2.1 core hook, we actually provide which account it is...
+				call_integration_hook('integrate_profile_profileSaveCharGroups', array($context['id_member'], $context['character']['id_character'], $primary_group, $additional_groups));
+			}
+
 			if (!empty($modSettings['userlog_enabled'])) {
 				$rows = [];
 				foreach ($changes as $key => $new_value)
