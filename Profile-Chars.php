@@ -1375,7 +1375,7 @@ function char_summary($memID)
 		if (!empty($char['char_groups']))
 			$user_groups = array_merge($user_groups, explode(',', $char['char_groups']));
 		$details = get_labels_and_badges($user_groups);
-		$context['member']['display_group'] = $details['title'];
+		$context['member']['characters'][$id_char]['display_group'] = $details['title'];
 	}
 }
 

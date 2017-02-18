@@ -1042,11 +1042,10 @@ function template_char_summary()
 							</div>
 						</div>
 						<div class="char_group">
-							', $context['member']['display_group'], '
+							', $char['display_group'], '
 							<div class="char_created">&nbsp;</div>
 						</div>
 					</li>';
-			//var_dump($char);
 		}
 		echo '
 				</ul>';
