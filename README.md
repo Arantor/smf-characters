@@ -4,6 +4,8 @@ A mod for supporting multiple 'characters' underneath a standard SMF account, ty
 
 This handles most of the requirements of typical 'sub-account' systems rather than having real sub-accounts.
 
+**As of 2018 this mod is 100% deprecated. All of the features have been transferred to the [StoryBB](https://github.com/StoryBB/StoryBB) project which is a rewritten SMF with roleplay as a set of core features.**
+
 Features:
  * Switch characters with a menu in the top area.
  * Characters can have their own avatars, signatures and theme choices.
